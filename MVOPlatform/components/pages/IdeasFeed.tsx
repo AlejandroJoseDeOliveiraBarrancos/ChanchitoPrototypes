@@ -1,111 +1,114 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Header } from '@/components/layout/Header'
+import { Sidebar } from '@/components/layout/Sidebar'
 import { Footer } from '@/components/layout/Footer'
 import { IdeaCard } from '@/components/ideas/IdeaCard'
 import { motion } from 'framer-motion'
+import { UI_LABELS } from '@/lib/constants/ui'
+import { Idea } from '@/lib/types/idea'
+import { ideaService } from '@/lib/services/ideaService'
 
-interface Idea {
-  id: string
-  title: string
-  description: string
-  author: string
-  score: number
-  votes: number
-  tags: string[]
-  createdAt: string
+interface IdeasFeedProps {
+  showHeader?: boolean
+  showFooter?: boolean
+  isForYou?: boolean
 }
 
-const mockIdeas: Idea[] = [
-  {
-    id: '1',
-    title: 'AI-Powered Meal Planning App',
-    description:
-      'An app that uses AI to create personalized meal plans based on dietary restrictions, budget, and preferences.',
-    author: 'Sarah Chen',
-    score: 82,
-    votes: 45,
-    tags: ['AI', 'Health', 'Food'],
-    createdAt: '2024-01-15',
-  },
-  {
-    id: '2',
-    title: 'Sustainable Fashion Marketplace',
-    description:
-      'A platform connecting eco-conscious consumers with sustainable fashion brands.',
-    author: 'Michael Rodriguez',
-    score: 75,
-    votes: 32,
-    tags: ['Fashion', 'Sustainability', 'E-commerce'],
-    createdAt: '2024-01-14',
-  },
-  {
-    id: '3',
-    title: 'Remote Team Building Platform',
-    description:
-      'Virtual team building activities and games for distributed teams.',
-    author: 'Emily Johnson',
-    score: 88,
-    votes: 67,
-    tags: ['SaaS', 'Remote Work', 'HR'],
-    createdAt: '2024-01-13',
-  },
-]
-
-export function IdeasFeed() {
-  const [ideas, setIdeas] = useState<Idea[]>(mockIdeas)
+export function IdeasFeed({ showHeader = true, showFooter = true, isForYou = false }: IdeasFeedProps) {
+  const [ideas, setIdeas] = useState<Idea[]>([])
   const [loading, setLoading] = useState(false)
+  const [initialized, setInitialized] = useState(false)
+
+  // Load initial ideas
+  useEffect(() => {
+    if (!initialized) {
+      setLoading(true)
+      ideaService.getIdeas().then((loadedIdeas) => {
+        setIdeas(loadedIdeas)
+        setLoading(false)
+        setInitialized(true)
+      })
+    }
+  }, [initialized])
 
   const handleLoadMore = async () => {
+    if (loading) return
     setLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    const newIdeas = await ideaService.loadMoreIdeas(ideas.length)
+    setIdeas((prev) => [...prev, ...newIdeas])
     setLoading(false)
   }
 
-  return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Header />
-      <main className="flex-1 max-w-4xl mx-auto w-full px-6 py-12">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="mb-12"
-        >
-          <h1 className="text-4xl font-semibold text-text-primary mb-4">
-            Browse Ideas
-          </h1>
-          <p className="text-lg text-text-secondary">
-            Discover and vote on validated business ideas
-          </p>
-        </motion.div>
+  const content = (
+    <main className={`flex-1 w-full px-4 md:px-6 py-8 ${isForYou ? 'max-w-7xl mx-auto' : 'max-w-2xl mx-auto'}`}>
+        {!isForYou && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="mb-8 md:mb-12"
+          >
+            <h1 className="text-heading-1 mb-4">
+              {UI_LABELS.BROWSE_IDEAS}
+            </h1>
+            <p className="text-body-large">
+              {UI_LABELS.DISCOVER_IDEAS}
+            </p>
+          </motion.div>
+        )}
 
-        <div className="space-y-6">
-          {ideas.map((idea, index) => (
-            <motion.div
-              key={idea.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: index * 0.1 }}
-            >
-              <IdeaCard idea={idea} />
-            </motion.div>
-          ))}
-        </div>
+        {isForYou ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            {ideas.map((idea, index) => (
+              <motion.div
+                key={idea.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: index * 0.03 }}
+              >
+                <IdeaCard idea={idea} />
+              </motion.div>
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-4 max-w-2xl mx-auto">
+            {ideas.map((idea, index) => (
+              <motion.div
+                key={idea.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: index * 0.05 }}
+              >
+                <IdeaCard idea={idea} />
+              </motion.div>
+            ))}
+          </div>
+        )}
 
         <div className="mt-12 text-center">
           <button
             onClick={handleLoadMore}
             disabled={loading}
-            className="px-6 py-3 text-base font-medium text-text-secondary border-2 border-gray-100 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50"
+            className="button-secondary"
           >
-            {loading ? 'Loading...' : 'Load More'}
+            {loading ? UI_LABELS.LOADING : UI_LABELS.LOAD_MORE}
           </button>
         </div>
       </main>
-      <Footer />
+  )
+
+  if (!showHeader && !showFooter) {
+    return content
+  }
+
+  return (
+    <div className="min-h-screen flex bg-background">
+      {showHeader && <Sidebar />}
+      <div className="flex-1 flex flex-col transition-all duration-300 overflow-x-hidden">
+        {content}
+        {showFooter && <Footer />}
+      </div>
     </div>
   )
 }
-

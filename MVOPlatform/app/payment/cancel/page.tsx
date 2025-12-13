@@ -4,14 +4,15 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { Header } from '@/components/layout/Header'
+import { Sidebar } from '@/components/layout/Sidebar'
 import { Footer } from '@/components/layout/Footer'
 
 export default function PaymentCancelPage() {
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Header />
-      <main className="flex-1 flex items-center justify-center px-6 py-12">
+    <div className="min-h-screen flex bg-background">
+      <Sidebar />
+      <div className="flex-1 flex flex-col ml-16 md:ml-0">
+        <main className="flex-1 flex items-center justify-center px-6 py-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -42,6 +43,7 @@ export default function PaymentCancelPage() {
         </motion.div>
       </main>
       <Footer />
+      </div>
     </div>
   )
 }

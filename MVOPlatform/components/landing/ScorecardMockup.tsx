@@ -23,10 +23,10 @@ export function ScorecardMockup() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl font-semibold text-text-primary mb-4">
+          <h2 className="text-heading-1 mb-4">
             Example Scorecard
           </h2>
-          <p className="text-lg text-text-secondary max-w-2xl mx-auto">
+          <p className="text-body-large max-w-2xl mx-auto">
             See what kind of insights you&apos;ll receive
           </p>
         </motion.div>
@@ -36,7 +36,7 @@ export function ScorecardMockup() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="max-w-2xl mx-auto bg-background border-2 border-border-color rounded-md p-8 shadow-sm"
+          className="max-w-2xl mx-auto card-base padding-card-large"
         >
           <div className="text-center mb-8">
             <div className="text-5xl font-semibold text-text-primary mb-2">

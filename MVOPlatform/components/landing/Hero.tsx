@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/Button'
 import Link from 'next/link'
+import { UI_LABELS } from '@/lib/constants/ui'
 
 export function Hero() {
   return (
@@ -24,12 +25,12 @@ export function Hero() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link href="/submit">
             <Button size="lg" variant="primary">
-              Submit Your Idea
+              {UI_LABELS.SUBMIT_IDEA}
             </Button>
           </Link>
           <Link href="/ideas">
             <Button size="lg" variant="outline">
-              Browse Ideas
+              {UI_LABELS.BROWSE_IDEAS}
             </Button>
           </Link>
         </div>

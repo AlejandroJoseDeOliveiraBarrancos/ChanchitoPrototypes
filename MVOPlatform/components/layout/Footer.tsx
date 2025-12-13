@@ -1,8 +1,9 @@
 import Link from 'next/link'
+import { UI_LABELS } from '@/lib/constants/ui'
 
 export function Footer() {
   return (
-    <footer className="bg-background border-t border-border-color mt-auto">
+    <footer className="bg-background mt-auto">
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
@@ -22,17 +23,17 @@ export function Footer() {
               <li>
                 <Link
                   href="/ideas"
-                  className="text-sm text-text-secondary hover:text-text-primary transition-colors"
+                  className="text-sm nav-link"
                 >
-                  Browse Ideas
+                  {UI_LABELS.BROWSE_IDEAS}
                 </Link>
               </li>
               <li>
                 <Link
                   href="/submit"
-                  className="text-sm text-text-secondary hover:text-text-primary transition-colors"
+                  className="text-sm nav-link"
                 >
-                  Submit Idea
+                  {UI_LABELS.SUBMIT_IDEA}
                 </Link>
               </li>
             </ul>
@@ -46,7 +47,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/about"
-                  className="text-sm text-text-secondary hover:text-text-primary transition-colors"
+                  className="text-sm nav-link"
                 >
                   About
                 </Link>
@@ -54,7 +55,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/contact"
-                  className="text-sm text-text-secondary hover:text-text-primary transition-colors"
+                  className="text-sm nav-link"
                 >
                   Contact
                 </Link>
@@ -70,7 +71,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/privacy"
-                  className="text-sm text-text-secondary hover:text-text-primary transition-colors"
+                  className="text-sm nav-link"
                 >
                   Privacy Policy
                 </Link>
@@ -78,7 +79,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/terms"
-                  className="text-sm text-text-secondary hover:text-text-primary transition-colors"
+                  className="text-sm nav-link"
                 >
                   Terms of Service
                 </Link>

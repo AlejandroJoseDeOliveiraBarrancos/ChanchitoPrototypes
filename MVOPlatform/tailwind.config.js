@@ -17,6 +17,11 @@ module.exports = {
         white: 'var(--white)',
         black: 'var(--black)',
         'border-color': 'var(--border-color)',
+        gray: {
+          50: 'var(--gray-50)',
+          100: 'var(--gray-100)',
+          200: 'var(--gray-200)',
+        },
       },
       fontFamily: {
         sans: ['var(--font-family-primary)'],

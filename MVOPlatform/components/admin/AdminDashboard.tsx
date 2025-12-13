@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { AlertTriangle, CheckCircle, Clock, DollarSign } from 'lucide-react'
+import { formatDate } from '@/lib/utils/date'
 
 const mockStats = {
   totalIdeas: 1247,
@@ -43,10 +44,10 @@ export function AdminDashboard() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-4xl font-semibold text-text-primary mb-2">
+        <h1 className="text-heading-1 mb-2">
           Admin Dashboard
         </h1>
-        <p className="text-base text-text-secondary">
+        <p className="text-body">
           Manage ideas, reports, and platform settings
         </p>
       </div>
@@ -81,9 +82,9 @@ export function AdminDashboard() {
           className="space-y-6"
         >
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="bg-white border-2 border-gray-100 rounded-md p-6 shadow-sm">
+            <div className="card-white">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-medium text-text-secondary">
+                <h3 className="text-label text-text-secondary">
                   Total Ideas
                 </h3>
                 <CheckCircle className="w-5 h-5 text-accent" />
@@ -93,9 +94,9 @@ export function AdminDashboard() {
               </div>
             </div>
 
-            <div className="bg-white border-2 border-gray-100 rounded-md p-6 shadow-sm">
+            <div className="card-white">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-medium text-text-secondary">
+                <h3 className="text-label text-text-secondary">
                   Pending
                 </h3>
                 <Clock className="w-5 h-5 text-accent-alt" />
@@ -105,9 +106,9 @@ export function AdminDashboard() {
               </div>
             </div>
 
-            <div className="bg-white border-2 border-gray-100 rounded-md p-6 shadow-sm">
+            <div className="card-white">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-medium text-text-secondary">
+                <h3 className="text-label text-text-secondary">
                   Completed Today
                 </h3>
                 <CheckCircle className="w-5 h-5 text-accent" />
@@ -117,9 +118,9 @@ export function AdminDashboard() {
               </div>
             </div>
 
-            <div className="bg-white border-2 border-gray-100 rounded-md p-6 shadow-sm">
+            <div className="card-white">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-medium text-text-secondary">
+                <h3 className="text-label text-text-secondary">
                   Revenue
                 </h3>
                 <DollarSign className="w-5 h-5 text-accent" />
@@ -136,43 +137,43 @@ export function AdminDashboard() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white border-2 border-gray-100 rounded-md shadow-sm overflow-hidden"
+          className="card-white overflow-hidden"
         >
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-100">
+              <thead className="bg-gray-100 border-b border-border-color">
                 <tr>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-text-primary">
+                  <th className="table-header">
                     Idea
                   </th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-text-primary">
+                  <th className="table-header">
                     Author
                   </th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-text-primary">
+                  <th className="table-header">
                     Status
                   </th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-text-primary">
+                  <th className="table-header">
                     Submitted
                   </th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-text-primary">
+                  <th className="table-header">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-border-color">
                 {mockReports.map((report) => (
-                  <tr key={report.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4">
+                  <tr key={report.id} className="hover:bg-gray-100 transition-colors">
+                    <td className="table-cell">
                       <div className="text-base font-medium text-text-primary">
                         {report.idea}
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="table-cell">
                       <div className="text-sm text-text-secondary">
                         {report.author}
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="table-cell">
                       <span
                         className={`inline-flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium ${
                           report.status === 'completed'
@@ -188,12 +189,12 @@ export function AdminDashboard() {
                         {report.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="table-cell">
                       <div className="text-sm text-text-secondary">
-                        {new Date(report.submittedAt).toLocaleDateString()}
+                        {formatDate(report.submittedAt)}
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="table-cell">
                       <button className="text-sm font-medium text-accent hover:text-accent/80 transition-colors">
                         View
                       </button>

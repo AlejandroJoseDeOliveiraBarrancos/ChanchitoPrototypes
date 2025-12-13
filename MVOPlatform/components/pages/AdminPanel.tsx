@@ -2,11 +2,12 @@
 
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { Header } from '@/components/layout/Header'
+import { Sidebar } from '@/components/layout/Sidebar'
 import { Footer } from '@/components/layout/Footer'
 import { AdminDashboard } from '@/components/admin/AdminDashboard'
 import { motion } from 'framer-motion'
 import { clientEnv } from '@/config/env'
+import { UI_LABELS } from '@/lib/constants/ui'
 
 export function AdminPanel() {
   const { data: session, status } = useSession()
@@ -15,7 +16,7 @@ export function AdminPanel() {
   if (status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-text-secondary">Loading...</div>
+        <div className="text-text-secondary">{UI_LABELS.LOADING}</div>
       </div>
     )
   }
@@ -26,8 +27,9 @@ export function AdminPanel() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Header />
+    <div className="min-h-screen flex bg-background">
+      <Sidebar />
+      <div className="flex-1 flex flex-col ml-16 md:ml-0">
       <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -38,6 +40,7 @@ export function AdminPanel() {
         </motion.div>
       </main>
       <Footer />
+      </div>
     </div>
   )
 }

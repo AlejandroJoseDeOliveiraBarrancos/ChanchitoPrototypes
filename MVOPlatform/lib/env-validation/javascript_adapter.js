@@ -242,6 +242,7 @@ class EnvValidator {
 
     validate(schema, envVars = null) {
         if (envVars === null) {
+            // eslint-disable-next-line no-restricted-syntax
             envVars = process.env;
         }
 

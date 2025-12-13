@@ -113,7 +113,3 @@ The project follows strict design principles:
 - Micro-animations
 
 All styles are centralized in `styles/design-tokens.ts` for easy modification.
-
-## License
-
-[Add your license here]

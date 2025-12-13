@@ -7,6 +7,7 @@ import { z } from 'zod'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/Button'
 import { useRouter } from 'next/navigation'
+import { UI_LABELS } from '@/lib/constants/ui'
 
 const ideaSchema = z.object({
   title: z.string().min(10, 'Title must be at least 10 characters'),
@@ -46,13 +47,13 @@ export function IdeaForm() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: 0.2 }}
       onSubmit={handleSubmit(onSubmit)}
-      className="bg-background border-2 border-border-color rounded-md p-8 shadow-sm"
+      className="card-base padding-card-large"
     >
       <div className="space-y-6">
         <div>
           <label
             htmlFor="title"
-            className="block text-sm font-medium text-text-primary mb-2"
+            className="text-label mb-2 block"
           >
             Idea Title
           </label>
@@ -60,7 +61,7 @@ export function IdeaForm() {
             {...register('title')}
             type="text"
             id="title"
-            className="w-full px-4 py-3 border-2 border-border-color rounded-md focus:outline-none focus:border-accent transition-colors text-base"
+            className="input-base"
             placeholder="Enter a clear, concise title for your idea"
           />
           {errors.title && (
@@ -71,7 +72,7 @@ export function IdeaForm() {
         <div>
           <label
             htmlFor="description"
-            className="block text-sm font-medium text-text-primary mb-2"
+            className="text-label mb-2 block"
           >
             Description
           </label>
@@ -79,7 +80,7 @@ export function IdeaForm() {
             {...register('description')}
             id="description"
             rows={4}
-            className="w-full px-4 py-3 border-2 border-gray-100 rounded-md focus:outline-none focus:border-accent transition-colors text-base resize-none"
+            className="input-gray resize-none"
             placeholder="Provide a detailed description of your business idea"
           />
           {errors.description && (
@@ -92,7 +93,7 @@ export function IdeaForm() {
         <div>
           <label
             htmlFor="targetMarket"
-            className="block text-sm font-medium text-text-primary mb-2"
+            className="text-label mb-2 block"
           >
             Target Market
           </label>
@@ -100,7 +101,7 @@ export function IdeaForm() {
             {...register('targetMarket')}
             id="targetMarket"
             rows={3}
-            className="w-full px-4 py-3 border-2 border-gray-100 rounded-md focus:outline-none focus:border-accent transition-colors text-base resize-none"
+            className="input-gray resize-none"
             placeholder="Who is your target audience?"
           />
           {errors.targetMarket && (
@@ -113,7 +114,7 @@ export function IdeaForm() {
         <div>
           <label
             htmlFor="problem"
-            className="block text-sm font-medium text-text-primary mb-2"
+            className="text-label mb-2 block"
           >
             Problem Statement
           </label>
@@ -121,7 +122,7 @@ export function IdeaForm() {
             {...register('problem')}
             id="problem"
             rows={3}
-            className="w-full px-4 py-3 border-2 border-gray-100 rounded-md focus:outline-none focus:border-accent transition-colors text-base resize-none"
+            className="input-gray resize-none"
             placeholder="What problem does your idea solve?"
           />
           {errors.problem && (
@@ -132,7 +133,7 @@ export function IdeaForm() {
         <div>
           <label
             htmlFor="solution"
-            className="block text-sm font-medium text-text-primary mb-2"
+            className="text-label mb-2 block"
           >
             Solution
           </label>
@@ -140,7 +141,7 @@ export function IdeaForm() {
             {...register('solution')}
             id="solution"
             rows={3}
-            className="w-full px-4 py-3 border-2 border-gray-100 rounded-md focus:outline-none focus:border-accent transition-colors text-base resize-none"
+            className="input-gray resize-none"
             placeholder="How does your idea solve this problem?"
           />
           {errors.solution && (
@@ -153,7 +154,7 @@ export function IdeaForm() {
         <div>
           <label
             htmlFor="tags"
-            className="block text-sm font-medium text-text-primary mb-2"
+            className="text-label mb-2 block"
           >
             Tags (optional)
           </label>
@@ -169,7 +170,7 @@ export function IdeaForm() {
 
       <div className="mt-8 flex gap-4">
         <Button type="submit" variant="primary" disabled={isSubmitting}>
-          {isSubmitting ? 'Submitting...' : 'Submit Idea'}
+          {isSubmitting ? UI_LABELS.SUBMITTING : UI_LABELS.SUBMIT_IDEA}
         </Button>
         <Button
           type="button"

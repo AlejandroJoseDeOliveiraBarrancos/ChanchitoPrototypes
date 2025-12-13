@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion'
 import { Download, Share2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { formatDate } from '@/lib/utils/date'
 
 interface ReportDashboardProps {
   ideaId: string
@@ -55,11 +56,11 @@ export function ReportDashboard({ ideaId }: ReportDashboardProps) {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-4xl font-semibold text-text-primary mb-2">
+          <h1 className="text-heading-1 mb-2">
             {mockReport.idea.title}
           </h1>
-          <p className="text-base text-text-secondary">
-            Validation Report • Submitted {new Date(mockReport.idea.submittedAt).toLocaleDateString()}
+          <p className="text-body">
+            Validation Report • Submitted {formatDate(mockReport.idea.submittedAt)}
           </p>
         </div>
         <div className="flex gap-3">
@@ -74,7 +75,7 @@ export function ReportDashboard({ ideaId }: ReportDashboardProps) {
         </div>
       </div>
 
-      <div className="bg-white border-2 border-gray-100 rounded-md p-8 shadow-sm">
+      <div className="card-white-large">
         <div className="text-center mb-8">
           <div className="text-6xl font-semibold text-accent mb-2">
             {mockReport.overallScore}
@@ -94,7 +95,7 @@ export function ReportDashboard({ ideaId }: ReportDashboardProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: index * 0.1 }}
-              className="border-2 border-gray-100 rounded-md p-6"
+              className="card-white padding-card"
             >
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-lg font-medium text-text-primary">
@@ -104,7 +105,7 @@ export function ReportDashboard({ ideaId }: ReportDashboardProps) {
                   {category.score}
                 </div>
               </div>
-              <div className="h-2 bg-gray-100 rounded-full overflow-hidden mb-3">
+                      <div className="h-2 bg-gray-200 rounded-full overflow-hidden mb-3">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${category.score}%` }}

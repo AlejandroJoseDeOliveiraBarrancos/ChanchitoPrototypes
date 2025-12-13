@@ -15,6 +15,12 @@
       "rules": {
         "no-restricted-syntax": "off"
       }
+    },
+    {
+      "files": ["lib/env-validation/javascript_adapter.js"],
+      "rules": {
+        "no-restricted-syntax": "off"
+      }
     }
   ]
 }

@@ -1,11 +1,12 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { UI_LABELS } from '@/lib/constants/ui'
 
 const steps = [
   {
     number: '01',
-    title: 'Submit Your Idea',
+    title: UI_LABELS.SUBMIT_IDEA,
     description: 'Fill out a simple form with your business idea details.',
   },
   {
@@ -22,7 +23,7 @@ const steps = [
 
 export function Process() {
   return (
-    <section className="bg-white py-24">
+    <section className="bg-background py-24">
       <div className="max-w-7xl mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -31,10 +32,10 @@ export function Process() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl font-semibold text-text-primary mb-4">
+          <h2 className="text-heading-1 mb-4">
             How It Works
           </h2>
-          <p className="text-lg text-text-secondary max-w-2xl mx-auto">
+          <p className="text-body-large max-w-2xl mx-auto">
             A simple three-step process to validate your business idea
           </p>
         </motion.div>

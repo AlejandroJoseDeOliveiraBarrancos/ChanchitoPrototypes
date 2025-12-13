@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { loadStripe } from '@stripe/stripe-js'
 import { Button } from '@/components/ui/Button'
 import { clientEnv } from '@/config/env'
+import { UI_LABELS } from '@/lib/constants/ui'
 
 const stripePromise = loadStripe(clientEnv.stripePublishableKey)
 
@@ -44,7 +45,7 @@ export function CheckoutButton({ planId, userId }: CheckoutButtonProps) {
 
   return (
     <Button onClick={handleCheckout} disabled={loading} variant="primary">
-      {loading ? 'Processing...' : 'Checkout'}
+      {loading ? UI_LABELS.PROCESSING : UI_LABELS.CHECKOUT}
     </Button>
   )
 }

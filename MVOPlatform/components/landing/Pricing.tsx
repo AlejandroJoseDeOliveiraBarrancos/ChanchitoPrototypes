@@ -52,7 +52,7 @@ const plans = [
 
 export function Pricing() {
   return (
-    <section className="bg-white py-24">
+    <section className="bg-background py-24">
       <div className="max-w-7xl mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -61,10 +61,10 @@ export function Pricing() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl font-semibold text-text-primary mb-4">
+          <h2 className="text-heading-1 mb-4">
             Pricing
           </h2>
-          <p className="text-lg text-text-secondary max-w-2xl mx-auto">
+          <p className="text-body-large max-w-2xl mx-auto">
             Choose the plan that fits your needs
           </p>
         </motion.div>
@@ -77,10 +77,10 @@ export function Pricing() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
-              className={`bg-white rounded-md border-2 p-8 ${
+              className={`card-white padding-card-large ${
                 plan.popular
                   ? 'border-accent shadow-lg'
-                  : 'border-gray-100 shadow-sm'
+                  : ''
               }`}
             >
               {plan.popular && (

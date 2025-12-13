@@ -36,7 +36,7 @@ export function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(null)
 
   return (
-    <section className="bg-white py-24">
+    <section className="bg-background py-24">
       <div className="max-w-3xl mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -45,7 +45,7 @@ export function FAQ() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl font-semibold text-text-primary mb-4">
+          <h2 className="text-heading-1 mb-4">
             Frequently Asked Questions
           </h2>
         </motion.div>
@@ -58,13 +58,13 @@ export function FAQ() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="border-2 border-gray-100 rounded-md overflow-hidden"
+              className="card-white overflow-hidden border-2 border-border-color"
             >
               <button
                 onClick={() =>
                   setOpenIndex(openIndex === index ? null : index)
                 }
-                className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
+                className="w-full px-6 py-4 flex items-center justify-between text-left interactive-hover"
               >
                 <span className="text-base font-medium text-text-primary">
                   {faq.question}
