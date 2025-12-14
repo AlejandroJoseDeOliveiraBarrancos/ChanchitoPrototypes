@@ -3,33 +3,21 @@
 import { useState, Suspense, lazy } from 'react'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { HeroCarousel } from '@/components/carousel/HeroCarousel'
+import { HomeFeed } from '@/components/home/HomeFeed'
 import { ExploreIdeaSkeleton } from '@/components/ui/Skeleton'
-import { IdeaCardSkeleton } from '@/components/ui/Skeleton'
 
-// Lazy load components for better performance
+// Lazy load only ForYouFeed for better performance
 const ForYouFeed = lazy(() => 
   import('@/components/foryou/ForYouFeed').then(module => ({ default: module.ForYouFeed }))
 )
 
-const HomeFeed = lazy(() => 
-  import('@/components/home/HomeFeed').then(module => ({ default: module.HomeFeed }))
-)
-
-// Loading fallbacks
+// Loading fallback for ForYouFeed
 const ForYouFeedFallback = () => (
   <div className="h-screen w-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide">
     {[1, 2, 3, 4, 5].map((i) => (
       <div key={`skeleton-${i}`} className="h-screen snap-start snap-mandatory">
         <ExploreIdeaSkeleton />
       </div>
-    ))}
-  </div>
-)
-
-const HomeFeedFallback = () => (
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 px-4 md:px-6 py-8">
-    {[1, 2, 3, 4, 5, 6].map((i) => (
-      <IdeaCardSkeleton key={`skeleton-${i}`} />
     ))}
   </div>
 )
@@ -64,10 +52,8 @@ export default function Home() {
           <div className="h-full overflow-y-auto">
             {/* Hero Carousel at the top */}
             <HeroCarousel />
-            {/* Home Feed below - lazy loaded */}
-            <Suspense fallback={<HomeFeedFallback />}>
-              <HomeFeed showHeader={false} showFooter={false} />
-            </Suspense>
+            {/* Home Feed below - loaded directly, not lazy */}
+            <HomeFeed showHeader={false} showFooter={false} />
           </div>
         )}
       </main>

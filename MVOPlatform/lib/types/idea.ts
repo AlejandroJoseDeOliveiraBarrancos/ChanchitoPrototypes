@@ -3,6 +3,8 @@
  * Single source of truth for Idea interface
  */
 
+import { ContentBlock } from './content'
+
 export interface Idea {
   id: string
   title: string
@@ -14,6 +16,8 @@ export interface Idea {
   createdAt: string
   image?: string
   video?: string
+  // Rich content for detail page
+  content?: ContentBlock[]
   // Categorization for different sections
   featured?: boolean // For carousel
   trending?: boolean // For trending section

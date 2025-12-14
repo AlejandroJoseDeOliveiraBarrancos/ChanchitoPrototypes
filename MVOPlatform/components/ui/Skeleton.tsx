@@ -105,3 +105,69 @@ export function CarouselItemSkeleton() {
   )
 }
 
+export function IdeaDetailSkeleton() {
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Hero Section Skeleton */}
+      <div className="relative w-full bg-black">
+        <div className="relative w-full aspect-video bg-gray-900 animate-pulse" />
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/80 to-transparent p-6 md:p-12">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex flex-wrap gap-2 mb-4">
+              <div className="h-6 w-16 bg-gray-700 rounded-full animate-pulse" />
+              <div className="h-6 w-20 bg-gray-700 rounded-full animate-pulse" />
+              <div className="h-6 w-14 bg-gray-700 rounded-full animate-pulse" />
+            </div>
+            <div className="h-12 w-3/4 bg-gray-700 rounded mb-4 animate-pulse" />
+            <div className="flex items-center gap-4">
+              <div className="h-4 w-24 bg-gray-700 rounded animate-pulse" />
+              <div className="h-4 w-32 bg-gray-700 rounded animate-pulse" />
+              <div className="h-4 w-20 bg-gray-700 rounded animate-pulse" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Article Content Skeleton */}
+      <article className="max-w-4xl mx-auto px-4 md:px-6 py-8 md:py-12">
+        {/* Actions Bar Skeleton */}
+        <div className="flex items-center gap-4 mb-8">
+          <div className="h-10 w-24 bg-gray-200 rounded animate-pulse" />
+          <div className="h-10 w-24 bg-gray-200 rounded animate-pulse" />
+          <div className="h-10 w-24 bg-gray-200 rounded animate-pulse" />
+          <div className="h-10 w-24 bg-gray-200 rounded animate-pulse" />
+        </div>
+
+        {/* Description Skeleton */}
+        <div className="mb-12 space-y-3">
+          <div className="h-4 w-full bg-gray-200 rounded animate-pulse" />
+          <div className="h-4 w-full bg-gray-200 rounded animate-pulse" />
+          <div className="h-4 w-5/6 bg-gray-200 rounded animate-pulse" />
+        </div>
+
+        {/* Content Blocks Skeleton */}
+        <div className="mb-12 space-y-6">
+          <div className="h-64 w-full bg-gray-200 rounded-lg animate-pulse" />
+          <div className="h-4 w-full bg-gray-200 rounded animate-pulse" />
+          <div className="h-4 w-4/5 bg-gray-200 rounded animate-pulse" />
+        </div>
+
+        {/* Comments Section Skeleton */}
+        <div className="space-y-4">
+          <div className="h-8 w-48 bg-gray-200 rounded animate-pulse mb-6" />
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="flex gap-4 p-4 border border-gray-200 rounded-lg">
+              <div className="h-10 w-10 bg-gray-200 rounded-full animate-pulse flex-shrink-0" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 w-32 bg-gray-200 rounded animate-pulse" />
+                <div className="h-4 w-full bg-gray-200 rounded animate-pulse" />
+                <div className="h-4 w-3/4 bg-gray-200 rounded animate-pulse" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </article>
+    </div>
+  )
+}
+

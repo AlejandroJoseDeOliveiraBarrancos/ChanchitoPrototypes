@@ -17,6 +17,62 @@ interface HeroCarouselProps {
 
 const AUTO_SCROLL_INTERVAL = 5000 // 5 seconds
 
+// Internal component for video thumbnail
+function VideoThumbnail({ videoSrc, title }: { videoSrc: string; title: string }) {
+  const videoRef = useRef<HTMLVideoElement>(null)
+
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video) return
+
+    // Set video to show a frame at 2 seconds for thumbnail
+    const handleLoadedMetadata = () => {
+      if (video.readyState >= 1) {
+        video.currentTime = 2
+      }
+    }
+
+    const handleCanPlay = () => {
+      if (video.readyState >= 2) {
+        video.currentTime = 2
+      }
+    }
+
+    video.addEventListener('loadedmetadata', handleLoadedMetadata)
+    video.addEventListener('canplay', handleCanPlay)
+    video.load() // Force load metadata
+
+    return () => {
+      video.removeEventListener('loadedmetadata', handleLoadedMetadata)
+      video.removeEventListener('canplay', handleCanPlay)
+    }
+  }, [videoSrc])
+
+  return (
+    <video
+      ref={videoRef}
+      src={videoSrc}
+      className="w-full h-full object-cover"
+      muted
+      playsInline
+      preload="metadata"
+      onLoadedMetadata={(e) => {
+        // Set video to show a frame at 2 seconds for thumbnail
+        const video = e.currentTarget
+        if (video.readyState >= 1) {
+          video.currentTime = 2
+        }
+      }}
+      onCanPlay={(e) => {
+        const video = e.currentTarget
+        if (video.readyState >= 2 && video.currentTime < 1) {
+          video.currentTime = 2
+        }
+      }}
+    />
+  )
+}
+
 // Internal component for carousel video item
 function CarouselVideoItem({ 
   idea, 
@@ -265,14 +321,17 @@ export function HeroCarousel({ ideas: initialIdeas }: HeroCarouselProps) {
                   : 'bg-black hover:bg-gray-900'
               }`}
             >
-              <div className="relative w-16 h-16 flex-shrink-0 rounded overflow-hidden">
+              <div className="relative w-16 h-16 flex-shrink-0 rounded overflow-hidden bg-gray-800">
                 {idea.image ? (
                   <Image
                     src={idea.image}
                     alt={idea.title}
                     fill
                     className="object-cover"
+                    unoptimized
                   />
+                ) : idea.video ? (
+                  <VideoThumbnail videoSrc={idea.video} title={idea.title} />
                 ) : (
                   <div className="w-full h-full bg-gray-800" />
                 )}

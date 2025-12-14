@@ -112,6 +112,9 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   const [isMobile, setIsMobile] = useState(false)
   const { data: session } = useSession()
   const pathname = usePathname()
+  
+  // Check if we're on a detail page that needs fixed sidebar
+  const isDetailPage = pathname?.startsWith('/ideas/') && pathname !== '/ideas'
 
   useEffect(() => {
     const checkMobile = () => {
@@ -380,7 +383,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
 
       {/* Sidebar */}
       <aside
-        className={`relative h-screen z-50 transition-all duration-300 flex-shrink-0 ${
+        className={`${isDetailPage ? 'fixed left-0 top-0' : 'relative'} h-screen z-50 transition-all duration-300 flex-shrink-0 ${
           showExpanded ? SIDEBAR_STYLES.width.expanded : SIDEBAR_STYLES.width.collapsed
         } shadow-lg md:shadow-none`}
       >

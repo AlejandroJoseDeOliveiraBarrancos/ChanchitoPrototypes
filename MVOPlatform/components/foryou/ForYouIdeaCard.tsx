@@ -24,7 +24,7 @@ export function ForYouIdeaCard({ idea, isActive }: ForYouIdeaCardProps) {
   const videoRef = useVideoPlayer({
     videoSrc: idea.video,
     isActive,
-    startTime: 10,
+    startTime: 45,
   })
 
   const handleVote = (e: React.MouseEvent) => {
@@ -116,7 +116,7 @@ export function ForYouIdeaCard({ idea, isActive }: ForYouIdeaCardProps) {
       {/* Bottom section - Title, description, and actions - Fixed at bottom */}
       <div className="absolute bottom-0 left-0 right-0 z-10 pointer-events-none">
         {/* Mobile: Stack vertically with text at bottom */}
-        <div className="md:hidden px-4 pb-4 w-full">
+        <div className="md:hidden px-4 pb-9 w-full">
           <div className="flex items-end justify-between gap-3 w-full">
             {/* Left side - Text content */}
             <div className="flex-1 text-white min-w-0 pointer-events-auto pb-0">

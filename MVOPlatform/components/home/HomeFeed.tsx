@@ -23,12 +23,12 @@ export function HomeFeed({ showHeader = true, showFooter = true }: HomeFeedProps
   const loadMoreRef = useRef<HTMLDivElement>(null)
   const observerRef = useRef<IntersectionObserver | null>(null)
 
-  // Load initial ideas - Only load first batch for lazy loading
+  // Load initial ideas - Load more content upfront, not lazy
   useEffect(() => {
     if (!initialized) {
       setLoading(true)
-      // Load only 6 items initially for faster initial load
-      ideaService.getForYouIdeas(6).then((loadedIdeas) => {
+      // Load 12 items initially for better UX (not waiting for demand)
+      ideaService.getIdeas(12).then((loadedIdeas) => {
         setIdeas(loadedIdeas)
         setLoading(false)
         setInitialized(true)
@@ -40,8 +40,8 @@ export function HomeFeed({ showHeader = true, showFooter = true }: HomeFeedProps
     if (loading || !hasMore) return
     setLoading(true)
     try {
-      // Smaller batches for better performance
-      const newIdeas = await ideaService.getForYouIdeas(6, ideas.length)
+      // Load more ideas with offset
+      const newIdeas = await ideaService.loadMoreIdeas(ideas.length)
       if (newIdeas.length === 0) {
         setHasMore(false)
       } else {
@@ -85,7 +85,7 @@ export function HomeFeed({ showHeader = true, showFooter = true }: HomeFeedProps
       {/* Show skeletons while loading initial data */}
       {!initialized && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((i) => (
             <IdeaCardSkeleton key={`skeleton-${i}`} />
           ))}
         </div>
