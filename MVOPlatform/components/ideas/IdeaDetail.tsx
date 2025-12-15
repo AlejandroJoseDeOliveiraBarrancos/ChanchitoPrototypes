@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowUp, MessageSquare, Share2, Heart, User, Calendar } from 'lucide-react'
+import { ArrowUp, MessageSquare, Share2, Heart, User, Calendar, ArrowLeft } from 'lucide-react'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { formatDate } from '@/lib/utils/date'
 import { UI_LABELS } from '@/lib/constants/ui'
 import { Idea } from '@/lib/types/idea'
@@ -28,6 +29,29 @@ export function IdeaDetail({ ideaId }: IdeaDetailProps) {
   const [likeCount, setLikeCount] = useState(0)
   const [commentCount, setCommentCount] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
+  const router = useRouter()
+
+  const handleBack = () => {
+    // Get the previous path from sessionStorage (set when navigating to idea)
+    const previousPath = sessionStorage.getItem('previousPath') || '/'
+    const scrollPosition = sessionStorage.getItem('previousScrollPosition')
+    
+    // Save scroll position to localStorage before navigating
+    if (scrollPosition && previousPath) {
+      localStorage.setItem(`scrollPosition_${previousPath}`, scrollPosition)
+      // Set a flag to indicate we need to restore scroll
+      sessionStorage.setItem('shouldRestoreScroll', 'true')
+      sessionStorage.setItem('restoreScrollPath', previousPath)
+      sessionStorage.setItem('restoreScrollPosition', scrollPosition)
+    }
+    
+    // Navigate back using router.back() if possible, otherwise push
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      router.back()
+    } else {
+      router.push(previousPath)
+    }
+  }
 
   useEffect(() => {
     const loadIdea = async () => {

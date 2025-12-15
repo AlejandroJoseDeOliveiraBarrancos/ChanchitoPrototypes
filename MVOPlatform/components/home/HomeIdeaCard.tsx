@@ -33,9 +33,21 @@ export function HomeIdeaCard({ idea }: HomeIdeaCardProps) {
     }
   }
 
+  const handleClick = () => {
+    // Save current path and scroll position before navigating
+    if (typeof window !== 'undefined') {
+      // Find the scrollable container (div inside main with overflow-y-auto)
+      const scrollContainer = document.querySelector('main > div.overflow-y-auto') as HTMLElement
+      const scrollY = scrollContainer ? scrollContainer.scrollTop : window.scrollY
+      
+      sessionStorage.setItem('previousPath', window.location.pathname)
+      sessionStorage.setItem('previousScrollPosition', scrollY.toString())
+    }
+  }
+
   return (
     <div ref={cardRef} className="card-hover overflow-hidden">
-      <Link href={`/ideas/${idea.id}`}>
+      <Link href={`/ideas/${idea.id}`} onClick={handleClick}>
         <motion.article
           whileHover={{ y: -2 }}
           className="p-4 flex flex-col"

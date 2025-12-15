@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useSession, signIn, signOut } from 'next-auth/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -110,11 +110,44 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [isNavigating, setIsNavigating] = useState(false)
   const { data: session } = useSession()
   const pathname = usePathname()
+  const router = useRouter()
   
   // Check if we're on a detail page that needs fixed sidebar
   const isDetailPage = pathname?.startsWith('/ideas/') && pathname !== '/ideas'
+
+  // Track navigation to disable animations
+  useEffect(() => {
+    setIsNavigating(true)
+    const timer = setTimeout(() => {
+      setIsNavigating(false)
+    }, 100) // Small delay to ensure transition completes
+    return () => clearTimeout(timer)
+  }, [pathname])
+
+  const handleBack = () => {
+    // Get the previous path from sessionStorage (set when navigating to idea)
+    const previousPath = sessionStorage.getItem('previousPath') || '/'
+    const scrollPosition = sessionStorage.getItem('previousScrollPosition')
+    
+    // Save scroll position to localStorage before navigating
+    if (scrollPosition && previousPath) {
+      localStorage.setItem(`scrollPosition_${previousPath}`, scrollPosition)
+      // Set a flag to indicate we need to restore scroll
+      sessionStorage.setItem('shouldRestoreScroll', 'true')
+      sessionStorage.setItem('restoreScrollPath', previousPath)
+      sessionStorage.setItem('restoreScrollPosition', scrollPosition)
+    }
+    
+    // Navigate back using router.back() if possible, otherwise push
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      router.back()
+    } else {
+      router.push(previousPath)
+    }
+  }
 
   useEffect(() => {
     const checkMobile = () => {
@@ -141,11 +174,14 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       icon: Home,
       href: '/',
       onClick: () => {
-        if (isHomePage && onTabChange) {
+        if (isDetailPage) {
+          // On detail pages, use back navigation
+          handleBack()
+        } else if (isHomePage && onTabChange) {
           onTabChange('home')
         }
       },
-      active: isHomePage && activeTab === 'home',
+      active: (isHomePage && activeTab === 'home') || (!isHomePage && activeTab === 'home'),
     },
     {
       id: 'foryou',
@@ -157,7 +193,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
           onTabChange('foryou')
         }
       },
-      active: isHomePage && activeTab === 'foryou',
+      active: (isHomePage && activeTab === 'foryou') || (!isHomePage && activeTab === 'foryou'),
     },
     {
       id: 'activity',
@@ -201,14 +237,23 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
 
   const sidebarContent = (
     <div className="h-full flex flex-col bg-background">
-      {/* Logo/Brand */}
+      {/* Logo/Brand - Acts as back button on detail pages */}
       <div className={SIDEBAR_STYLES.container.padding.logo}>
         <div className="flex items-center justify-between">
           {showExpanded && (
             <>
-              <Link href="/" className={`${SIDEBAR_STYLES.logo.expanded.text} font-semibold text-text-primary`}>
-                {UI_LABELS.BRAND_NAME}
-              </Link>
+              {isDetailPage ? (
+                <button
+                  onClick={handleBack}
+                  className={`${SIDEBAR_STYLES.logo.expanded.text} font-semibold text-text-primary hover:text-accent transition-colors cursor-pointer`}
+                >
+                  {UI_LABELS.BRAND_NAME}
+                </button>
+              ) : (
+                <Link href="/" className={`${SIDEBAR_STYLES.logo.expanded.text} font-semibold text-text-primary`}>
+                  {UI_LABELS.BRAND_NAME}
+                </Link>
+              )}
               {isMobile && (
                 <button
                   onClick={() => setIsMobileOpen(false)}
@@ -221,9 +266,18 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
             </>
           )}
           {!showExpanded && (
-            <div className={`${SIDEBAR_STYLES.logo.collapsed.size} ${SIDEBAR_STYLES.button.borderRadius} bg-accent flex items-center justify-center mx-auto`}>
-              <span className={`text-text-primary ${SIDEBAR_STYLES.logo.collapsed.text}`}>MVO</span>
-            </div>
+            isDetailPage ? (
+              <button
+                onClick={handleBack}
+                className={`${SIDEBAR_STYLES.logo.collapsed.size} ${SIDEBAR_STYLES.button.borderRadius} bg-accent flex items-center justify-center mx-auto cursor-pointer hover:bg-accent/80 transition-colors`}
+              >
+                <span className={`text-text-primary ${SIDEBAR_STYLES.logo.collapsed.text}`}>MVO</span>
+              </button>
+            ) : (
+              <Link href="/" className={`${SIDEBAR_STYLES.logo.collapsed.size} ${SIDEBAR_STYLES.button.borderRadius} bg-accent flex items-center justify-center mx-auto`}>
+                <span className={`text-text-primary ${SIDEBAR_STYLES.logo.collapsed.text}`}>MVO</span>
+              </Link>
+            )
           )}
         </div>
       </div>
@@ -239,7 +293,35 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
               return (
                 <button
                   key={item.id}
-                  onClick={() => handleItemClick(item)}
+                  onClick={() => {
+                    if (isDetailPage && item.id === 'home') {
+                      // On detail pages, home icon acts as back button
+                      handleBack()
+                    } else {
+                      handleItemClick(item)
+                    }
+                  }}
+                  className={`w-full flex items-center ${showExpanded ? `${SIDEBAR_STYLES.button.gap.expanded} ${SIDEBAR_STYLES.button.padding.horizontal.expanded}` : `justify-center ${SIDEBAR_STYLES.button.padding.horizontal.collapsed}`} ${SIDEBAR_STYLES.button.padding.vertical} ${SIDEBAR_STYLES.button.borderRadius} transition-colors ${
+                    isActive
+                      ? SIDEBAR_STYLES.colors.active
+                      : SIDEBAR_STYLES.colors.inactive
+                  }`}
+                  title={!showExpanded ? item.label : ''}
+                >
+                  <Icon className={`${SIDEBAR_STYLES.icon.size} flex-shrink-0`} />
+                  {showExpanded && (
+                    <span className={`${SIDEBAR_STYLES.button.text.size} ${SIDEBAR_STYLES.button.text.weight}`}>{item.label}</span>
+                  )}
+                </button>
+              )
+            }
+
+            // Handle home icon on detail pages (when not on home page)
+            if (isDetailPage && item.id === 'home') {
+              return (
+                <button
+                  key={item.id}
+                  onClick={handleBack}
                   className={`w-full flex items-center ${showExpanded ? `${SIDEBAR_STYLES.button.gap.expanded} ${SIDEBAR_STYLES.button.padding.horizontal.expanded}` : `justify-center ${SIDEBAR_STYLES.button.padding.horizontal.collapsed}`} ${SIDEBAR_STYLES.button.padding.vertical} ${SIDEBAR_STYLES.button.borderRadius} transition-colors ${
                     isActive
                       ? SIDEBAR_STYLES.colors.active
@@ -375,6 +457,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: isNavigating && isMobile ? 0 : 0.2 }}
             onClick={() => setIsMobileOpen(false)}
             className="fixed inset-0 bg-black/50 z-40 md:hidden"
           />

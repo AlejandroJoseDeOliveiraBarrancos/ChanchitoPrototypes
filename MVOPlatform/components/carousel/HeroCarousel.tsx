@@ -109,7 +109,9 @@ export function HeroCarousel({ ideas: initialIdeas }: HeroCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
   const [isUserInteracting, setIsUserInteracting] = useState(false)
+  const [progress, setProgress] = useState(0)
   const autoScrollRef = useRef<NodeJS.Timeout | null>(null)
+  const progressRef = useRef<NodeJS.Timeout | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [initialized, setInitialized] = useState(false)
 
@@ -289,6 +291,17 @@ export function HeroCarousel({ ideas: initialIdeas }: HeroCarouselProps) {
                   <div className="flex items-center gap-2 md:gap-4">
                     <Link
                       href={`/ideas/${idea.id}`}
+                      onClick={() => {
+                        // Save current path and scroll position before navigating
+                        if (typeof window !== 'undefined') {
+                          // Find the scrollable container (div inside main with overflow-y-auto)
+                          const scrollContainer = document.querySelector('main > div.overflow-y-auto') as HTMLElement
+                          const scrollY = scrollContainer ? scrollContainer.scrollTop : window.scrollY
+                          
+                          sessionStorage.setItem('previousPath', window.location.pathname)
+                          sessionStorage.setItem('previousScrollPosition', scrollY.toString())
+                        }
+                      }}
                       className="px-4 md:px-8 py-2 md:py-3 bg-white text-black text-sm md:text-base font-semibold rounded-md hover:bg-gray-200 transition-colors"
                     >
                       View Details
@@ -315,13 +328,35 @@ export function HeroCarousel({ ideas: initialIdeas }: HeroCarouselProps) {
             <button
               key={idea.id}
               onClick={() => handleThumbnailClick(index)}
-              className={`w-full text-left p-2 rounded-lg transition-all flex items-center gap-2 ${
+              className={`relative w-full text-left p-2 rounded-lg transition-all flex items-center gap-2 overflow-hidden ${
                 index === activeIndex
                   ? 'bg-gray-900 ring-2 ring-accent'
                   : 'bg-black hover:bg-gray-900'
               }`}
             >
-              <div className="relative w-16 h-16 flex-shrink-0 rounded overflow-hidden bg-gray-800">
+              {/* Progress bar overlay - only visible on active item */}
+              {index === activeIndex && !isPaused && !isUserInteracting && (
+                <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-lg">
+                  {/* Background progress bar */}
+                  <div
+                    className="absolute inset-0 bg-white/10"
+                    style={{
+                      width: `${progress}%`,
+                      transition: 'width 0.1s linear',
+                    }}
+                  />
+                  {/* Animated light bar */}
+                  <div
+                    className="absolute top-0 bottom-0 w-1/3 bg-gradient-to-r from-transparent via-white/40 to-transparent"
+                    style={{
+                      left: `${progress}%`,
+                      transform: 'translateX(-50%)',
+                      transition: 'left 0.1s linear',
+                    }}
+                  />
+                </div>
+              )}
+              <div className="relative w-16 h-16 flex-shrink-0 rounded overflow-hidden bg-gray-800 z-10">
                 {idea.image ? (
                   <Image
                     src={idea.image}
@@ -336,7 +371,7 @@ export function HeroCarousel({ ideas: initialIdeas }: HeroCarouselProps) {
                   <div className="w-full h-full bg-gray-800" />
                 )}
               </div>
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 z-10">
                 <p className="text-xs md:text-sm font-medium text-white line-clamp-2">
                   {idea.title}
                 </p>

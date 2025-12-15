@@ -314,4 +314,14 @@ a {
     padding-left: var(--spacing-lg);
     padding-right: var(--spacing-lg);
   }
+
+  /* Carousel progress bar animation */
+  @keyframes slideRight {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(350%);
+    }
+  }
 }
