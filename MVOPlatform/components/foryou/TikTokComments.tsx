@@ -10,6 +10,7 @@ import {
   MessageSquare,
   ChevronUp,
   ChevronDown,
+  X,
 } from 'lucide-react'
 import Image from 'next/image'
 import { formatDate } from '@/lib/utils/date'
@@ -656,9 +657,10 @@ export function TikTokComments({
                                     </button>
                                   </div>
                                 </div>
-                              ))}
-                            </div>
-                          )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </motion.div>
                   ))}

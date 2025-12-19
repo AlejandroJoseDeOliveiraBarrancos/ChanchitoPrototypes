@@ -524,9 +524,10 @@ export function CommentsBlock({ ideaId }: CommentsBlockProps) {
                               </button>
                             </div>
                           </div>
-                        ))}
-                      </div>
-                    )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>
