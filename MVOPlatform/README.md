@@ -9,7 +9,7 @@ A Next.js web application for validating business ideas with data-driven insight
 - **Ideas Feed**: Social media-style feed with voting
 - **Validation Reports**: Detailed scorecards and recommendations
 - **Admin Panel**: Dashboard for managing ideas and reports
-- **Authentication**: Google OAuth integration
+- **Authentication**: Google OAuth via Supabase
 - **Payments**: Stripe checkout integration
 
 ## Tech Stack
@@ -19,7 +19,8 @@ A Next.js web application for validating business ideas with data-driven insight
 - React 18
 - Tailwind CSS
 - Framer Motion
-- NextAuth.js
+- Supabase (Auth & Database)
+- Redux Toolkit
 - Stripe
 - React Hook Form + Zod
 
@@ -27,7 +28,7 @@ A Next.js web application for validating business ideas with data-driven insight
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - npm or yarn
 
 ### Installation
@@ -39,19 +40,21 @@ A Next.js web application for validating business ideas with data-driven insight
 npm install
 ```
 
-3. Set up environment variables (`.env.local`):
+3. Set up Supabase database:
+
+Go to your Supabase project → SQL Editor and run the SQL from `init.sql` to create the users table and authentication trigger.
+
+4. Set up environment variables (`.env.local`):
 
 ```env
-GOOGLE_CLIENT_ID=your_google_client_id
-GOOGLE_CLIENT_SECRET=your_google_client_secret
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=your_secret_key
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 STRIPE_SECRET_KEY=sk_test_...
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
 NEXT_PUBLIC_ADMIN_EMAIL=admin@example.com
 ```
 
-4. Run the development server:
+5. Run the development server:
 
 ```bash
 npm run dev
@@ -64,7 +67,7 @@ npm run dev
 **Important**: All environment variable access is centralized in `config/env.ts`. Direct `process.env` access is blocked by ESLint rules.
 
 - Use `serverEnv` for server-side variables
-- Use `clientEnv` for client-side variables (NEXT_PUBLIC_*)
+- Use `clientEnv` for client-side variables (NEXT*PUBLIC*\*)
 
 See `docs/architecture/environment-variables.md` for details.
 
@@ -100,12 +103,14 @@ MVOPlatform/
 ## Documentation
 
 See `docs/` directory for detailed documentation:
+
 - UX guidelines (`docs/UX/`)
 - Architecture (`docs/architecture/`)
 
 ## Design System
 
 The project follows strict design principles:
+
 - 95% neutrals, 5-10% accents
 - High white space ratio
 - Predictable card structure
