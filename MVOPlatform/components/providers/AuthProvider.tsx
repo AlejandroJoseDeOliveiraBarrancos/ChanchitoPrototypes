@@ -1,0 +1,50 @@
+'use client'
+
+import { useEffect } from 'react'
+import { useRouter, usePathname } from 'next/navigation'
+import { useAppDispatch, useAppSelector } from '@/lib/hooks'
+import { checkAuth } from '@/lib/slices/authSlice'
+import { supabase } from '@/lib/supabase'
+
+interface AuthProviderProps {
+  children: React.ReactNode
+}
+
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const dispatch = useAppDispatch()
+  const router = useRouter()
+  const pathname = usePathname()
+  const { isAuthenticated, initialized, profile, error } = useAppSelector(
+    state => state.auth
+  )
+
+  useEffect(() => {
+    dispatch(checkAuth())
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(event => {
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        dispatch(checkAuth())
+      } else if (event === 'SIGNED_OUT') {
+        dispatch(checkAuth())
+      }
+    })
+
+    return () => {
+      authListener.subscription.unsubscribe()
+    }
+  }, [dispatch])
+
+  useEffect(() => {
+    const isAuthPage = pathname.startsWith('/auth')
+    const isProtectedPage =
+      pathname.startsWith('/submit') || pathname.startsWith('/admin')
+
+    if (initialized && !isAuthPage && isProtectedPage) {
+      if (!isAuthenticated || !profile || error) {
+        router.replace('/auth')
+      }
+    }
+  }, [initialized, isAuthenticated, profile, error, pathname, router])
+
+  return <>{children}</>
+}

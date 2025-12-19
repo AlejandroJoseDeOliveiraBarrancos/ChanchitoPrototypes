@@ -1,14 +1,24 @@
 'use client'
 
 import Link from 'next/link'
-import { useSession, signIn, signOut } from 'next-auth/react'
+import { useAppSelector } from '@/lib/hooks'
 import { Button } from '@/components/ui/Button'
-import { UserMenu } from '@/components/ui/UserMenu'
+import { signInWithGoogle, signOut } from '@/lib/slices/authSlice'
+import { useAppDispatch } from '@/lib/hooks'
 import { clientEnv } from '@/config/env'
 import { UI_LABELS } from '@/lib/constants/ui'
 
 export function Header() {
-  const { data: session } = useSession()
+  const dispatch = useAppDispatch()
+  const { isAuthenticated, profile } = useAppSelector(state => state.auth)
+
+  const handleSignIn = () => {
+    dispatch(signInWithGoogle())
+  }
+
+  const handleSignOut = () => {
+    dispatch(signOut())
+  }
 
   return (
     <header className="sticky top-0 z-50 bg-background border-b border-border-color">
@@ -18,39 +28,41 @@ export function Header() {
         </Link>
 
         <nav className="flex items-center gap-6">
-          <Link
-            href="/ideas"
-            className="nav-link"
-          >
+          <Link href="/ideas" className="nav-link">
             {UI_LABELS.EXPLORE}
           </Link>
-          <Link
-            href="/submit"
-            className="nav-link"
-          >
+          <Link href="/submit" className="nav-link">
             {UI_LABELS.SUBMIT_IDEA}
           </Link>
 
-          {session ? (
+          {isAuthenticated ? (
             <>
-              {session.user?.email === clientEnv.adminEmail && (
-                <Link
-                  href="/admin"
-                  className="nav-link"
-                >
+              {profile?.email === clientEnv.adminEmail && (
+                <Link href="/admin" className="nav-link">
                   {UI_LABELS.ADMIN}
                 </Link>
               )}
-              <UserMenu user={session.user} onSignOut={() => signOut()} />
+              <div className="flex items-center gap-4">
+                <span className="text-text-primary">
+                  Welcome, {profile?.full_name || 'User'}
+                </span>
+                <Button onClick={handleSignOut} variant="secondary">
+                  Sign Out
+                </Button>
+              </div>
             </>
           ) : (
-            <Button onClick={() => signIn('google')} variant="primary">
-              {UI_LABELS.SIGN_IN}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button onClick={handleSignIn} variant="outline">
+                Login
+              </Button>
+              <Button onClick={handleSignIn} variant="primary">
+                Register
+              </Button>
+            </div>
           )}
         </nav>
       </div>
     </header>
   )
 }
-
