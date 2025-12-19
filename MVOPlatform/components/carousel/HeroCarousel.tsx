@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { ArrowUp, Share2, Bookmark } from 'lucide-react'
+import { ArrowUp, Share2, Bookmark, TrendingUp } from 'lucide-react'
 import { Idea } from '@/lib/types/idea'
 import { ideaService } from '@/lib/services/ideaService'
 import { formatDate } from '@/lib/utils/date'
@@ -115,10 +115,10 @@ export function HeroCarousel({ ideas: initialIdeas }: HeroCarouselProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [initialized, setInitialized] = useState(false)
 
-  // Load featured ideas if not provided (max 5 for carousel)
+  // Load trending ideas if not provided (max 5 for carousel)
   useEffect(() => {
     if (!initialIdeas && !initialized) {
-      ideaService.getFeaturedIdeas(5).then((loadedIdeas) => {
+      ideaService.getTrendingIdeas(5).then((loadedIdeas) => {
         setIdeas(loadedIdeas)
         setInitialized(true)
       })
@@ -203,6 +203,16 @@ export function HeroCarousel({ ideas: initialIdeas }: HeroCarouselProps) {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
+      {/* Trending Label */}
+      <div className="absolute top-6 left-6 md:left-10 z-20">
+        <div className="flex items-center gap-2 px-5 py-2.5 md:px-6 md:py-3 bg-accent/90 backdrop-blur-sm rounded-full shadow-xl">
+          <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-text-primary" />
+          <span className="text-base md:text-lg font-bold text-text-primary tracking-wide uppercase">
+            Trending
+          </span>
+        </div>
+      </div>
+
       {/* Main Carousel */}
       <div
         ref={containerRef}

@@ -17,6 +17,7 @@ interface HomeFeedProps {
 
 export function HomeFeed({ showHeader = true, showFooter = true }: HomeFeedProps) {
   const [ideas, setIdeas] = useState<Idea[]>([])
+  const [newIdeas, setNewIdeas] = useState<Idea[]>([])
   const [loading, setLoading] = useState(false)
   const [initialized, setInitialized] = useState(false)
   const [hasMore, setHasMore] = useState(true)
@@ -28,8 +29,12 @@ export function HomeFeed({ showHeader = true, showFooter = true }: HomeFeedProps
     if (!initialized) {
       setLoading(true)
       // Load 12 items initially for better UX (not waiting for demand)
-      ideaService.getIdeas(12).then((loadedIdeas) => {
+      Promise.all([
+        ideaService.getIdeas(12),
+        ideaService.getNewIdeas(2)
+      ]).then(([loadedIdeas, loadedNewIdeas]) => {
         setIdeas(loadedIdeas)
+        setNewIdeas(loadedNewIdeas)
         setLoading(false)
         setInitialized(true)
       })
@@ -94,6 +99,31 @@ export function HomeFeed({ showHeader = true, showFooter = true }: HomeFeedProps
       {/* Show ideas once loaded */}
       {initialized && (
         <>
+          {/* New Ideas Section */}
+          {newIdeas.length > 0 && (
+            <div className="mb-6 md:mb-8">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="px-3 py-1 bg-accent/20 text-accent text-sm font-semibold rounded-full">
+                  New Ideas
+                </span>
+                <div className="flex-1 h-px bg-border"></div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                {newIdeas.map((idea, index) => (
+                  <motion.div
+                    key={idea.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: index * 0.03 }}
+                  >
+                    <HomeIdeaCard idea={idea} />
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Regular Ideas Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
             {ideas.map((idea, index) => (
               <motion.div

@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { ArrowUp, MessageSquare, Share2, Heart } from 'lucide-react'
+import { ArrowUp, MessageSquare, Share2, DollarSign } from 'lucide-react'
 import { Idea } from '@/lib/types/idea'
 
 interface IdeaActionsProps {
@@ -13,6 +13,7 @@ interface IdeaActionsProps {
   commentCount: number
   onVote: () => void
   onLike: () => void
+  onCommentsClick?: () => void
 }
 
 export function IdeaActions({
@@ -24,6 +25,7 @@ export function IdeaActions({
   commentCount,
   onVote,
   onLike,
+  onCommentsClick,
 }: IdeaActionsProps) {
   const handleShare = async () => {
     if (navigator.share) {
@@ -64,23 +66,27 @@ export function IdeaActions({
         <span className="text-sm hidden md:inline">Votes</span>
       </motion.button>
 
-      {/* Like Button */}
+      {/* I'd Pay For It Button */}
       <motion.button
         onClick={onLike}
         whileTap={{ scale: 0.95 }}
         className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
           liked
-            ? 'bg-red-500 text-white'
+            ? 'bg-accent-alt text-white'
             : 'bg-gray-100 text-text-secondary hover:bg-gray-200'
         }`}
+        title="I'd pay for it"
       >
-        <Heart className={`w-5 h-5 ${liked ? 'fill-current' : ''}`} />
+        <DollarSign className={`w-5 h-5 ${liked ? 'fill-current' : ''}`} />
         <span className="font-semibold">{likeCount}</span>
-        <span className="text-sm hidden md:inline">Likes</span>
+        <span className="text-sm hidden md:inline">I'd pay</span>
       </motion.button>
 
       {/* Comments Button */}
-      <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 text-text-secondary hover:bg-gray-200 transition-colors">
+      <button 
+        onClick={onCommentsClick}
+        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 text-text-secondary hover:bg-gray-200 transition-colors"
+      >
         <MessageSquare className="w-5 h-5" />
         <span className="font-semibold">{commentCount}</span>
         <span className="text-sm hidden md:inline">Comments</span>

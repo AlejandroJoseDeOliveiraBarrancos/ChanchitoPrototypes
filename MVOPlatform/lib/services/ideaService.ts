@@ -31,8 +31,19 @@ export interface IIdeaService {
 
   /**
    * Get featured ideas for carousel (high score, with videos)
+   * @deprecated Use getTrendingIdeas instead
    */
   getFeaturedIdeas(limit?: number): Promise<Idea[]>
+
+  /**
+   * Get trending ideas for carousel (ideas with status_flag: 'trending')
+   */
+  getTrendingIdeas(limit?: number): Promise<Idea[]>
+
+  /**
+   * Get new ideas (ideas with status_flag: 'new')
+   */
+  getNewIdeas(limit?: number): Promise<Idea[]>
 
   /**
    * Get ideas for "For You" section (personalized/curated)
@@ -119,10 +130,16 @@ const MOCK_IDEAS: Idea[] = [
     author: 'Sarah Chen',
     score: 92,
     votes: 145,
+    votesByType: {
+      dislike: 20,
+      use: 50,
+      pay: 75,
+    },
     tags: ['AI', 'Health', 'Food'],
     createdAt: '2024-01-15',
     video: VIDEO_URLS[0],
     featured: true,
+    status_flag: 'trending',
     content: [
       {
         type: 'heading',
@@ -219,11 +236,17 @@ const MOCK_IDEAS: Idea[] = [
     author: 'Michael Rodriguez',
     score: 88,
     votes: 132,
+    votesByType: {
+      dislike: 40,
+      use: 30,
+      pay: 62,
+    },
     tags: ['Fashion', 'Sustainability', 'E-commerce'],
     createdAt: '2024-01-14',
     video: VIDEO_URLS[1],
     featured: true,
     trending: true,
+    status_flag: 'new',
     content: [
       {
         type: 'heading',
@@ -292,10 +315,16 @@ const MOCK_IDEAS: Idea[] = [
     author: 'David Kim',
     score: 91,
     votes: 189,
+    votesByType: {
+      dislike: 60,
+      use: 80,
+      pay: 49,
+    },
     tags: ['AI', 'Finance', 'Fintech'],
     createdAt: '2024-01-12',
     video: VIDEO_URLS[2],
     featured: true,
+    status_flag: 'active_discussion',
     content: [
       {
         type: 'heading',
@@ -346,11 +375,17 @@ const MOCK_IDEAS: Idea[] = [
     author: 'Daniel Anderson',
     score: 87,
     votes: 171,
+    votesByType: {
+      dislike: 25,
+      use: 45,
+      pay: 101,
+    },
     tags: ['AR', 'E-commerce', 'Design'],
     createdAt: '2024-01-02',
     video: VIDEO_URLS[3],
     featured: true,
     trending: true,
+    status_flag: 'validated',
     content: [
       {
         type: 'heading',
@@ -413,8 +448,14 @@ const MOCK_IDEAS: Idea[] = [
     author: 'Kevin Moore',
     score: 89,
     votes: 195,
+    votesByType: {
+      dislike: 25,
+      use: 100,
+      pay: 70,
+    },
     tags: ['AI', 'SaaS', 'Content'],
     createdAt: '2023-12-31',
+    status_flag: 'validated',
     video: VIDEO_URLS[4],
     featured: true,
     content: [
@@ -473,8 +514,14 @@ const MOCK_IDEAS: Idea[] = [
     author: 'Jessica Park',
     score: 86,
     votes: 128,
+    votesByType: {
+      dislike: 0,
+      use: 0,
+      pay: 0,
+    },
     tags: ['VR', 'Health', 'Fitness'],
     createdAt: '2024-01-16',
+    status_flag: 'new',
     video: VIDEO_URLS[5],
     featured: true,
     trending: true,
@@ -540,10 +587,16 @@ const MOCK_IDEAS: Idea[] = [
     author: 'Carlos Mendez',
     score: 90,
     votes: 156,
+    votesByType: {
+      dislike: 90,
+      use: 35,
+      pay: 31,
+    },
     tags: ['AI', 'IoT', 'Smart City'],
     createdAt: '2024-01-17',
     video: VIDEO_URLS[6],
     featured: true,
+    status_flag: 'validated',
     content: [
       {
         type: 'heading',
@@ -594,6 +647,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'Priya Sharma',
     score: 85,
     votes: 142,
+    votesByType: {
+      dislike: 25,
+      use: 50,
+      pay: 67,
+    },
     tags: ['Blockchain', 'Democracy', 'Security'],
     createdAt: '2024-01-18',
     video: VIDEO_URLS[7],
@@ -659,10 +717,16 @@ const MOCK_IDEAS: Idea[] = [
     author: 'Tom Wilson',
     score: 84,
     votes: 118,
+    votesByType: {
+      dislike: 15,
+      use: 65,
+      pay: 38,
+    },
     tags: ['3D Printing', 'E-commerce', 'Design'],
     createdAt: '2024-01-19',
     video: VIDEO_URLS[8],
     featured: true,
+    status_flag: 'validated',
     content: [
       {
         type: 'heading',
@@ -717,6 +781,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'Alex Chen',
     score: 93,
     votes: 201,
+    votesByType: {
+      dislike: 35,
+      use: 75,
+      pay: 91,
+    },
     tags: ['Gaming', 'Neurotech', 'Innovation'],
     createdAt: '2024-01-20',
     video: VIDEO_URLS[9],
@@ -783,6 +852,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'Emily Johnson',
     score: 88,
     votes: 167,
+    votesByType: {
+      dislike: 30,
+      use: 60,
+      pay: 77,
+    },
     tags: ['SaaS', 'Remote Work', 'HR'],
     createdAt: '2024-01-13',
     video: VIDEO_URLS[10],
@@ -850,6 +924,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'James Wilson',
     score: 85,
     votes: 172,
+    votesByType: {
+      dislike: 31,
+      use: 62,
+      pay: 79,
+    },
     tags: ['Health', 'SaaS', 'Wellness'],
     createdAt: '2024-01-10',
     video: VIDEO_URLS[11],
@@ -902,6 +981,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'Chris Martinez',
     score: 86,
     votes: 178,
+    votesByType: {
+      dislike: 32,
+      use: 64,
+      pay: 82,
+    },
     tags: ['Health', 'Wearables', 'AI'],
     createdAt: '2024-01-06',
     video: VIDEO_URLS[12],
@@ -963,6 +1047,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'Alex Thompson',
     score: 83,
     votes: 161,
+    votesByType: {
+      dislike: 29,
+      use: 58,
+      pay: 74,
+    },
     tags: ['Education', 'Gaming', 'Mobile'],
     createdAt: '2024-01-08',
     video: VIDEO_URLS[13],
@@ -1015,6 +1104,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'Jennifer Lee',
     score: 84,
     votes: 165,
+    votesByType: {
+      dislike: 30,
+      use: 59,
+      pay: 76,
+    },
     tags: ['SaaS', 'Events', 'Remote Work'],
     createdAt: '2024-01-05',
     video: VIDEO_URLS[14],
@@ -1076,6 +1170,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'Ryan Lewis',
     score: 85,
     votes: 174,
+    votesByType: {
+      dislike: 31,
+      use: 63,
+      pay: 80,
+    },
     tags: ['Education', 'Marketplace', 'Learning'],
     createdAt: '2023-12-29',
     video: VIDEO_URLS[15],
@@ -1089,6 +1188,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'Brian King',
     score: 83,
     votes: 166,
+    votesByType: {
+      dislike: 30,
+      use: 60,
+      pay: 76,
+    },
     tags: ['AI', 'News', 'Personalization'],
     createdAt: '2023-12-27',
     video: VIDEO_URLS[16],
@@ -1103,6 +1207,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'Lisa Wang',
     score: 79,
     votes: 154,
+    votesByType: {
+      dislike: 28,
+      use: 55,
+      pay: 71,
+    },
     tags: ['Sustainability', 'E-commerce', 'Innovation'],
     createdAt: '2024-01-11',
     video: VIDEO_URLS[17],
@@ -1116,6 +1225,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'Maria Garcia',
     score: 77,
     votes: 148,
+    votesByType: {
+      dislike: 27,
+      use: 53,
+      pay: 68,
+    },
     tags: ['IoT', 'Sustainability', 'Smart Home'],
     createdAt: '2024-01-09',
     video: VIDEO_URLS[18],
@@ -1130,6 +1244,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'Robert Taylor',
     score: 81,
     votes: 159,
+    votesByType: {
+      dislike: 29,
+      use: 57,
+      pay: 73,
+    },
     tags: ['Blockchain', 'E-commerce', 'Innovation'],
     createdAt: '2024-01-04',
     video: VIDEO_URLS[19],
@@ -1144,6 +1263,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'Sam Lee',
     score: 82,
     votes: 138,
+    votesByType: {
+      dislike: 25,
+      use: 50,
+      pay: 63,
+    },
     tags: ['Drones', 'Logistics', 'Innovation'],
     createdAt: '2024-01-21',
     video: VIDEO_URLS[20],
@@ -1157,6 +1281,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'Dr. Elena Volkov',
     score: 94,
     votes: 212,
+    votesByType: {
+      dislike: 38,
+      use: 76,
+      pay: 98,
+    },
     tags: ['Quantum', 'Cloud', 'Tech'],
     createdAt: '2024-01-22',
     video: VIDEO_URLS[21],
@@ -1170,6 +1299,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'Raj Patel',
     score: 87,
     votes: 176,
+    votesByType: {
+      dislike: 32,
+      use: 63,
+      pay: 81,
+    },
     tags: ['Fintech', 'Security', 'Biometrics'],
     createdAt: '2024-01-23',
     video: VIDEO_URLS[22],
@@ -1182,6 +1316,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'Sophie Martin',
     score: 89,
     votes: 187,
+    votesByType: {
+      dislike: 34,
+      use: 67,
+      pay: 86,
+    },
     tags: ['Holography', 'Remote Work', 'Innovation'],
     createdAt: '2024-01-24',
     video: VIDEO_URLS[23],
@@ -1195,6 +1334,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'Marcus Johnson',
     score: 88,
     votes: 183,
+    votesByType: {
+      dislike: 33,
+      use: 66,
+      pay: 84,
+    },
     tags: ['AI', 'Development', 'SaaS'],
     createdAt: '2024-01-25',
     video: VIDEO_URLS[24],
@@ -1207,6 +1351,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'Yuki Tanaka',
     score: 85,
     votes: 169,
+    votesByType: {
+      dislike: 31,
+      use: 61,
+      pay: 77,
+    },
     tags: ['AI', 'Fitness', 'IoT'],
     createdAt: '2024-01-26',
     video: VIDEO_URLS[25],
@@ -1220,6 +1369,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'Emma Green',
     score: 86,
     votes: 175,
+    votesByType: {
+      dislike: 32,
+      use: 63,
+      pay: 80,
+    },
     tags: ['Sustainability', 'Mobile', 'Environment'],
     createdAt: '2024-01-27',
     video: VIDEO_URLS[26],
@@ -1232,6 +1386,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'David Kim',
     score: 84,
     votes: 162,
+    votesByType: {
+      dislike: 29,
+      use: 58,
+      pay: 75,
+    },
     tags: ['IoT', 'Smart Home', 'Voice'],
     createdAt: '2024-01-28',
     video: VIDEO_URLS[27],
@@ -1245,6 +1404,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'Lucas Rivera',
     score: 87,
     votes: 181,
+    votesByType: {
+      dislike: 33,
+      use: 65,
+      pay: 83,
+    },
     tags: ['AI', 'Music', 'Creative'],
     createdAt: '2024-01-29',
     video: VIDEO_URLS[28],
@@ -1257,6 +1421,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'Isabella Rossi',
     score: 83,
     votes: 164,
+    votesByType: {
+      dislike: 30,
+      use: 59,
+      pay: 75,
+    },
     tags: ['AI', 'Fashion', 'Mobile'],
     createdAt: '2024-01-30',
     video: VIDEO_URLS[29],
@@ -1270,6 +1439,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'Chef Marco',
     score: 90,
     votes: 198,
+    votesByType: {
+      dislike: 36,
+      use: 71,
+      pay: 91,
+    },
     tags: ['Robotics', 'Food', 'Innovation'],
     createdAt: '2024-02-01',
     video: VIDEO_URLS[30],
@@ -1282,6 +1456,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'Dr. Sarah Chen',
     score: 86,
     votes: 177,
+    votesByType: {
+      dislike: 32,
+      use: 64,
+      pay: 81,
+    },
     tags: ['Health', 'IoT', 'Wellness'],
     createdAt: '2024-02-02',
     video: VIDEO_URLS[31],
@@ -1295,6 +1474,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'Ana Silva',
     score: 85,
     votes: 173,
+    votesByType: {
+      dislike: 31,
+      use: 62,
+      pay: 80,
+    },
     tags: ['Translation', 'Community', 'SaaS'],
     createdAt: '2024-02-03',
     video: VIDEO_URLS[32],
@@ -1307,6 +1491,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'Attorney James',
     score: 88,
     votes: 185,
+    votesByType: {
+      dislike: 33,
+      use: 67,
+      pay: 85,
+    },
     tags: ['AI', 'Legal', 'SaaS'],
     createdAt: '2024-02-04',
     video: VIDEO_URLS[33],
@@ -1320,6 +1509,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'Green Energy Co',
     score: 87,
     votes: 179,
+    votesByType: {
+      dislike: 32,
+      use: 64,
+      pay: 83,
+    },
     tags: ['Sustainability', 'Energy', 'Blockchain'],
     createdAt: '2024-02-05',
     video: VIDEO_URLS[34],
@@ -1332,6 +1526,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'EduTech Solutions',
     score: 89,
     votes: 192,
+    votesByType: {
+      dislike: 35,
+      use: 69,
+      pay: 88,
+    },
     tags: ['AI', 'Education', 'SaaS'],
     createdAt: '2024-02-06',
     video: VIDEO_URLS[35],
@@ -1345,6 +1544,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'Garden Tech',
     score: 82,
     votes: 147,
+    votesByType: {
+      dislike: 27,
+      use: 53,
+      pay: 67,
+    },
     tags: ['IoT', 'Gardening', 'AI'],
     createdAt: '2024-02-07',
     video: VIDEO_URLS[36],
@@ -1357,6 +1561,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'Dr. Wellness',
     score: 91,
     votes: 203,
+    votesByType: {
+      dislike: 37,
+      use: 73,
+      pay: 93,
+    },
     tags: ['VR', 'Health', 'Therapy'],
     createdAt: '2024-02-08',
     video: VIDEO_URLS[37],
@@ -1370,6 +1579,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'Chef AI',
     score: 84,
     votes: 168,
+    votesByType: {
+      dislike: 30,
+      use: 60,
+      pay: 78,
+    },
     tags: ['AI', 'Food', 'Mobile'],
     createdAt: '2024-02-09',
     video: VIDEO_URLS[38],
@@ -1382,6 +1596,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'SecureID Inc',
     score: 90,
     votes: 196,
+    votesByType: {
+      dislike: 35,
+      use: 71,
+      pay: 90,
+    },
     tags: ['Blockchain', 'Security', 'Identity'],
     createdAt: '2024-02-10',
     video: VIDEO_URLS[39],
@@ -1395,6 +1614,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'EcoSort',
     score: 86,
     votes: 174,
+    votesByType: {
+      dislike: 31,
+      use: 63,
+      pay: 80,
+    },
     tags: ['AI', 'Sustainability', 'IoT'],
     createdAt: '2024-02-11',
     video: VIDEO_URLS[40],
@@ -1407,6 +1631,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'AR Shop',
     score: 88,
     votes: 184,
+    votesByType: {
+      dislike: 33,
+      use: 66,
+      pay: 85,
+    },
     tags: ['AR', 'E-commerce', 'Shopping'],
     createdAt: '2024-02-12',
     video: VIDEO_URLS[41],
@@ -1420,6 +1649,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'FinanceAI',
     score: 87,
     votes: 180,
+    votesByType: {
+      dislike: 33,
+      use: 65,
+      pay: 82,
+    },
     tags: ['AI', 'Finance', 'Investing'],
     createdAt: '2024-02-13',
     video: VIDEO_URLS[42],
@@ -1432,6 +1666,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'SecureHome',
     score: 89,
     votes: 191,
+    votesByType: {
+      dislike: 34,
+      use: 69,
+      pay: 88,
+    },
     tags: ['Security', 'IoT', 'Voice'],
     createdAt: '2024-02-14',
     video: VIDEO_URLS[43],
@@ -1445,6 +1684,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'HoloTech',
     score: 92,
     votes: 207,
+    votesByType: {
+      dislike: 37,
+      use: 75,
+      pay: 95,
+    },
     tags: ['Holography', 'Display', 'Innovation'],
     createdAt: '2024-02-15',
     video: VIDEO_URLS[44],
@@ -1457,6 +1701,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'CareerAI',
     score: 86,
     votes: 176,
+    votesByType: {
+      dislike: 32,
+      use: 63,
+      pay: 81,
+    },
     tags: ['AI', 'HR', 'Jobs'],
     createdAt: '2024-02-16',
     video: VIDEO_URLS[45],
@@ -1469,6 +1718,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'AquaTech',
     score: 85,
     votes: 170,
+    votesByType: {
+      dislike: 31,
+      use: 61,
+      pay: 78,
+    },
     tags: ['IoT', 'Sustainability', 'Water'],
     createdAt: '2024-02-17',
     video: VIDEO_URLS[46],
@@ -1482,6 +1736,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'ArtAI',
     score: 88,
     votes: 186,
+    votesByType: {
+      dislike: 34,
+      use: 67,
+      pay: 85,
+    },
     tags: ['AI', 'Art', 'Creative'],
     createdAt: '2024-02-18',
     video: VIDEO_URLS[47],
@@ -1494,6 +1753,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'PetTech',
     score: 84,
     votes: 163,
+    votesByType: {
+      dislike: 29,
+      use: 59,
+      pay: 75,
+    },
     tags: ['IoT', 'Pets', 'Automation'],
     createdAt: '2024-02-19',
     video: VIDEO_URLS[48],
@@ -1507,6 +1771,11 @@ const MOCK_IDEAS: Idea[] = [
     author: 'MedAI',
     score: 93,
     votes: 215,
+    votesByType: {
+      dislike: 39,
+      use: 77,
+      pay: 99,
+    },
     tags: ['AI', 'Healthcare', 'Medical'],
     createdAt: '2024-02-20',
     video: VIDEO_URLS[49],
@@ -1559,8 +1828,9 @@ class MockIdeaService implements IIdeaService {
     
     // Return ONLY featured ideas (exclude those marked for other sections)
     // Featured ideas should NOT appear in For You or Explore
+    // Support both old featured flag and new status_flag
     const featured = MOCK_IDEAS.filter(
-      (idea) => idea.featured && idea.video && !idea.forYou
+      (idea) => (idea.featured || idea.status_flag === 'trending') && idea.video && !idea.forYou
     )
       .sort((a, b) => b.score - a.score)
       .slice(0, limit)
@@ -1568,14 +1838,44 @@ class MockIdeaService implements IIdeaService {
     return featured
   }
 
+  async getTrendingIdeas(limit = 5): Promise<Idea[]> {
+    // Simulate API delay
+    await new Promise((resolve) => setTimeout(resolve, 100))
+    
+    // Return ONLY trending ideas (status_flag: 'trending')
+    // Fallback to featured flag for backward compatibility
+    const trending = MOCK_IDEAS.filter(
+      (idea) => (idea.status_flag === 'trending' || idea.featured) && idea.video && !idea.forYou
+    )
+      .sort((a, b) => b.score - a.score)
+      .slice(0, limit)
+    
+    return trending
+  }
+
+  async getNewIdeas(limit = 2): Promise<Idea[]> {
+    // Simulate API delay
+    await new Promise((resolve) => setTimeout(resolve, 100))
+    
+    // Return new ideas (status_flag: 'new'), sorted by creation date (newest first)
+    const newIdeas = MOCK_IDEAS.filter(
+      (idea) => idea.status_flag === 'new'
+    )
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, limit)
+    
+    return newIdeas
+  }
+
   async getForYouIdeas(limit?: number, offset = 0): Promise<Idea[]> {
     // Simulate API delay
     await new Promise((resolve) => setTimeout(resolve, 100))
     
-    // Return ONLY For You ideas (exclude featured ones)
+    // Return ONLY For You ideas (exclude featured ones and validated ideas)
     // For You ideas should NOT appear in Carousel or Explore
+    // Validated ideas should NOT appear in For You section
     const forYou = MOCK_IDEAS.filter(
-      (idea) => idea.forYou && !idea.featured
+      (idea) => idea.forYou && !idea.featured && idea.status_flag !== 'validated'
     )
       .sort((a, b) => b.score - a.score)
     
@@ -1588,10 +1888,11 @@ class MockIdeaService implements IIdeaService {
     // Simulate API delay
     await new Promise((resolve) => setTimeout(resolve, 100))
     
-    // Return ONLY Explore ideas (exclude featured and forYou)
+    // Return ONLY Explore ideas (exclude featured, forYou, and validated)
     // Explore ideas should NOT appear in Carousel or For You
+    // Validated ideas should NOT appear in Explore section
     const explore = MOCK_IDEAS.filter(
-      (idea) => idea.video && !idea.featured && !idea.forYou
+      (idea) => idea.video && !idea.featured && !idea.forYou && idea.status_flag !== 'validated'
     )
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     

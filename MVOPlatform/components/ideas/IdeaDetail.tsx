@@ -29,6 +29,7 @@ export function IdeaDetail({ ideaId }: IdeaDetailProps) {
   const [likeCount, setLikeCount] = useState(0)
   const [commentCount, setCommentCount] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
+  const commentsSectionRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
   const handleBack = () => {
@@ -91,6 +92,12 @@ export function IdeaDetail({ ideaId }: IdeaDetailProps) {
   const handleLike = () => {
     setLiked(!liked)
     setLikeCount(liked ? likeCount - 1 : likeCount + 1)
+  }
+
+  const handleCommentsClick = () => {
+    if (commentsSectionRef.current) {
+      commentsSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
   }
 
   if (loading) {
@@ -202,6 +209,7 @@ export function IdeaDetail({ ideaId }: IdeaDetailProps) {
           commentCount={commentCount}
           onVote={handleVote}
           onLike={handleLike}
+          onCommentsClick={handleCommentsClick}
         />
 
         {/* Description */}
@@ -249,6 +257,7 @@ export function IdeaDetail({ ideaId }: IdeaDetailProps) {
 
         {/* Comments Section */}
         <motion.div
+          ref={commentsSectionRef}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}

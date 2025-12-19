@@ -9,10 +9,12 @@ export interface Comment {
   authorImage?: string
   content: string
   createdAt: string
-  likes: number
-  liked?: boolean
   upvotes: number
   upvoted?: boolean
+  downvotes: number
+  downvoted?: boolean
+  helpful: number
+  helpfulMarked?: boolean
   usefulnessScore: number
   parentId?: string // If set, this is a reply to another comment
   replies?: Comment[] // Nested replies
