@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { signOut } from 'next-auth/react'
+import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { UI_LABELS } from '@/lib/constants/ui'
@@ -13,15 +13,28 @@ interface UserMenuProps {
     image?: string | null
   }
   onSignOut: () => void
+  showProfileLink?: boolean
+  position?: 'below' | 'above'
 }
 
-export function UserMenu({ user, onSignOut }: UserMenuProps) {
+export function UserMenu({
+  user,
+  onSignOut,
+  showProfileLink = false,
+  position = 'below',
+}: UserMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const buttonRef = useRef<HTMLButtonElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(event.target as Node) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false)
       }
     }
@@ -31,8 +44,9 @@ export function UserMenu({ user, onSignOut }: UserMenuProps) {
   }, [])
 
   return (
-    <div className="relative" ref={menuRef}>
+    <div className="relative">
       <button
+        ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-accent"
       >
@@ -54,16 +68,26 @@ export function UserMenu({ user, onSignOut }: UserMenuProps) {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
+            ref={menuRef}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 mt-2 w-48 bg-gray-100 rounded-md shadow-lg border border-border-color py-2 z-50"
+            className="absolute bottom-full left-4.5 transform -translate-x-1/2 mb-2 w-60 bg-gray-100 rounded-md shadow-lg border border-border-color py-2 z-[100]"
           >
             <div className="px-4 py-2 border-b border-border-color">
               <p className="text-label">{user.name}</p>
               <p className="text-xs text-text-secondary">{user.email}</p>
             </div>
+            {showProfileLink && (
+              <Link
+                href="/profile"
+                onClick={() => setIsOpen(false)}
+                className="block px-4 py-2 text-sm text-text-secondary interactive-hover"
+              >
+                {UI_LABELS.PROFILE}
+              </Link>
+            )}
             <button
               onClick={onSignOut}
               className="w-full text-left px-4 py-2 text-sm text-text-secondary interactive-hover"
@@ -76,4 +100,3 @@ export function UserMenu({ user, onSignOut }: UserMenuProps) {
     </div>
   )
 }
-

@@ -3,7 +3,9 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useSession, signIn, signOut } from 'next-auth/react'
+import { useAppSelector } from '@/lib/hooks'
+import { signInWithGoogle, signOut } from '@/lib/slices/authSlice'
+import { useAppDispatch } from '@/lib/hooks'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Home,
@@ -107,14 +109,15 @@ const SIDEBAR_STYLES = {
 } as const
 
 export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
+  const dispatch = useAppDispatch()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [isNavigating, setIsNavigating] = useState(false)
-  const { data: session } = useSession()
+  const { user, profile, isAuthenticated } = useAppSelector(state => state.auth)
   const pathname = usePathname()
   const router = useRouter()
-  
+
   // Check if we're on a detail page that needs fixed sidebar
   const isDetailPage = pathname?.startsWith('/ideas/') && pathname !== '/ideas'
 
@@ -131,7 +134,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
     // Get the previous path from sessionStorage (set when navigating to idea)
     const previousPath = sessionStorage.getItem('previousPath') || '/'
     const scrollPosition = sessionStorage.getItem('previousScrollPosition')
-    
+
     // Save scroll position to localStorage before navigating
     if (scrollPosition && previousPath) {
       localStorage.setItem(`scrollPosition_${previousPath}`, scrollPosition)
@@ -140,7 +143,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       sessionStorage.setItem('restoreScrollPath', previousPath)
       sessionStorage.setItem('restoreScrollPosition', scrollPosition)
     }
-    
+
     // Navigate back using router.back() if possible, otherwise push
     if (typeof window !== 'undefined' && window.history.length > 1) {
       router.back()
@@ -157,7 +160,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
         setIsMobileOpen(false)
       }
     }
-    
+
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
@@ -181,7 +184,9 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
           onTabChange('home')
         }
       },
-      active: (isHomePage && activeTab === 'home') || (!isHomePage && activeTab === 'home'),
+      active:
+        (isHomePage && activeTab === 'home') ||
+        (!isHomePage && activeTab === 'home'),
     },
     {
       id: 'foryou',
@@ -193,7 +198,9 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
           onTabChange('foryou')
         }
       },
-      active: (isHomePage && activeTab === 'foryou') || (!isHomePage && activeTab === 'foryou'),
+      active:
+        (isHomePage && activeTab === 'foryou') ||
+        (!isHomePage && activeTab === 'foryou'),
     },
     {
       id: 'activity',
@@ -213,13 +220,6 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
 
   const bottomItems = [
     {
-      id: 'profile',
-      label: UI_LABELS.PROFILE,
-      icon: User,
-      href: '/profile',
-      active: pathname === '/profile',
-    },
-    {
       id: 'more',
       label: UI_LABELS.MORE,
       icon: MoreHorizontal,
@@ -228,7 +228,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
     },
   ]
 
-  const handleItemClick = (item: typeof navItems[0]) => {
+  const handleItemClick = (item: (typeof navItems)[0]) => {
     if (item.onClick) {
       item.onClick()
     }
@@ -250,7 +250,10 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                   {UI_LABELS.BRAND_NAME}
                 </button>
               ) : (
-                <Link href="/" className={`${SIDEBAR_STYLES.logo.expanded.text} font-semibold text-text-primary`}>
+                <Link
+                  href="/"
+                  className={`${SIDEBAR_STYLES.logo.expanded.text} font-semibold text-text-primary`}
+                >
                   {UI_LABELS.BRAND_NAME}
                 </Link>
               )}
@@ -260,32 +263,48 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                   className="p-1 rounded-md interactive-hover"
                   aria-label="Close sidebar"
                 >
-                  <X className={`${SIDEBAR_STYLES.icon.size} text-text-secondary`} />
+                  <X
+                    className={`${SIDEBAR_STYLES.icon.size} text-text-secondary`}
+                  />
                 </button>
               )}
             </>
           )}
-          {!showExpanded && (
-            isDetailPage ? (
+          {!showExpanded &&
+            (isDetailPage ? (
               <button
                 onClick={handleBack}
                 className={`${SIDEBAR_STYLES.logo.collapsed.size} ${SIDEBAR_STYLES.button.borderRadius} bg-accent flex items-center justify-center mx-auto cursor-pointer hover:bg-accent/80 transition-colors`}
               >
-                <span className={`text-text-primary ${SIDEBAR_STYLES.logo.collapsed.text}`}>MVO</span>
+                <span
+                  className={`text-text-primary ${SIDEBAR_STYLES.logo.collapsed.text}`}
+                >
+                  MVO
+                </span>
               </button>
             ) : (
-              <Link href="/" className={`${SIDEBAR_STYLES.logo.collapsed.size} ${SIDEBAR_STYLES.button.borderRadius} bg-accent flex items-center justify-center mx-auto`}>
-                <span className={`text-text-primary ${SIDEBAR_STYLES.logo.collapsed.text}`}>MVO</span>
+              <Link
+                href="/"
+                className={`${SIDEBAR_STYLES.logo.collapsed.size} ${SIDEBAR_STYLES.button.borderRadius} bg-accent flex items-center justify-center mx-auto`}
+              >
+                <span
+                  className={`text-text-primary ${SIDEBAR_STYLES.logo.collapsed.text}`}
+                >
+                  MVO
+                </span>
               </Link>
-            )
-          )}
+            ))}
         </div>
       </div>
 
       {/* Navigation Items */}
-      <nav className={`flex-1 ${SIDEBAR_STYLES.container.padding.nav.vertical} overflow-y-auto`}>
-        <div className={`${SIDEBAR_STYLES.container.spacing.items} ${showExpanded ? SIDEBAR_STYLES.container.padding.nav.horizontal.expanded : SIDEBAR_STYLES.container.padding.nav.horizontal.collapsed}`}>
-          {navItems.map((item) => {
+      <nav
+        className={`flex-1 ${SIDEBAR_STYLES.container.padding.nav.vertical} overflow-y-auto`}
+      >
+        <div
+          className={`${SIDEBAR_STYLES.container.spacing.items} ${showExpanded ? SIDEBAR_STYLES.container.padding.nav.horizontal.expanded : SIDEBAR_STYLES.container.padding.nav.horizontal.collapsed}`}
+        >
+          {navItems.map(item => {
             const Icon = item.icon
             const isActive = item.active || false
 
@@ -308,9 +327,15 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                   }`}
                   title={!showExpanded ? item.label : ''}
                 >
-                  <Icon className={`${SIDEBAR_STYLES.icon.size} flex-shrink-0`} />
+                  <Icon
+                    className={`${SIDEBAR_STYLES.icon.size} flex-shrink-0`}
+                  />
                   {showExpanded && (
-                    <span className={`${SIDEBAR_STYLES.button.text.size} ${SIDEBAR_STYLES.button.text.weight}`}>{item.label}</span>
+                    <span
+                      className={`${SIDEBAR_STYLES.button.text.size} ${SIDEBAR_STYLES.button.text.weight}`}
+                    >
+                      {item.label}
+                    </span>
                   )}
                 </button>
               )
@@ -329,9 +354,15 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                   }`}
                   title={!showExpanded ? item.label : ''}
                 >
-                  <Icon className={`${SIDEBAR_STYLES.icon.size} flex-shrink-0`} />
+                  <Icon
+                    className={`${SIDEBAR_STYLES.icon.size} flex-shrink-0`}
+                  />
                   {showExpanded && (
-                    <span className={`${SIDEBAR_STYLES.button.text.size} ${SIDEBAR_STYLES.button.text.weight}`}>{item.label}</span>
+                    <span
+                      className={`${SIDEBAR_STYLES.button.text.size} ${SIDEBAR_STYLES.button.text.weight}`}
+                    >
+                      {item.label}
+                    </span>
                   )}
                 </button>
               )
@@ -351,7 +382,11 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
               >
                 <Icon className={`${SIDEBAR_STYLES.icon.size} flex-shrink-0`} />
                 {showExpanded && (
-                  <span className={`${SIDEBAR_STYLES.button.text.size} ${SIDEBAR_STYLES.button.text.weight}`}>{item.label}</span>
+                  <span
+                    className={`${SIDEBAR_STYLES.button.text.size} ${SIDEBAR_STYLES.button.text.weight}`}
+                  >
+                    {item.label}
+                  </span>
                 )}
               </Link>
             )
@@ -360,8 +395,10 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       </nav>
 
       {/* Bottom Items */}
-      <div className={`${showExpanded ? SIDEBAR_STYLES.container.padding.bottom.expanded : SIDEBAR_STYLES.container.padding.bottom.collapsed} ${SIDEBAR_STYLES.container.spacing.items}`}>
-        {bottomItems.map((item) => {
+      <div
+        className={`${showExpanded ? SIDEBAR_STYLES.container.padding.bottom.expanded : SIDEBAR_STYLES.container.padding.bottom.collapsed} ${SIDEBAR_STYLES.container.spacing.items}`}
+      >
+        {bottomItems.map(item => {
           const Icon = item.icon
           return (
             <Link
@@ -377,17 +414,23 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
             >
               <Icon className={`${SIDEBAR_STYLES.icon.size} flex-shrink-0`} />
               {showExpanded && (
-                <span className={`${SIDEBAR_STYLES.button.text.size} ${SIDEBAR_STYLES.button.text.weight}`}>{item.label}</span>
+                <span
+                  className={`${SIDEBAR_STYLES.button.text.size} ${SIDEBAR_STYLES.button.text.weight}`}
+                >
+                  {item.label}
+                </span>
               )}
             </Link>
           )
         })}
 
-                {/* Auth Section */}
-                <div className={`${SIDEBAR_STYLES.container.padding.auth.top} ${SIDEBAR_STYLES.container.padding.auth.margin}`}>
-          {session ? (
+        {/* Auth Section */}
+        <div
+          className={`${SIDEBAR_STYLES.container.padding.auth.top} ${SIDEBAR_STYLES.container.padding.auth.margin}`}
+        >
+          {isAuthenticated ? (
             <>
-              {session.user?.email === clientEnv.adminEmail && (
+              {profile?.email === clientEnv.adminEmail && (
                 <Link
                   href="/admin"
                   onClick={() => setIsMobileOpen(false)}
@@ -398,38 +441,44 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                   } ${!showExpanded ? 'justify-center' : ''}`}
                   title={!showExpanded ? UI_LABELS.ADMIN : ''}
                 >
-                  <Activity className={`${SIDEBAR_STYLES.icon.size} flex-shrink-0`} />
+                  <Activity
+                    className={`${SIDEBAR_STYLES.icon.size} flex-shrink-0`}
+                  />
                   {showExpanded && (
-                    <span className={`${SIDEBAR_STYLES.button.text.size} ${SIDEBAR_STYLES.button.text.weight}`}>{UI_LABELS.ADMIN}</span>
+                    <span
+                      className={`${SIDEBAR_STYLES.button.text.size} ${SIDEBAR_STYLES.button.text.weight}`}
+                    >
+                      {UI_LABELS.ADMIN}
+                    </span>
                   )}
                 </Link>
               )}
-              {!showExpanded ? (
-                <div className={`${SIDEBAR_STYLES.container.padding.auth.horizontal} ${SIDEBAR_STYLES.container.padding.auth.vertical} flex justify-center`}>
-                  {session.user?.image ? (
-                    <Image
-                      src={session.user.image}
-                      alt={session.user.name || 'User'}
-                      width={SIDEBAR_STYLES.avatar.size.image}
-                      height={SIDEBAR_STYLES.avatar.size.image}
-                      className="rounded-full"
-                    />
-                  ) : (
-                    <div className={`${SIDEBAR_STYLES.avatar.size.placeholder} rounded-full bg-accent flex items-center justify-center text-text-primary font-medium ${SIDEBAR_STYLES.avatar.size.text}`}>
-                      {session.user?.name?.[0] || session.user?.email?.[0] || 'U'}
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className={`${SIDEBAR_STYLES.container.padding.auth.horizontal} ${SIDEBAR_STYLES.container.padding.auth.vertical}`}>
-                  <UserMenu user={session.user} onSignOut={() => signOut()} />
-                </div>
-              )}
+              <div
+                className={`${SIDEBAR_STYLES.container.padding.auth.horizontal} ${SIDEBAR_STYLES.container.padding.auth.vertical}`}
+              >
+                <UserMenu
+                  user={{
+                    name: profile?.full_name || user?.email || 'User',
+                    email: user?.email || '',
+                    image: user?.user_metadata?.avatar_url || null,
+                  }}
+                  onSignOut={() => dispatch(signOut())}
+                  showProfileLink={!showExpanded}
+                  position="above"
+                />
+                {!showExpanded && (
+                  <div className="mt-1 text-center">
+                    <p className="text-xs text-text-secondary truncate max-w-16">
+                      {profile?.full_name || 'User'}
+                    </p>
+                  </div>
+                )}
+              </div>
             </>
           ) : (
             <button
               onClick={() => {
-                signIn('google')
+                dispatch(signInWithGoogle())
                 setIsMobileOpen(false)
               }}
               className={`w-full flex items-center ${SIDEBAR_STYLES.button.gap.expanded} ${SIDEBAR_STYLES.button.padding.horizontal.expanded} ${SIDEBAR_STYLES.button.padding.vertical} ${SIDEBAR_STYLES.button.borderRadius} transition-colors ${SIDEBAR_STYLES.colors.inactive} ${
@@ -439,7 +488,11 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
             >
               <LogIn className={`${SIDEBAR_STYLES.icon.size} flex-shrink-0`} />
               {showExpanded && (
-                <span className={`${SIDEBAR_STYLES.button.text.size} ${SIDEBAR_STYLES.button.text.weight}`}>{UI_LABELS.SIGN_IN}</span>
+                <span
+                  className={`${SIDEBAR_STYLES.button.text.size} ${SIDEBAR_STYLES.button.text.weight}`}
+                >
+                  {UI_LABELS.SIGN_IN}
+                </span>
               )}
             </button>
           )}
@@ -467,7 +520,9 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       {/* Sidebar */}
       <aside
         className={`${isDetailPage ? 'fixed left-0 top-0' : 'relative'} h-screen z-50 transition-all duration-300 flex-shrink-0 ${
-          showExpanded ? SIDEBAR_STYLES.width.expanded : SIDEBAR_STYLES.width.collapsed
+          showExpanded
+            ? SIDEBAR_STYLES.width.expanded
+            : SIDEBAR_STYLES.width.collapsed
         } shadow-lg md:shadow-none`}
       >
         {sidebarContent}
@@ -475,4 +530,3 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
     </>
   )
 }
-
