@@ -5,6 +5,16 @@
 
 import { ContentBlock } from './content'
 
+export type IdeaStatusFlag = 'new' | 'active_discussion' | 'trending' | 'validated'
+
+export type IdeaVoteType = 'dislike' | 'use' | 'pay'
+
+export interface IdeaVotes {
+  dislike: number
+  use: number
+  pay: number
+}
+
 export interface Idea {
   id: string
   title: string
@@ -12,15 +22,18 @@ export interface Idea {
   author: string
   score: number
   votes: number
+  votesByType: IdeaVotes // Distribution of votes by type (mandatory)
   tags: string[]
   createdAt: string
   image?: string
   video?: string
   // Rich content for detail page
   content?: ContentBlock[]
-  // Categorization for different sections
-  featured?: boolean // For carousel
-  trending?: boolean // For trending section
+  // Status flag for visual differentiation
+  status_flag?: IdeaStatusFlag
+  // Categorization for different sections (deprecated - use status_flag instead)
+  featured?: boolean // For carousel (deprecated - use status_flag: 'trending')
+  trending?: boolean // For trending section (deprecated)
   forYou?: boolean // For personalized "For You" section
 }
 

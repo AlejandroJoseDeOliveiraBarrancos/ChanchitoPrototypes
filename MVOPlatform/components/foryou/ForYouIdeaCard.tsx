@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowUp, MessageSquare, Share2, Heart } from 'lucide-react'
+import { ArrowUp, MessageSquare, Share2, DollarSign } from 'lucide-react'
 import Image from 'next/image'
 import { formatDate } from '@/lib/utils/date'
 import { UI_LABELS } from '@/lib/constants/ui'
@@ -10,6 +10,7 @@ import { Idea } from '@/lib/types/idea'
 import { useVideoPlayer } from '@/hooks/useVideoPlayer'
 import { TikTokComments } from './TikTokComments'
 import { commentService } from '@/lib/services/commentService'
+import { VoteDistributionBar } from '@/components/ui/VoteDistributionBar'
 
 interface ForYouIdeaCardProps {
   idea: Idea
@@ -19,7 +20,7 @@ interface ForYouIdeaCardProps {
 export function ForYouIdeaCard({ idea, isActive }: ForYouIdeaCardProps) {
   const [voted, setVoted] = useState(false)
   const [voteCount, setVoteCount] = useState(idea.votes)
-  const [liked, setLiked] = useState(false)
+  const [wouldPay, setWouldPay] = useState(false)
   const [commentCount, setCommentCount] = useState(0)
   const [commentsOpen, setCommentsOpen] = useState(false)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
@@ -54,9 +55,9 @@ export function ForYouIdeaCard({ idea, isActive }: ForYouIdeaCardProps) {
     }
   }
 
-  const handleLike = (e: React.MouseEvent) => {
+  const handleWouldPay = (e: React.MouseEvent) => {
     e.stopPropagation()
-    setLiked(!liked)
+    setWouldPay(!wouldPay)
   }
 
   const handleCommentClick = (e: React.MouseEvent) => {
@@ -129,7 +130,7 @@ export function ForYouIdeaCard({ idea, isActive }: ForYouIdeaCardProps) {
             </span>
           ))}
         </div>
-        <div className="text-right flex-shrink-0 pointer-events-auto">
+        <div className="text-right flex-shrink-0 pointer-events-auto relative">
           <div className="text-4xl md:text-5xl font-bold text-accent drop-shadow-lg">
             {idea.score}
           </div>
@@ -147,6 +148,12 @@ export function ForYouIdeaCard({ idea, isActive }: ForYouIdeaCardProps) {
               <h3 className="text-lg font-bold mb-1 drop-shadow-lg">
                 {idea.title}
               </h3>
+              {/* Vote Distribution Bar - Between title and description */}
+              <div className="mb-1 flex justify-start pointer-events-auto">
+                <div className="w-[80%]">
+                  <VoteDistributionBar votes={idea.votesByType} orientation="horizontal" thickness="extra-thin" />
+                </div>
+              </div>
               <p className="text-sm text-white/90 mb-1 line-clamp-2 drop-shadow-md">
                 {idea.description}
               </p>
@@ -173,15 +180,16 @@ export function ForYouIdeaCard({ idea, isActive }: ForYouIdeaCardProps) {
               </motion.button>
 
               <motion.button
-                onClick={handleLike}
+                onClick={handleWouldPay}
                 whileTap={{ scale: 0.9 }}
                 className={`flex flex-col items-center gap-1 p-2.5 rounded-full transition-colors ${
-                  liked
-                    ? 'bg-red-500 text-white'
+                  wouldPay
+                    ? 'bg-accent-alt text-white'
                     : 'bg-white/10 backdrop-blur-sm text-white hover:bg-white/20'
                 }`}
+                title="I'd pay for it"
               >
-                <Heart className={`w-5 h-5 ${liked ? 'fill-current' : ''}`} />
+                <DollarSign className={`w-5 h-5 ${wouldPay ? 'fill-current' : ''}`} />
               </motion.button>
 
               <motion.button
@@ -190,10 +198,24 @@ export function ForYouIdeaCard({ idea, isActive }: ForYouIdeaCardProps) {
                 className={`flex flex-col items-center gap-1 p-2.5 rounded-full transition-colors ${
                   commentsOpen
                     ? 'bg-accent text-text-primary'
+                    : idea.status_flag === 'active_discussion'
+                    ? 'bg-accent/20 text-accent hover:bg-accent/30'
                     : 'bg-white/10 backdrop-blur-sm text-white hover:bg-white/20'
                 }`}
+                animate={
+                  idea.status_flag === 'active_discussion' && !commentsOpen
+                    ? {
+                        opacity: [0.7, 1, 0.7],
+                      }
+                    : {}
+                }
+                transition={{
+                  duration: 3,
+                  repeat: idea.status_flag === 'active_discussion' && !commentsOpen ? Infinity : 0,
+                  ease: 'easeInOut',
+                }}
               >
-                <MessageSquare className="w-5 h-5" />
+                <MessageSquare className={idea.status_flag === 'active_discussion' ? "w-[21px] h-[21px]" : "w-5 h-5"} />
                 <span className="text-xs font-semibold">{commentCount}</span>
               </motion.button>
 
@@ -212,6 +234,12 @@ export function ForYouIdeaCard({ idea, isActive }: ForYouIdeaCardProps) {
               <h3 className="text-2xl font-bold mb-2 drop-shadow-lg">
                 {idea.title}
               </h3>
+              {/* Vote Distribution Bar - Between title and description */}
+              <div className="mb-2 flex justify-start pointer-events-auto">
+                <div className="w-[80%]">
+                  <VoteDistributionBar votes={idea.votesByType} orientation="horizontal" thickness="extra-thin" />
+                </div>
+              </div>
               <p className="text-base text-white/90 mb-2 line-clamp-2 drop-shadow-md">
                 {idea.description}
               </p>
@@ -238,15 +266,16 @@ export function ForYouIdeaCard({ idea, isActive }: ForYouIdeaCardProps) {
               </motion.button>
 
               <motion.button
-                onClick={handleLike}
+                onClick={handleWouldPay}
                 whileTap={{ scale: 0.9 }}
                 className={`flex flex-col items-center gap-1 p-3 rounded-full transition-colors ${
-                  liked
-                    ? 'bg-red-500 text-white'
+                  wouldPay
+                    ? 'bg-accent-alt text-white'
                     : 'bg-white/10 backdrop-blur-sm text-white hover:bg-white/20'
                 }`}
+                title="I'd pay for it"
               >
-                <Heart className={`w-6 h-6 ${liked ? 'fill-current' : ''}`} />
+                <DollarSign className={`w-6 h-6 ${wouldPay ? 'fill-current' : ''}`} />
               </motion.button>
 
               <motion.button
@@ -255,10 +284,24 @@ export function ForYouIdeaCard({ idea, isActive }: ForYouIdeaCardProps) {
                 className={`flex flex-col items-center gap-1 p-3 rounded-full transition-colors ${
                   commentsOpen
                     ? 'bg-accent text-text-primary'
+                    : idea.status_flag === 'active_discussion'
+                    ? 'bg-accent/20 text-accent hover:bg-accent/30'
                     : 'bg-white/10 backdrop-blur-sm text-white hover:bg-white/20'
                 }`}
+                animate={
+                  idea.status_flag === 'active_discussion' && !commentsOpen
+                    ? {
+                        opacity: [0.7, 1, 0.7],
+                      }
+                    : {}
+                }
+                transition={{
+                  duration: 3,
+                  repeat: idea.status_flag === 'active_discussion' && !commentsOpen ? Infinity : 0,
+                  ease: 'easeInOut',
+                }}
               >
-                <MessageSquare className="w-6 h-6" />
+                <MessageSquare className={idea.status_flag === 'active_discussion' ? "w-[25px] h-[25px]" : "w-6 h-6"} />
                 <span className="text-xs font-semibold">{commentCount}</span>
               </motion.button>
 

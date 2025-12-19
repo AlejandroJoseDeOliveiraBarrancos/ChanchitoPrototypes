@@ -20,14 +20,19 @@ export interface ICommentService {
   addComment(ideaId: string, content: string, author: string, authorImage?: string, parentId?: string): Promise<Comment>
 
   /**
-   * Like/unlike a comment
-   */
-  toggleLikeComment(commentId: string, ideaId: string): Promise<Comment>
-
-  /**
    * Upvote/downvote a comment
    */
   toggleUpvoteComment(commentId: string, ideaId: string): Promise<Comment>
+
+  /**
+   * Downvote/undownvote a comment
+   */
+  toggleDownvoteComment(commentId: string, ideaId: string): Promise<Comment>
+
+  /**
+   * Mark/unmark a comment as helpful
+   */
+  toggleHelpfulComment(commentId: string, ideaId: string): Promise<Comment>
 
   /**
    * Get comment count for an idea
@@ -51,10 +56,12 @@ const initializeMockComments = (ideaId: string): Comment[] => {
       author: 'john_doe',
       content: 'Esta es una idea increíble! Me encanta cómo aborda el problema desde una perspectiva única.',
       createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-      likes: 12,
-      liked: false,
       upvotes: 8,
       upvoted: false,
+      downvotes: 1,
+      downvoted: false,
+      helpful: 5,
+      helpfulMarked: false,
       usefulnessScore: 4.5,
       replies: [
         {
@@ -63,10 +70,12 @@ const initializeMockComments = (ideaId: string): Comment[] => {
           author: 'sarah_smith',
           content: 'Totalmente de acuerdo! La perspectiva es muy innovadora.',
           createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
-          likes: 3,
-          liked: false,
           upvotes: 2,
           upvoted: false,
+          downvotes: 0,
+          downvoted: false,
+          helpful: 1,
+          helpfulMarked: false,
           usefulnessScore: 4.0,
           parentId: `${ideaId}-1`,
         },
@@ -78,10 +87,12 @@ const initializeMockComments = (ideaId: string): Comment[] => {
       author: 'sarah_smith',
       content: '¿Has considerado el impacto en el mercado internacional? Sería interesante explorar esa dimensión.',
       createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-      likes: 8,
-      liked: true,
       upvotes: 5,
       upvoted: true,
+      downvotes: 0,
+      downvoted: false,
+      helpful: 3,
+      helpfulMarked: true,
       usefulnessScore: 4.8,
       replies: [],
     },
@@ -91,10 +102,12 @@ const initializeMockComments = (ideaId: string): Comment[] => {
       author: 'tech_enthusiast',
       content: 'La implementación técnica parece sólida. ¿Tienes algún prototipo funcionando?',
       createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-      likes: 15,
-      liked: false,
       upvotes: 12,
       upvoted: false,
+      downvotes: 2,
+      downvoted: false,
+      helpful: 8,
+      helpfulMarked: false,
       usefulnessScore: 4.7,
       replies: [],
     },
@@ -104,10 +117,12 @@ const initializeMockComments = (ideaId: string): Comment[] => {
       author: 'business_analyst',
       content: 'El modelo de negocio es prometedor. Creo que hay potencial para escalar esto rápidamente.',
       createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-      likes: 6,
-      liked: false,
       upvotes: 4,
       upvoted: false,
+      downvotes: 0,
+      downvoted: false,
+      helpful: 2,
+      helpfulMarked: false,
       usefulnessScore: 4.2,
       replies: [],
     },
@@ -146,10 +161,12 @@ class MockCommentService implements ICommentService {
       authorImage,
       content: content.trim(),
       createdAt: new Date().toISOString(),
-      likes: 0,
-      liked: false,
       upvotes: 0,
       upvoted: false,
+      downvotes: 0,
+      downvoted: false,
+      helpful: 0,
+      helpfulMarked: false,
       usefulnessScore: 0,
       parentId,
       replies: [],
@@ -172,45 +189,6 @@ class MockCommentService implements ICommentService {
     mockCommentsStorage.set(ideaId, comments)
 
     return newComment
-  }
-
-  async toggleLikeComment(commentId: string, ideaId: string): Promise<Comment> {
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 100))
-
-    const comments = mockCommentsStorage.get(ideaId) || initializeMockComments(ideaId)
-    
-    // Find comment in top-level or replies
-    let comment: Comment | undefined
-    for (const c of comments) {
-      if (c.id === commentId) {
-        comment = c
-        break
-      }
-      if (c.replies) {
-        const reply = c.replies.find((r) => r.id === commentId)
-        if (reply) {
-          comment = reply
-          break
-        }
-      }
-    }
-
-    if (!comment) {
-      throw new Error('Comment not found')
-    }
-
-    const wasLiked = comment.liked || false
-    comment.liked = !wasLiked
-    comment.likes = wasLiked ? comment.likes - 1 : comment.likes + 1
-    
-    // Update usefulness score based on likes and upvotes
-    const totalVotes = comment.upvotes + comment.likes
-    comment.usefulnessScore = totalVotes > 0 ? Math.min(5, (comment.upvotes / (totalVotes + 1)) * 5) : 0
-
-    mockCommentsStorage.set(ideaId, comments)
-
-    return comment
   }
 
   async toggleUpvoteComment(commentId: string, ideaId: string): Promise<Comment> {
@@ -240,12 +218,102 @@ class MockCommentService implements ICommentService {
     }
 
     const wasUpvoted = comment.upvoted || false
+    const wasDownvoted = comment.downvoted || false
+    
+    // If downvoted, remove downvote first
+    if (wasDownvoted) {
+      comment.downvoted = false
+      comment.downvotes = Math.max(0, comment.downvotes - 1)
+    }
+    
     comment.upvoted = !wasUpvoted
     comment.upvotes = wasUpvoted ? comment.upvotes - 1 : comment.upvotes + 1
     
-    // Update usefulness score based on upvotes (simple formula: upvotes / (upvotes + 1) * 5)
-    const totalVotes = comment.upvotes + (comment.likes || 0)
-    comment.usefulnessScore = totalVotes > 0 ? Math.min(5, (comment.upvotes / (totalVotes + 1)) * 5) : 0
+    // Update usefulness score based on upvotes and downvotes
+    const totalVotes = comment.upvotes + comment.downvotes
+    comment.usefulnessScore = totalVotes > 0 ? Math.min(5, ((comment.upvotes - comment.downvotes) / (totalVotes + 1)) * 5 + 2.5) : 0
+
+    mockCommentsStorage.set(ideaId, comments)
+
+    return comment
+  }
+
+  async toggleDownvoteComment(commentId: string, ideaId: string): Promise<Comment> {
+    // Simulate API delay
+    await new Promise((resolve) => setTimeout(resolve, 100))
+
+    const comments = mockCommentsStorage.get(ideaId) || initializeMockComments(ideaId)
+    
+    // Find comment in top-level or replies
+    let comment: Comment | undefined
+    for (const c of comments) {
+      if (c.id === commentId) {
+        comment = c
+        break
+      }
+      if (c.replies) {
+        const reply = c.replies.find((r) => r.id === commentId)
+        if (reply) {
+          comment = reply
+          break
+        }
+      }
+    }
+
+    if (!comment) {
+      throw new Error('Comment not found')
+    }
+
+    const wasDownvoted = comment.downvoted || false
+    const wasUpvoted = comment.upvoted || false
+    
+    // If upvoted, remove upvote first
+    if (wasUpvoted) {
+      comment.upvoted = false
+      comment.upvotes = Math.max(0, comment.upvotes - 1)
+    }
+    
+    comment.downvoted = !wasDownvoted
+    comment.downvotes = wasDownvoted ? comment.downvotes - 1 : comment.downvotes + 1
+    
+    // Update usefulness score based on upvotes and downvotes
+    const totalVotes = comment.upvotes + comment.downvotes
+    comment.usefulnessScore = totalVotes > 0 ? Math.min(5, ((comment.upvotes - comment.downvotes) / (totalVotes + 1)) * 5 + 2.5) : 0
+
+    mockCommentsStorage.set(ideaId, comments)
+
+    return comment
+  }
+
+  async toggleHelpfulComment(commentId: string, ideaId: string): Promise<Comment> {
+    // Simulate API delay
+    await new Promise((resolve) => setTimeout(resolve, 100))
+
+    const comments = mockCommentsStorage.get(ideaId) || initializeMockComments(ideaId)
+    
+    // Find comment in top-level or replies
+    let comment: Comment | undefined
+    for (const c of comments) {
+      if (c.id === commentId) {
+        comment = c
+        break
+      }
+      if (c.replies) {
+        const reply = c.replies.find((r) => r.id === commentId)
+        if (reply) {
+          comment = reply
+          break
+        }
+      }
+    }
+
+    if (!comment) {
+      throw new Error('Comment not found')
+    }
+
+    const wasHelpful = comment.helpfulMarked || false
+    comment.helpfulMarked = !wasHelpful
+    comment.helpful = wasHelpful ? comment.helpful - 1 : comment.helpful + 1
 
     mockCommentsStorage.set(ideaId, comments)
 

@@ -8,6 +8,7 @@ import { formatDate } from '@/lib/utils/date'
 import { UI_LABELS } from '@/lib/constants/ui'
 import { Idea } from '@/lib/types/idea'
 import { useVideoPlayer } from '@/hooks/useVideoPlayer'
+import { VoteDistributionBar, getMostVotedType } from '@/components/ui/VoteDistributionBar'
 
 interface HomeIdeaCardProps {
   idea: Idea
@@ -45,8 +46,10 @@ export function HomeIdeaCard({ idea }: HomeIdeaCardProps) {
     }
   }
 
+  const mostVoted = idea.status_flag === 'validated' ? getMostVotedType(idea.votesByType) : null
+
   return (
-    <div ref={cardRef} className="card-hover overflow-hidden">
+    <div ref={cardRef} className="card-hover overflow-hidden relative">
       <Link href={`/ideas/${idea.id}`} onClick={handleClick}>
         <motion.article
           whileHover={{ y: -2 }}
@@ -74,6 +77,27 @@ export function HomeIdeaCard({ idea }: HomeIdeaCardProps) {
                   loading="lazy"
                 />
               ) : null}
+              
+              {/* Validated Overlay - Only over media */}
+              {idea.status_flag === 'validated' && mostVoted && (
+                <>
+                  {/* Darkened overlay */}
+                  <div className="absolute inset-0 bg-black/60 z-10" />
+                  {/* Most voted color overlay */}
+                  <div 
+                    className="absolute inset-0 z-20 opacity-40"
+                    style={{ backgroundColor: mostVoted.color }}
+                  />
+                  {/* See Results Label - Centered */}
+                  <div className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none">
+                    <div className="px-6 py-3 bg-white/90 backdrop-blur-sm rounded-full shadow-xl">
+                      <span className="text-base font-bold text-text-primary tracking-wide">
+                        See Results
+                      </span>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           )}
 
@@ -83,7 +107,7 @@ export function HomeIdeaCard({ idea }: HomeIdeaCardProps) {
               <h2 className="text-lg font-semibold text-text-primary mb-1 line-clamp-2 break-words">
                 {idea.title}
               </h2>
-              <p className="text-sm text-text-secondary line-clamp-2 mb-2 break-words">
+              <p className="text-sm text-text-secondary line-clamp-2 break-words">
                 {idea.description}
               </p>
             </div>
@@ -93,6 +117,11 @@ export function HomeIdeaCard({ idea }: HomeIdeaCardProps) {
               </div>
               <div className="text-xs text-text-secondary whitespace-nowrap">{UI_LABELS.SCORE}</div>
             </div>
+          </div>
+
+          {/* Vote Distribution Bar */}
+          <div className="mb-3">
+            <VoteDistributionBar votes={idea.votesByType} />
           </div>
 
           {/* Actions and Tags */}
@@ -115,10 +144,28 @@ export function HomeIdeaCard({ idea }: HomeIdeaCardProps) {
                 </motion.div>
                 <span className="font-medium">{voteCount}</span>
               </button>
-              <div className="flex items-center gap-1.5 text-text-secondary whitespace-nowrap flex-shrink-0">
-                <MessageSquare className="w-3.5 h-3.5" />
+              <motion.div 
+                className={`flex items-center gap-1.5 whitespace-nowrap flex-shrink-0 ${
+                  idea.status_flag === 'active_discussion' 
+                    ? 'text-accent' 
+                    : 'text-text-secondary'
+                }`}
+                animate={
+                  idea.status_flag === 'active_discussion'
+                    ? {
+                        opacity: [0.7, 1, 0.7],
+                      }
+                    : {}
+                }
+                transition={{
+                  duration: 3,
+                  repeat: idea.status_flag === 'active_discussion' ? Infinity : 0,
+                  ease: 'easeInOut',
+                }}
+              >
+                <MessageSquare className={idea.status_flag === 'active_discussion' ? "w-[15px] h-[15px]" : "w-3.5 h-3.5"} />
                 <span className="text-sm">12</span>
-              </div>
+              </motion.div>
             </div>
 
             <div className="flex items-center gap-1.5 flex-shrink-0 overflow-hidden">

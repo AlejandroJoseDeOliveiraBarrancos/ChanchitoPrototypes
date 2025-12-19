@@ -2,14 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import {
-  Heart,
-  ArrowUp,
-  User,
-  ChevronDown,
-  ChevronUp,
-  MessageSquare,
-} from 'lucide-react'
+import { ArrowUp, ArrowDown, ThumbsUp, User, ChevronDown, ChevronUp, MessageSquare } from 'lucide-react'
 import Image from 'next/image'
 import { formatDate } from '@/lib/utils/date'
 import { Comment } from '@/lib/types/comment'
@@ -51,18 +44,6 @@ export function CommentsBlock({ ideaId }: CommentsBlockProps) {
     }
   }
 
-  const handleLikeComment = async (commentId: string) => {
-    try {
-      const updatedComment = await commentService.toggleLikeComment(
-        commentId,
-        ideaId
-      )
-      updateCommentInState(commentId, updatedComment)
-    } catch (error) {
-      console.error('Error liking comment:', error)
-    }
-  }
-
   const handleUpvoteComment = async (commentId: string) => {
     try {
       const updatedComment = await commentService.toggleUpvoteComment(
@@ -72,6 +53,24 @@ export function CommentsBlock({ ideaId }: CommentsBlockProps) {
       updateCommentInState(commentId, updatedComment)
     } catch (error) {
       console.error('Error upvoting comment:', error)
+    }
+  }
+
+  const handleDownvoteComment = async (commentId: string) => {
+    try {
+      const updatedComment = await commentService.toggleDownvoteComment(commentId, ideaId)
+      updateCommentInState(commentId, updatedComment)
+    } catch (error) {
+      console.error('Error downvoting comment:', error)
+    }
+  }
+
+  const handleHelpfulComment = async (commentId: string) => {
+    try {
+      const updatedComment = await commentService.toggleHelpfulComment(commentId, ideaId)
+      updateCommentInState(commentId, updatedComment)
+    } catch (error) {
+      console.error('Error marking comment as helpful:', error)
     }
   }
 
@@ -322,8 +321,8 @@ export function CommentsBlock({ ideaId }: CommentsBlockProps) {
                     {comment.usefulnessScore > 0 && (
                       <>
                         <span className="text-text-secondary text-sm">•</span>
-                        <span className="text-xs px-2 py-0.5 bg-accent/20 text-accent rounded-full">
-                          ⭐ {comment.usefulnessScore.toFixed(1)}
+                        <span className="text-xs px-0.2 py-0.5 bg-accent/20 text-accent rounded-full">
+                          {comment.usefulnessScore.toFixed(1)}
                         </span>
                       </>
                     )}
@@ -341,6 +340,7 @@ export function CommentsBlock({ ideaId }: CommentsBlockProps) {
                           ? 'text-accent'
                           : 'text-text-secondary hover:text-accent'
                       }`}
+                      title="Upvote"
                     >
                       <ArrowUp
                         className={`w-4 h-4 ${comment.upvoted ? 'fill-current' : ''}`}
@@ -349,17 +349,29 @@ export function CommentsBlock({ ideaId }: CommentsBlockProps) {
                     </button>
 
                     <button
-                      onClick={() => handleLikeComment(comment.id)}
+                      onClick={() => handleDownvoteComment(comment.id)}
                       className={`flex items-center gap-1.5 text-sm transition-colors ${
-                        comment.liked
+                        comment.downvoted
                           ? 'text-red-500'
                           : 'text-text-secondary hover:text-red-500'
                       }`}
+                      title="Downvote"
                     >
-                      <Heart
-                        className={`w-4 h-4 ${comment.liked ? 'fill-current' : ''}`}
-                      />
-                      <span>{comment.likes}</span>
+                      <ArrowDown className={`w-4 h-4 ${comment.downvoted ? 'fill-current' : ''}`} />
+                      <span>{comment.downvotes || 0}</span>
+                    </button>
+
+                    <button
+                      onClick={() => handleHelpfulComment(comment.id)}
+                      className={`flex items-center gap-1.5 text-sm transition-colors ${
+                        comment.helpfulMarked
+                          ? 'text-green-500'
+                          : 'text-text-secondary hover:text-green-500'
+                      }`}
+                      title="Helpful"
+                    >
+                      <ThumbsUp className={`w-4 h-4 ${comment.helpfulMarked ? 'fill-current' : ''}`} />
+                      <span>{comment.helpful || 0}</span>
                     </button>
 
                     <button
@@ -439,88 +451,83 @@ export function CommentsBlock({ ideaId }: CommentsBlockProps) {
                   )}
 
                   {/* Replies */}
-                  {expandedReplies.has(comment.id) &&
-                    comment.replies &&
-                    comment.replies.length > 0 && (
-                      <div className="mt-4 ml-6 space-y-4 border-l-2 border-border-color pl-4">
-                        {comment.replies.map(reply => (
-                          <div
-                            key={reply.id}
-                            className="flex items-start gap-3"
-                          >
-                            <div className="flex-shrink-0">
-                              {reply.authorImage ? (
-                                <Image
-                                  src={reply.authorImage}
-                                  alt={reply.author}
-                                  width={32}
-                                  height={32}
-                                  className="rounded-full"
-                                />
-                              ) : (
-                                <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-text-primary font-semibold">
-                                  <User className="w-4 h-4" />
-                                </div>
+                  {expandedReplies.has(comment.id) && comment.replies && comment.replies.length > 0 && (
+                    <div className="mt-4 ml-6 space-y-4 border-l-2 border-border-color pl-4">
+                      {comment.replies.map((reply) => (
+                        <div key={reply.id} className="flex items-start gap-3">
+                          <div className="flex-shrink-0">
+                            {reply.authorImage ? (
+                              <Image
+                                src={reply.authorImage}
+                                alt={reply.author}
+                                width={32}
+                                height={32}
+                                className="rounded-full"
+                              />
+                            ) : (
+                              <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-text-primary font-semibold">
+                                <User className="w-4 h-4" />
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1 flex-wrap">
+                              <span className="font-semibold text-sm text-text-primary">@{reply.author}</span>
+                              <span className="text-text-secondary text-xs">•</span>
+                              <span className="text-text-secondary text-xs">{formatDate(reply.createdAt)}</span>
+                              {reply.usefulnessScore > 0 && (
+                                <>
+                                  <span className="text-text-secondary text-xs">•</span>
+                                  <span className="text-xs px-0.2 py-0.5 bg-accent/20 text-accent rounded-full">
+                                    {reply.usefulnessScore.toFixed(1)}
+                                  </span>
+                                </>
                               )}
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                <span className="font-semibold text-sm text-text-primary">
-                                  @{reply.author}
-                                </span>
-                                <span className="text-text-secondary text-xs">
-                                  •
-                                </span>
-                                <span className="text-text-secondary text-xs">
-                                  {formatDate(reply.createdAt)}
-                                </span>
-                                {reply.usefulnessScore > 0 && (
-                                  <>
-                                    <span className="text-text-secondary text-xs">
-                                      •
-                                    </span>
-                                    <span className="text-xs px-1.5 py-0.5 bg-accent/20 text-accent rounded-full">
-                                      ⭐ {reply.usefulnessScore.toFixed(1)}
-                                    </span>
-                                  </>
-                                )}
-                              </div>
-                              <p className="text-text-secondary text-sm mb-2 whitespace-pre-wrap break-words">
-                                {reply.content}
-                              </p>
-                              <div className="flex items-center gap-3">
-                                <button
-                                  onClick={() => handleUpvoteComment(reply.id)}
-                                  className={`flex items-center gap-1 text-xs transition-colors ${
-                                    reply.upvoted
-                                      ? 'text-accent'
-                                      : 'text-text-secondary hover:text-accent'
-                                  }`}
-                                >
-                                  <ArrowUp
-                                    className={`w-3 h-3 ${reply.upvoted ? 'fill-current' : ''}`}
-                                  />
-                                  <span>{reply.upvotes || 0}</span>
-                                </button>
-                                <button
-                                  onClick={() => handleLikeComment(reply.id)}
-                                  className={`flex items-center gap-1 text-xs transition-colors ${
-                                    reply.liked
-                                      ? 'text-red-500'
-                                      : 'text-text-secondary hover:text-red-500'
-                                  }`}
-                                >
-                                  <Heart
-                                    className={`w-3 h-3 ${reply.liked ? 'fill-current' : ''}`}
-                                  />
-                                  <span>{reply.likes}</span>
-                                </button>
-                              </div>
+                            <p className="text-text-secondary text-sm mb-2 whitespace-pre-wrap break-words">{reply.content}</p>
+                            <div className="flex items-center gap-3">
+                              <button
+                                onClick={() => handleUpvoteComment(reply.id)}
+                                className={`flex items-center gap-1 text-xs transition-colors ${
+                                  reply.upvoted
+                                    ? 'text-accent'
+                                    : 'text-text-secondary hover:text-accent'
+                                }`}
+                                title="Upvote"
+                              >
+                                <ArrowUp className={`w-3 h-3 ${reply.upvoted ? 'fill-current' : ''}`} />
+                                <span>{reply.upvotes || 0}</span>
+                              </button>
+                              <button
+                                onClick={() => handleDownvoteComment(reply.id)}
+                                className={`flex items-center gap-1 text-xs transition-colors ${
+                                  reply.downvoted
+                                    ? 'text-red-500'
+                                    : 'text-text-secondary hover:text-red-500'
+                                }`}
+                                title="Downvote"
+                              >
+                                <ArrowDown className={`w-3 h-3 ${reply.downvoted ? 'fill-current' : ''}`} />
+                                <span>{reply.downvotes || 0}</span>
+                              </button>
+                              <button
+                                onClick={() => handleHelpfulComment(reply.id)}
+                                className={`flex items-center gap-1 text-xs transition-colors ${
+                                  reply.helpfulMarked
+                                    ? 'text-green-500'
+                                    : 'text-text-secondary hover:text-green-500'
+                                }`}
+                                title="Helpful"
+                              >
+                                <ThumbsUp className={`w-3 h-3 ${reply.helpfulMarked ? 'fill-current' : ''}`} />
+                                <span>{reply.helpful || 0}</span>
+                              </button>
                             </div>
                           </div>
-                        ))}
-                      </div>
-                    )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>
