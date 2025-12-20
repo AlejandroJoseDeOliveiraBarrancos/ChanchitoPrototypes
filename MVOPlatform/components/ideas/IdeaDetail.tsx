@@ -23,6 +23,7 @@ import { CommentsBlock } from './CommentsBlock'
 import { IdeaActions } from './IdeaActions'
 import { ContentRenderer } from './ContentRenderer'
 import { IdeaDetailSkeleton } from '@/components/ui/Skeleton'
+import { useAppSelector } from '@/lib/hooks'
 
 interface IdeaDetailProps {
   ideaId: string
@@ -31,14 +32,12 @@ interface IdeaDetailProps {
 export function IdeaDetail({ ideaId }: IdeaDetailProps) {
   const [idea, setIdea] = useState<Idea | null>(null)
   const [loading, setLoading] = useState(true)
-  const [voted, setVoted] = useState(false)
-  const [voteCount, setVoteCount] = useState(0)
-  const [liked, setLiked] = useState(false)
-  const [likeCount, setLikeCount] = useState(0)
+  const [isVoting, setIsVoting] = useState(false)
   const [commentCount, setCommentCount] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
   const commentsSectionRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
+  const { isAuthenticated } = useAppSelector(state => state.auth)
 
   const handleBack = () => {
     // Get the previous path from sessionStorage (set when navigating to idea)
@@ -68,8 +67,6 @@ export function IdeaDetail({ ideaId }: IdeaDetailProps) {
         const loadedIdea = await ideaService.getIdeaById(ideaId)
         if (loadedIdea) {
           setIdea(loadedIdea)
-          setVoteCount(loadedIdea.votes)
-          setLikeCount(Math.floor(loadedIdea.votes * 0.7)) // Mock likes count
           setCommentCount(loadedIdea.commentCount)
         }
       } catch (error) {
@@ -90,16 +87,40 @@ export function IdeaDetail({ ideaId }: IdeaDetailProps) {
     threshold: 0.1, // Start playing when 10% visible
   })
 
-  const handleVote = () => {
-    if (!voted) {
-      setVoted(true)
-      setVoteCount(voteCount + 1)
+  const handleVote = async () => {
+    if (!isAuthenticated) {
+      alert('Please sign in to vote')
+      return
+    }
+    if (!idea || isVoting) return
+
+    setIsVoting(true)
+    try {
+      const updatedIdea = await ideaService.toggleVote(idea.id, 'use')
+      setIdea(updatedIdea)
+    } catch (error) {
+      console.error('Error voting:', error)
+    } finally {
+      setIsVoting(false)
     }
   }
 
-  const handleLike = () => {
-    setLiked(!liked)
-    setLikeCount(liked ? likeCount - 1 : likeCount + 1)
+  const handleLike = async () => {
+    if (!isAuthenticated) {
+      alert('Please sign in to vote')
+      return
+    }
+    if (isVoting) return
+
+    setIsVoting(true)
+    try {
+      const updatedIdea = await ideaService.toggleVote(idea.id, 'pay')
+      setIdea(updatedIdea)
+    } catch (error) {
+      console.error('Error voting:', error)
+    } finally {
+      setIsVoting(false)
+    }
   }
 
   const handleCommentsClick = () => {
@@ -217,10 +238,10 @@ export function IdeaDetail({ ideaId }: IdeaDetailProps) {
         {/* Actions Bar */}
         <IdeaActions
           idea={idea}
-          voted={voted}
-          voteCount={voteCount}
-          liked={liked}
-          likeCount={likeCount}
+          voted={idea.votesByType.use > 0}
+          voteCount={idea.votes}
+          liked={idea.votesByType.pay > 0}
+          likeCount={idea.votesByType.pay}
           commentCount={commentCount}
           onVote={handleVote}
           onLike={handleLike}

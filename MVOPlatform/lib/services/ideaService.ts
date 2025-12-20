@@ -59,7 +59,19 @@ export interface IIdeaService {
   /**
    * Create a new idea
    */
-  createIdea(idea: Omit<Idea, 'id'>): Promise<Idea>
+  createIdea(idea: Omit<Idea, 'id'>, spaceId: string): Promise<Idea>
+
+  /**
+   * Get available spaces for idea creation
+   */
+  getSpaces(): Promise<Array<{ id: string; name: string; team_id: string }>>
+
+  /**
+   * Toggle a vote for an idea
+   * @param ideaId The idea ID
+   * @param voteType The type of vote ('dislike', 'use', 'pay')
+   */
+  toggleVote(ideaId: string, voteType: 'dislike' | 'use' | 'pay'): Promise<Idea>
 }
 
 /**
@@ -288,6 +300,53 @@ class SupabaseIdeaService implements IIdeaService {
     return data?.map(this.mapDbIdeaToIdea) || []
   }
 
+  async toggleVote(
+    ideaId: string,
+    voteType: 'dislike' | 'use' | 'pay'
+  ): Promise<Idea> {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) throw new Error('User not authenticated')
+
+    // Check if vote exists
+    const { data: existingVote } = await supabase
+      .from('idea_votes')
+      .select('vote_type')
+      .eq('idea_id', ideaId)
+      .eq('voter_id', user.id)
+      .single()
+
+    if (existingVote?.vote_type === voteType) {
+      // Remove the vote
+      await supabase
+        .from('idea_votes')
+        .delete()
+        .eq('idea_id', ideaId)
+        .eq('voter_id', user.id)
+        .eq('vote_type', voteType)
+    } else {
+      // Remove any existing vote and add new vote
+      await supabase
+        .from('idea_votes')
+        .delete()
+        .eq('idea_id', ideaId)
+        .eq('voter_id', user.id)
+
+      await supabase.from('idea_votes').insert({
+        idea_id: ideaId,
+        voter_id: user.id,
+        vote_type: voteType,
+      })
+    }
+
+    // Return updated idea
+    return this.getIdeaById(ideaId).then(idea => {
+      if (!idea) throw new Error('Idea not found')
+      return idea
+    })
+  }
+
   private mapDbIdeaToIdea(dbIdea: any): Idea {
     const votes = dbIdea.idea_votes || []
     const voteCounts = {
@@ -330,23 +389,73 @@ class SupabaseIdeaService implements IIdeaService {
     }
   }
 
-  async createIdea(ideaData: Omit<Idea, 'id'>): Promise<Idea> {
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    
-    // Generate a unique ID
-    const newId = `${MOCK_IDEAS.length + 1}`
-    
-    // Create the new idea with ID
-    const newIdea: Idea = {
-      ...ideaData,
-      id: newId,
+  async createIdea(ideaData: Omit<Idea, 'id'>, spaceId: string): Promise<Idea> {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) throw new Error('User not authenticated')
+
+    const { data, error } = await supabase
+      .from('ideas')
+      .insert({
+        space_id: spaceId,
+        creator_id: user.id,
+        title: ideaData.title,
+        content: ideaData.content,
+        status_flag: ideaData.status_flag || 'new',
+      })
+      .select()
+      .single()
+
+    if (error) throw error
+
+    if (ideaData.tags && ideaData.tags.length > 0) {
+      for (const tagName of ideaData.tags) {
+        let { data: tag } = await supabase
+          .from('tags')
+          .select('id')
+          .eq('name', tagName)
+          .maybeSingle()
+
+        if (!tag) {
+          const { data: newTag, error: tagError } = await supabase
+            .from('tags')
+            .insert({ name: tagName })
+            .select('id')
+            .single()
+
+          if (tagError) throw tagError
+
+          tag = newTag
+        }
+
+        await supabase.from('idea_tags').insert({
+          idea_id: data.id,
+          tag_id: tag.id,
+        })
+      }
     }
-    
-    // Add to the beginning of the array so it appears first
-    MOCK_IDEAS.unshift(newIdea)
-    
-    return newIdea
+
+    return this.getIdeaById(data.id).then(idea => {
+      if (!idea) throw new Error('Idea not found after creation')
+      return idea
+    })
+  }
+
+  async getSpaces(): Promise<
+    Array<{ id: string; name: string; team_id: string }>
+  > {
+    const { data, error } = await supabase
+      .from('enterprise_spaces')
+      .select('id, name, team_id')
+      .order('name')
+
+    if (error) {
+      console.error('Error fetching spaces:', error)
+      throw error
+    }
+
+    return data || []
   }
 }
 

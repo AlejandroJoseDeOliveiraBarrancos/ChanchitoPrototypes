@@ -94,7 +94,10 @@ export function TikTokComments({
 
   const handleDownvoteComment = async (commentId: string) => {
     try {
-      const updatedComment = await commentService.toggleDownvoteComment(commentId, ideaId)
+      const updatedComment = await commentService.toggleDownvoteComment(
+        commentId,
+        ideaId
+      )
       updateCommentInState(commentId, updatedComment)
     } catch (error) {
       console.error('Error downvoting comment:', error)
@@ -103,7 +106,10 @@ export function TikTokComments({
 
   const handleHelpfulComment = async (commentId: string) => {
     try {
-      const updatedComment = await commentService.toggleHelpfulComment(commentId, ideaId)
+      const updatedComment = await commentService.toggleHelpfulComment(
+        commentId,
+        ideaId
+      )
       updateCommentInState(commentId, updatedComment)
     } catch (error) {
       console.error('Error marking comment as helpful:', error)
@@ -144,6 +150,11 @@ export function TikTokComments({
     e.preventDefault()
     const replyContent = replyText.get(parentId)?.trim()
     if (!replyContent || submitting) return
+
+    if (!user) {
+      alert('Please sign in to comment')
+      return
+    }
 
     setSubmitting(true)
     try {
@@ -187,6 +198,11 @@ export function TikTokComments({
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!newComment.trim() || submitting) return
+
+    if (!user) {
+      alert('Please sign in to comment')
+      return
+    }
 
     const commentText = newComment.trim()
     setSubmitting(true)
@@ -490,7 +506,9 @@ export function TikTokComments({
                             }`}
                             title="Downvote"
                           >
-                            <ArrowDown className={`w-3.5 h-3.5 ${comment.downvoted ? 'fill-current' : ''}`} />
+                            <ArrowDown
+                              className={`w-3.5 h-3.5 ${comment.downvoted ? 'fill-current' : ''}`}
+                            />
                             <span>{comment.downvotes || 0}</span>
                           </button>
 
@@ -503,7 +521,9 @@ export function TikTokComments({
                             }`}
                             title="Helpful"
                           >
-                            <ThumbsUp className={`w-3.5 h-3.5 ${comment.helpfulMarked ? 'fill-current' : ''}`} />
+                            <ThumbsUp
+                              className={`w-3.5 h-3.5 ${comment.helpfulMarked ? 'fill-current' : ''}`}
+                            />
                             <span>{comment.helpful || 0}</span>
                           </button>
 
@@ -585,82 +605,107 @@ export function TikTokComments({
                         )}
 
                         {/* Replies */}
-                        {expandedReplies.has(comment.id) && comment.replies && comment.replies.length > 0 && (
-                          <div className="mt-3 ml-4 space-y-3 border-l-2 border-white/10 pl-3">
-                            {comment.replies.map((reply) => (
-                              <div key={reply.id} className="flex items-start gap-2">
-                                <div className="flex-shrink-0">
-                                  {reply.authorImage ? (
-                                    <Image
-                                      src={reply.authorImage}
-                                      alt={reply.author}
-                                      width={28}
-                                      height={28}
-                                      className="rounded-full"
-                                    />
-                                  ) : (
-                                    <div className="w-7 h-7 rounded-full bg-accent flex items-center justify-center">
-                                      <User className="w-4 h-4 text-text-primary" />
-                                    </div>
-                                  )}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
-                                    <span className="text-xs font-semibold text-white">@{reply.author}</span>
-                                    <span className="text-xs text-white/50">{formatDate(reply.createdAt)}</span>
-                                    {reply.usefulnessScore > 0 && (
-                                      <>
-                                        <span className="text-xs text-white/50">•</span>
-                                        <span className="text-xs px-0.2 py-0.5 bg-accent/30 text-accent rounded-full">
-                                          {reply.usefulnessScore.toFixed(1)}
-                                        </span>
-                                      </>
+                        {expandedReplies.has(comment.id) &&
+                          comment.replies &&
+                          comment.replies.length > 0 && (
+                            <div className="mt-3 ml-4 space-y-3 border-l-2 border-white/10 pl-3">
+                              {comment.replies.map(reply => (
+                                <div
+                                  key={reply.id}
+                                  className="flex items-start gap-2"
+                                >
+                                  <div className="flex-shrink-0">
+                                    {reply.authorImage ? (
+                                      <Image
+                                        src={reply.authorImage}
+                                        alt={reply.author}
+                                        width={28}
+                                        height={28}
+                                        className="rounded-full"
+                                      />
+                                    ) : (
+                                      <div className="w-7 h-7 rounded-full bg-accent flex items-center justify-center">
+                                        <User className="w-4 h-4 text-text-primary" />
+                                      </div>
                                     )}
                                   </div>
-                                  <p className="text-xs text-white/80 mb-1.5 whitespace-pre-wrap break-words">{reply.content}</p>
-                                  <div className="flex items-center gap-2">
-                                    <button
-                                      onClick={() => handleUpvoteComment(reply.id)}
-                                      className={`flex items-center gap-1 text-xs transition-colors ${
-                                        reply.upvoted
-                                          ? 'text-accent'
-                                          : 'text-white/50 hover:text-accent'
-                                      }`}
-                                      title="Upvote"
-                                    >
-                                      <ArrowUp className={`w-3 h-3 ${reply.upvoted ? 'fill-current' : ''}`} />
-                                      <span>{reply.upvotes || 0}</span>
-                                    </button>
-                                    <button
-                                      onClick={() => handleDownvoteComment(reply.id)}
-                                      className={`flex items-center gap-1 text-xs transition-colors ${
-                                        reply.downvoted
-                                          ? 'text-red-500'
-                                          : 'text-white/50 hover:text-red-500'
-                                      }`}
-                                      title="Downvote"
-                                    >
-                                      <ArrowDown className={`w-3 h-3 ${reply.downvoted ? 'fill-current' : ''}`} />
-                                      <span>{reply.downvotes || 0}</span>
-                                    </button>
-                                    <button
-                                      onClick={() => handleHelpfulComment(reply.id)}
-                                      className={`flex items-center gap-1 text-xs transition-colors ${
-                                        reply.helpfulMarked
-                                          ? 'text-green-500'
-                                          : 'text-white/50 hover:text-green-500'
-                                      }`}
-                                      title="Helpful"
-                                    >
-                                      <ThumbsUp className={`w-3 h-3 ${reply.helpfulMarked ? 'fill-current' : ''}`} />
-                                      <span>{reply.helpful || 0}</span>
-                                    </button>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
+                                      <span className="text-xs font-semibold text-white">
+                                        @{reply.author}
+                                      </span>
+                                      <span className="text-xs text-white/50">
+                                        {formatDate(reply.createdAt)}
+                                      </span>
+                                      {reply.usefulnessScore > 0 && (
+                                        <>
+                                          <span className="text-xs text-white/50">
+                                            •
+                                          </span>
+                                          <span className="text-xs px-0.2 py-0.5 bg-accent/30 text-accent rounded-full">
+                                            {reply.usefulnessScore.toFixed(1)}
+                                          </span>
+                                        </>
+                                      )}
+                                    </div>
+                                    <p className="text-xs text-white/80 mb-1.5 whitespace-pre-wrap break-words">
+                                      {reply.content}
+                                    </p>
+                                    <div className="flex items-center gap-2">
+                                      <button
+                                        onClick={() =>
+                                          handleUpvoteComment(reply.id)
+                                        }
+                                        className={`flex items-center gap-1 text-xs transition-colors ${
+                                          reply.upvoted
+                                            ? 'text-accent'
+                                            : 'text-white/50 hover:text-accent'
+                                        }`}
+                                        title="Upvote"
+                                      >
+                                        <ArrowUp
+                                          className={`w-3 h-3 ${reply.upvoted ? 'fill-current' : ''}`}
+                                        />
+                                        <span>{reply.upvotes || 0}</span>
+                                      </button>
+                                      <button
+                                        onClick={() =>
+                                          handleDownvoteComment(reply.id)
+                                        }
+                                        className={`flex items-center gap-1 text-xs transition-colors ${
+                                          reply.downvoted
+                                            ? 'text-red-500'
+                                            : 'text-white/50 hover:text-red-500'
+                                        }`}
+                                        title="Downvote"
+                                      >
+                                        <ArrowDown
+                                          className={`w-3 h-3 ${reply.downvoted ? 'fill-current' : ''}`}
+                                        />
+                                        <span>{reply.downvotes || 0}</span>
+                                      </button>
+                                      <button
+                                        onClick={() =>
+                                          handleHelpfulComment(reply.id)
+                                        }
+                                        className={`flex items-center gap-1 text-xs transition-colors ${
+                                          reply.helpfulMarked
+                                            ? 'text-green-500'
+                                            : 'text-white/50 hover:text-green-500'
+                                        }`}
+                                        title="Helpful"
+                                      >
+                                        <ThumbsUp
+                                          className={`w-3 h-3 ${reply.helpfulMarked ? 'fill-current' : ''}`}
+                                        />
+                                        <span>{reply.helpful || 0}</span>
+                                      </button>
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                              ))}
+                            </div>
+                          )}
                       </div>
                     </motion.div>
                   ))}

@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion'
 import { ArrowUp, MessageSquare, Share2, DollarSign } from 'lucide-react'
 import { Idea } from '@/lib/types/idea'
+import { useAppSelector } from '@/lib/hooks'
 
 interface IdeaActionsProps {
   idea: Idea
@@ -83,7 +84,7 @@ export function IdeaActions({
       </motion.button>
 
       {/* Comments Button */}
-      <button 
+      <button
         onClick={onCommentsClick}
         className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 text-text-secondary hover:bg-gray-200 transition-colors"
       >
@@ -104,4 +105,3 @@ export function IdeaActions({
     </div>
   )
 }
-

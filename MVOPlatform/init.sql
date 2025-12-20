@@ -427,6 +427,7 @@ CREATE POLICY "Users can update their own profile" ON users
 CREATE POLICY "Public read media_assets" ON media_assets FOR SELECT USING (true);
 CREATE POLICY "Public read topics" ON topics FOR SELECT USING (true);
 CREATE POLICY "Public read tags" ON tags FOR SELECT USING (true);
+CREATE POLICY "Authenticated insert tags" ON tags FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
 CREATE POLICY "Public read badges" ON badges FOR SELECT USING (true);
 
 -- Ideas: public read, authenticated create/update
