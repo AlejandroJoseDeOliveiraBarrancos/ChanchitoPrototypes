@@ -5,7 +5,6 @@ import { motion } from 'framer-motion'
 import {
   ArrowUp,
   ArrowDown,
-  ThumbsUp,
   User,
   ChevronDown,
   ChevronUp,
@@ -73,18 +72,6 @@ export function CommentsBlock({ ideaId }: CommentsBlockProps) {
       updateCommentInState(commentId, updatedComment)
     } catch (error) {
       console.error('Error downvoting comment:', error)
-    }
-  }
-
-  const handleHelpfulComment = async (commentId: string) => {
-    try {
-      const updatedComment = await commentService.toggleHelpfulComment(
-        commentId,
-        ideaId
-      )
-      updateCommentInState(commentId, updatedComment)
-    } catch (error) {
-      console.error('Error marking comment as helpful:', error)
     }
   }
 
@@ -388,21 +375,6 @@ export function CommentsBlock({ ideaId }: CommentsBlockProps) {
                     </button>
 
                     <button
-                      onClick={() => handleHelpfulComment(comment.id)}
-                      className={`flex items-center gap-1.5 text-sm transition-colors ${
-                        comment.helpfulMarked
-                          ? 'text-green-500'
-                          : 'text-text-secondary hover:text-green-500'
-                      }`}
-                      title="Helpful"
-                    >
-                      <ThumbsUp
-                        className={`w-4 h-4 ${comment.helpfulMarked ? 'fill-current' : ''}`}
-                      />
-                      <span>{comment.helpful || 0}</span>
-                    </button>
-
-                    <button
                       onClick={() => {
                         setReplyingTo(
                           replyingTo === comment.id ? null : comment.id
@@ -558,20 +530,6 @@ export function CommentsBlock({ ideaId }: CommentsBlockProps) {
                                     className={`w-3 h-3 ${reply.downvoted ? 'fill-current' : ''}`}
                                   />
                                   <span>{reply.downvotes || 0}</span>
-                                </button>
-                                <button
-                                  onClick={() => handleHelpfulComment(reply.id)}
-                                  className={`flex items-center gap-1 text-xs transition-colors ${
-                                    reply.helpfulMarked
-                                      ? 'text-green-500'
-                                      : 'text-text-secondary hover:text-green-500'
-                                  }`}
-                                  title="Helpful"
-                                >
-                                  <ThumbsUp
-                                    className={`w-3 h-3 ${reply.helpfulMarked ? 'fill-current' : ''}`}
-                                  />
-                                  <span>{reply.helpful || 0}</span>
                                 </button>
                               </div>
                             </div>

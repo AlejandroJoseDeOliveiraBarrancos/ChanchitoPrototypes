@@ -440,8 +440,9 @@ CREATE POLICY "Public read comments" ON comments FOR SELECT USING (true);
 CREATE POLICY "Authenticated create comments" ON comments FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
 CREATE POLICY "Users update own comments" ON comments FOR UPDATE USING (auth.uid() = user_id);
 
--- Votes: authenticated insert, users can view their own
+-- Votes: authenticated insert/delete, users can view their own
 CREATE POLICY "Authenticated insert idea_votes" ON idea_votes FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+CREATE POLICY "Users delete own idea_votes" ON idea_votes FOR DELETE USING (auth.uid() = voter_id);
 CREATE POLICY "Users view own idea_votes" ON idea_votes FOR SELECT USING (auth.uid() = voter_id);
 
 CREATE POLICY "Authenticated insert comment_votes" ON comment_votes FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);

@@ -72,6 +72,20 @@ export interface IIdeaService {
    * @param voteType The type of vote ('dislike', 'use', 'pay')
    */
   toggleVote(ideaId: string, voteType: 'dislike' | 'use' | 'pay'): Promise<Idea>
+
+  /**
+   * Get the current user's vote for an idea
+   * @param ideaId The idea ID
+   */
+  getUserVote(ideaId: string): Promise<'dislike' | 'use' | 'pay' | null>
+
+  /**
+   * Get all current user's votes for an idea
+   * @param ideaId The idea ID
+   */
+  getUserVotes(
+    ideaId: string
+  ): Promise<{ use: boolean; dislike: boolean; pay: boolean }>
 }
 
 /**
@@ -315,29 +329,48 @@ class SupabaseIdeaService implements IIdeaService {
       .select('vote_type')
       .eq('idea_id', ideaId)
       .eq('voter_id', user.id)
-      .single()
+      .limit(1)
+      .maybeSingle()
 
-    if (existingVote?.vote_type === voteType) {
-      // Remove the vote
+    // Handle different vote types:
+    // - 'use' and 'dislike' are mutually exclusive (only one can exist)
+    // - 'pay' is independent (can coexist with use/dislike)
+    if (voteType === 'use' || voteType === 'dislike') {
+      // For use/dislike votes, remove any existing use/dislike vote first
       await supabase
         .from('idea_votes')
         .delete()
         .eq('idea_id', ideaId)
         .eq('voter_id', user.id)
-        .eq('vote_type', voteType)
-    } else {
-      // Remove any existing vote and add new vote
-      await supabase
-        .from('idea_votes')
-        .delete()
-        .eq('idea_id', ideaId)
-        .eq('voter_id', user.id)
+        .in('vote_type', ['use', 'dislike'])
 
-      await supabase.from('idea_votes').insert({
-        idea_id: ideaId,
-        voter_id: user.id,
-        vote_type: voteType,
-      })
+      // If clicking the same vote type, don't insert (removes the vote)
+      // If clicking different vote type or no vote existed, insert the new vote
+      if (existingVote?.vote_type !== voteType) {
+        await supabase.from('idea_votes').insert({
+          idea_id: ideaId,
+          voter_id: user.id,
+          vote_type: voteType,
+        })
+      }
+    } else if (voteType === 'pay') {
+      // For pay votes, toggle independently
+      if (existingVote?.vote_type === 'pay') {
+        // Remove pay vote
+        await supabase
+          .from('idea_votes')
+          .delete()
+          .eq('idea_id', ideaId)
+          .eq('voter_id', user.id)
+          .eq('vote_type', 'pay')
+      } else {
+        // Add pay vote (can coexist with use/dislike)
+        await supabase.from('idea_votes').insert({
+          idea_id: ideaId,
+          voter_id: user.id,
+          vote_type: 'pay',
+        })
+      }
     }
 
     // Return updated idea
@@ -345,6 +378,49 @@ class SupabaseIdeaService implements IIdeaService {
       if (!idea) throw new Error('Idea not found')
       return idea
     })
+  }
+
+  async getUserVote(ideaId: string): Promise<'dislike' | 'use' | 'pay' | null> {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) return null
+
+    const { data, error } = await supabase
+      .from('idea_votes')
+      .select('vote_type')
+      .eq('idea_id', ideaId)
+      .eq('voter_id', user.id)
+      .limit(1)
+      .maybeSingle()
+
+    if (error) throw error
+
+    return data?.vote_type || null
+  }
+
+  async getUserVotes(
+    ideaId: string
+  ): Promise<{ use: boolean; dislike: boolean; pay: boolean }> {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) return { use: false, dislike: false, pay: false }
+
+    const { data, error } = await supabase
+      .from('idea_votes')
+      .select('vote_type')
+      .eq('idea_id', ideaId)
+      .eq('voter_id', user.id)
+
+    if (error) throw error
+
+    const votes = data || []
+    return {
+      use: votes.some(v => v.vote_type === 'use'),
+      dislike: votes.some(v => v.vote_type === 'dislike'),
+      pay: votes.some(v => v.vote_type === 'pay'),
+    }
   }
 
   private mapDbIdeaToIdea(dbIdea: any): Idea {

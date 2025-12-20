@@ -2,7 +2,13 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowUp, MessageSquare, Share2, DollarSign } from 'lucide-react'
+import {
+  ArrowUp,
+  ArrowDown,
+  MessageSquare,
+  Share2,
+  DollarSign,
+} from 'lucide-react'
 import Image from 'next/image'
 import { formatDate } from '@/lib/utils/date'
 import { UI_LABELS } from '@/lib/constants/ui'
@@ -22,12 +28,32 @@ interface ForYouIdeaCardProps {
 export function ForYouIdeaCard({ idea, isActive }: ForYouIdeaCardProps) {
   const [currentIdea, setCurrentIdea] = useState(idea)
   const [isVoting, setIsVoting] = useState(false)
+  const [userVote, setUserVote] = useState<{
+    use: boolean
+    dislike: boolean
+    pay: boolean
+  }>({
+    use: false,
+    dislike: false,
+    pay: false,
+  })
   const [commentCount, setCommentCount] = useState(0)
   const [commentsOpen, setCommentsOpen] = useState(false)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
   const previousIdeaIdRef = useRef<string>(idea.id)
   const { isAuthenticated } = useAppSelector(state => state.auth)
+
+  // Fetch user's votes on mount
+  useEffect(() => {
+    const fetchUserVotes = async () => {
+      if (isAuthenticated) {
+        const votes = await ideaService.getUserVotes(currentIdea.id)
+        setUserVote(votes)
+      }
+    }
+    fetchUserVotes()
+  }, [currentIdea.id, isAuthenticated])
 
   // Use reusable video player hook with start time at 10 seconds
   const videoRef = useVideoPlayer({
@@ -61,6 +87,13 @@ export function ForYouIdeaCard({ idea, isActive }: ForYouIdeaCardProps) {
     try {
       const updatedIdea = await ideaService.toggleVote(currentIdea.id, 'use')
       setCurrentIdea(updatedIdea)
+      // For use/dislike, toggle the specific vote and ensure the other is false
+      setUserVote(prev => ({
+        ...prev,
+        use: !prev.use,
+        dislike: false, // ensure dislike is false when voting up
+        pay: prev.pay, // pay remains unchanged
+      }))
     } catch (error) {
       console.error('Error voting:', error)
     } finally {
@@ -80,6 +113,40 @@ export function ForYouIdeaCard({ idea, isActive }: ForYouIdeaCardProps) {
     try {
       const updatedIdea = await ideaService.toggleVote(currentIdea.id, 'pay')
       setCurrentIdea(updatedIdea)
+      // For pay, just toggle it
+      setUserVote(prev => ({
+        ...prev,
+        pay: !prev.pay,
+      }))
+    } catch (error) {
+      console.error('Error voting:', error)
+    } finally {
+      setIsVoting(false)
+    }
+  }
+
+  const handleDownVote = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!isAuthenticated) {
+      alert('Please sign in to vote')
+      return
+    }
+    if (isVoting) return
+
+    setIsVoting(true)
+    try {
+      const updatedIdea = await ideaService.toggleVote(
+        currentIdea.id,
+        'dislike'
+      )
+      setCurrentIdea(updatedIdea)
+      // For use/dislike, toggle the specific vote and ensure the other is false
+      setUserVote(prev => ({
+        ...prev,
+        use: false, // ensure use is false when voting down
+        dislike: !prev.dislike,
+        pay: prev.pay, // pay remains unchanged
+      }))
     } catch (error) {
       console.error('Error voting:', error)
     } finally {
@@ -92,8 +159,9 @@ export function ForYouIdeaCard({ idea, isActive }: ForYouIdeaCardProps) {
     setCommentsOpen(prev => !prev)
   }
 
-  const voted = currentIdea.votesByType.use > 0
-  const wouldPay = currentIdea.votesByType.pay > 0
+  const voted = userVote.use
+  const votedDown = userVote.dislike
+  const wouldPay = userVote.pay
   const voteCount = currentIdea.votes
 
   return (
@@ -213,7 +281,25 @@ export function ForYouIdeaCard({ idea, isActive }: ForYouIdeaCardProps) {
                 }`}
               >
                 <ArrowUp className="w-5 h-5" />
-                <span className="text-xs font-semibold">{voteCount}</span>
+                <span className="text-xs font-semibold">
+                  {currentIdea.votesByType.use}
+                </span>
+              </motion.button>
+
+              <motion.button
+                onClick={handleDownVote}
+                whileTap={{ scale: 0.9 }}
+                className={`flex flex-col items-center gap-1 p-2.5 rounded-full transition-colors ${
+                  votedDown
+                    ? 'bg-red-500 text-white'
+                    : 'bg-white/10 backdrop-blur-sm text-white hover:bg-white/20'
+                }`}
+                title="Downvote"
+              >
+                <ArrowDown className="w-5 h-5" />
+                <span className="text-xs font-semibold">
+                  {currentIdea.votesByType.dislike}
+                </span>
               </motion.button>
 
               <motion.button
@@ -229,6 +315,9 @@ export function ForYouIdeaCard({ idea, isActive }: ForYouIdeaCardProps) {
                 <DollarSign
                   className={`w-5 h-5 ${wouldPay ? 'fill-current' : ''}`}
                 />
+                <span className="text-xs font-semibold">
+                  {currentIdea.votesByType.pay}
+                </span>
               </motion.button>
 
               <motion.button
@@ -316,7 +405,25 @@ export function ForYouIdeaCard({ idea, isActive }: ForYouIdeaCardProps) {
                 }`}
               >
                 <ArrowUp className="w-6 h-6" />
-                <span className="text-xs font-semibold">{voteCount}</span>
+                <span className="text-xs font-semibold">
+                  {currentIdea.votesByType.use}
+                </span>
+              </motion.button>
+
+              <motion.button
+                onClick={handleDownVote}
+                whileTap={{ scale: 0.9 }}
+                className={`flex flex-col items-center gap-1 p-3 rounded-full transition-colors ${
+                  votedDown
+                    ? 'bg-red-500 text-white'
+                    : 'bg-white/10 backdrop-blur-sm text-white hover:bg-white/20'
+                }`}
+                title="Downvote"
+              >
+                <ArrowDown className="w-6 h-6" />
+                <span className="text-xs font-semibold">
+                  {currentIdea.votesByType.dislike}
+                </span>
               </motion.button>
 
               <motion.button
@@ -332,6 +439,9 @@ export function ForYouIdeaCard({ idea, isActive }: ForYouIdeaCardProps) {
                 <DollarSign
                   className={`w-6 h-6 ${wouldPay ? 'fill-current' : ''}`}
                 />
+                <span className="text-xs font-semibold">
+                  {currentIdea.votesByType.pay}
+                </span>
               </motion.button>
 
               <motion.button
