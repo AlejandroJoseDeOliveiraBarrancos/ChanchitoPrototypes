@@ -30,7 +30,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/submit"
+                  href="/upload"
                   className="text-sm nav-link"
                 >
                   {UI_LABELS.SUBMIT_IDEA}

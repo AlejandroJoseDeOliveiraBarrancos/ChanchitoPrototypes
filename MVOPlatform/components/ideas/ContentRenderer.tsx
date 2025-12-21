@@ -1,13 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { ContentBlock } from '@/lib/types/content'
-import { useVideoPlayer } from '@/hooks/useVideoPlayer'
-import { useRef } from 'react'
+import { ContentBlock, VideoContent } from '@/lib/types/content'
 
 interface ContentRendererProps {
   content: ContentBlock[]
@@ -37,7 +35,14 @@ function ContentBlockRenderer({ block, index }: { block: ContentBlock; index: nu
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: index * 0.1 }}
-          className={`${textSizeClasses[textSize]} text-text-secondary leading-relaxed whitespace-pre-line`}
+          className={`${textSizeClasses[textSize]} text-text-secondary leading-relaxed whitespace-pre-line break-words`}
+          style={{
+            fontFamily: block.fontFamily || undefined,
+            color: block.color || undefined,
+            overflowWrap: 'break-word',
+            wordBreak: 'break-word',
+            maxWidth: '100%',
+          }}
         >
           {block.content}
         </motion.p>
@@ -57,7 +62,16 @@ function ContentBlockRenderer({ block, index }: { block: ContentBlock; index: nu
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: index * 0.1 }}
         >
-          <HeadingTag className={`${headingClasses[block.level]} text-text-primary mb-4`}>
+          <HeadingTag 
+            className={`${headingClasses[block.level]} text-text-primary mb-4 break-words`}
+            style={{
+              fontFamily: block.fontFamily || undefined,
+              color: block.color || undefined,
+              overflowWrap: 'break-word',
+              wordBreak: 'break-word',
+              maxWidth: '100%',
+            }}
+          >
             {block.text}
           </HeadingTag>
         </motion.div>
@@ -73,9 +87,14 @@ function ContentBlockRenderer({ block, index }: { block: ContentBlock; index: nu
         >
           <Image
             src={block.src}
-            alt={block.alt}
+            alt=""
             fill
             className="object-cover"
+            style={block.crop ? {
+              objectPosition: `${block.crop.x}% ${block.crop.y}%`,
+              transform: `scale(${block.crop.scale || 1})`,
+              transformOrigin: `${block.crop.x}% ${block.crop.y}%`,
+            } : undefined}
           />
           {block.caption && (
             <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white p-4 text-sm">
@@ -100,9 +119,61 @@ function ContentBlockRenderer({ block, index }: { block: ContentBlock; index: nu
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: index * 0.1 }}
-          className="prose prose-invert max-w-none"
-          dangerouslySetInnerHTML={{ __html: block.content }}
-        />
+          className="w-full html-embed-container"
+          style={{
+            maxWidth: '100%',
+            overflow: 'hidden',
+            position: 'relative',
+            zIndex: 1,
+          }}
+        >
+          <div
+            className="w-full html-embed-wrapper"
+            style={{
+              maxWidth: '100%',
+            }}
+            dangerouslySetInnerHTML={{ 
+              __html: `<style>
+                /* Default styles for iframes - allow responsive containers to override */
+                iframe, embed, object {
+                  max-width: 100% !important;
+                }
+                /* Only apply height: auto to iframes that are NOT absolutely positioned */
+                iframe:not([style*="absolute"]),
+                embed:not([style*="absolute"]),
+                object:not([style*="absolute"]) {
+                  width: 100% !important;
+                  min-height: 400px !important;
+                  height: auto !important;
+                }
+                /* Allow responsive containers to work properly - iframe with absolute positioning */
+                iframe[style*="absolute"] {
+                  width: 100% !important;
+                  height: 100% !important;
+                }
+                @media (min-width: 768px) {
+                  iframe:not([style*="absolute"]),
+                  embed:not([style*="absolute"]),
+                  object:not([style*="absolute"]) {
+                    min-height: 600px !important;
+                  }
+                }
+                @media (min-width: 1024px) {
+                  iframe:not([style*="absolute"]),
+                  embed:not([style*="absolute"]),
+                  object:not([style*="absolute"]) {
+                    min-height: 800px !important;
+                  }
+                }
+                video {
+                  max-width: 100% !important;
+                  width: 100% !important;
+                  height: auto !important;
+                }
+              </style>${block.content}` 
+            }}
+          />
+        </motion.div>
       )
 
     case 'spacer':
@@ -113,15 +184,7 @@ function ContentBlockRenderer({ block, index }: { block: ContentBlock; index: nu
   }
 }
 
-function VideoBlock({ video, index }: { video: { type: 'video'; src: string; title?: string; description?: string }; index: number }) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const videoRef = useVideoPlayer({
-    videoSrc: video.src,
-    containerRef: containerRef,
-    startTime: 0,
-    threshold: 0.1,
-  })
-
+function VideoBlock({ video, index }: { video: VideoContent; index: number }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -130,29 +193,34 @@ function VideoBlock({ video, index }: { video: { type: 'video'; src: string; tit
       className="space-y-4"
     >
       {video.title && (
-        <h3 className="text-2xl font-semibold text-text-primary">{video.title}</h3>
+        <h3 className="text-2xl font-semibold text-text-primary break-words" style={{
+          overflowWrap: 'break-word',
+          wordBreak: 'break-word',
+          maxWidth: '100%',
+        }}>{video.title}</h3>
       )}
-      <div ref={containerRef} className="relative w-full aspect-video rounded-lg overflow-hidden bg-black">
+      <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-black">
         <video
-          ref={videoRef}
           src={video.src}
-          className="w-full h-full object-cover pointer-events-none"
-          loop
-          muted
-          playsInline
-          autoPlay
-          onPause={(e) => {
-            e.preventDefault()
-            const videoEl = e.currentTarget
-            if (videoEl.paused) {
-              videoEl.play().catch(() => {})
-            }
+          className="w-full h-full object-contain"
+          style={{
+            ...(video.crop ? {
+              objectPosition: `${video.crop.x}% ${video.crop.y}%`,
+              transform: `scale(${video.crop.scale || 1})`,
+              transformOrigin: `${video.crop.x}% ${video.crop.y}%`,
+            } : {}),
+            zIndex: 1,
           }}
-          onContextMenu={(e) => e.preventDefault()}
+          controls
+          playsInline
         />
       </div>
       {video.description && (
-        <p className="text-text-secondary text-sm">{video.description}</p>
+        <p className="text-text-secondary text-sm break-words" style={{
+          overflowWrap: 'break-word',
+          wordBreak: 'break-word',
+          maxWidth: '100%',
+        }}>{video.description}</p>
       )}
     </motion.div>
   )
@@ -203,16 +271,34 @@ function CarouselBlock({ carousel, index }: { carousel: { type: 'carousel'; slid
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-accent/20 via-background to-accent/10 flex items-center justify-center">
                     <div className="text-center px-6 max-w-2xl">
-                      <h3 className="text-3xl font-bold text-text-primary mb-4">{slide.title}</h3>
-                      <p className="text-lg text-text-secondary">{slide.description}</p>
+                      <h3 className="text-3xl font-bold text-text-primary mb-4 break-words" style={{
+                        overflowWrap: 'break-word',
+                        wordBreak: 'break-word',
+                        maxWidth: '100%',
+                      }}>{slide.title}</h3>
+                      <p className="text-lg text-text-secondary break-words" style={{
+                        overflowWrap: 'break-word',
+                        wordBreak: 'break-word',
+                        maxWidth: '100%',
+                      }}>{slide.description}</p>
                     </div>
                   </div>
                 )}
-                {/* Overlay with description */}
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/80 to-transparent p-6">
-                  <h3 className="text-xl font-bold text-white mb-2">{slide.title}</h3>
-                  <p className="text-white/90">{slide.description}</p>
-                </div>
+                {/* Overlay with description - only show if not video (videos have their own controls) */}
+                {!slide.video && (
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/80 to-transparent p-6">
+                    <h3 className="text-xl font-bold text-white mb-2 break-words" style={{
+                      overflowWrap: 'break-word',
+                      wordBreak: 'break-word',
+                      maxWidth: '100%',
+                    }}>{slide.title}</h3>
+                    <p className="text-white/90 break-words" style={{
+                      overflowWrap: 'break-word',
+                      wordBreak: 'break-word',
+                      maxWidth: '100%',
+                    }}>{slide.description}</p>
+                  </div>
+                )}
               </motion.div>
             )
           })}
@@ -259,32 +345,18 @@ function CarouselBlock({ carousel, index }: { carousel: { type: 'carousel'; slid
 }
 
 function VideoSlide({ src }: { src: string }) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const videoRef = useVideoPlayer({
-    videoSrc: src,
-    containerRef: containerRef,
-    startTime: 0,
-    threshold: 0.1,
-  })
+  const videoRef = useRef<HTMLVideoElement>(null)
 
   return (
-    <div ref={containerRef} className="w-full h-full">
+    <div className="w-full h-full relative" style={{ zIndex: 2 }}>
       <video
         ref={videoRef}
         src={src}
-        className="w-full h-full object-cover pointer-events-none"
+        className="w-full h-full object-contain"
+        controls
         loop
-        muted
         playsInline
-        autoPlay
-        onPause={(e) => {
-          e.preventDefault()
-          const videoEl = e.currentTarget
-          if (videoEl.paused) {
-            videoEl.play().catch(() => {})
-          }
-        }}
-        onContextMenu={(e) => e.preventDefault()}
+        style={{ zIndex: 2 }}
       />
     </div>
   )

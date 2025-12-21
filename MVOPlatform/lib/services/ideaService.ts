@@ -54,6 +54,11 @@ export interface IIdeaService {
    * Get ideas for "Explore" section (all ideas, TikTok-style)
    */
   getExploreIdeas(limit?: number, offset?: number): Promise<Idea[]>
+
+  /**
+   * Create a new idea
+   */
+  createIdea(idea: Omit<Idea, 'id'>): Promise<Idea>
 }
 
 /**
@@ -1899,6 +1904,25 @@ class MockIdeaService implements IIdeaService {
     const start = offset
     const end = limit ? offset + limit : explore.length
     return explore.slice(start, end)
+  }
+
+  async createIdea(ideaData: Omit<Idea, 'id'>): Promise<Idea> {
+    // Simulate API delay
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    
+    // Generate a unique ID
+    const newId = `${MOCK_IDEAS.length + 1}`
+    
+    // Create the new idea with ID
+    const newIdea: Idea = {
+      ...ideaData,
+      id: newId,
+    }
+    
+    // Add to the beginning of the array so it appears first
+    MOCK_IDEAS.unshift(newIdea)
+    
+    return newIdea
   }
 }
 

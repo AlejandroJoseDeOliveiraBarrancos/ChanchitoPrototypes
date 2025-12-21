@@ -22,7 +22,7 @@ export function CTA() {
             Join hundreds of entrepreneurs who have validated their business
             ideas with our platform.
           </p>
-          <Link href="/submit">
+          <Link href="/upload">
             <Button size="lg" variant="primary">
               {UI_LABELS.SUBMIT_YOUR_IDEA_NOW}
             </Button>

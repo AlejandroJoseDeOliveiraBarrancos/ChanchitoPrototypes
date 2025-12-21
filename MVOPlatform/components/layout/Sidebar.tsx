@@ -213,8 +213,8 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       id: 'upload',
       label: UI_LABELS.UPLOAD,
       icon: Plus,
-      href: '/submit',
-      active: pathname === '/submit',
+      href: '/upload',
+      active: pathname === '/upload',
     },
   ]
 
@@ -238,21 +238,21 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   const sidebarContent = (
     <div className="h-full flex flex-col bg-background">
       {/* Logo/Brand - Acts as back button on detail pages */}
-      <div className={SIDEBAR_STYLES.container.padding.logo}>
-        <div className="flex items-center justify-between">
+      <div className={`${SIDEBAR_STYLES.container.padding.logo} flex-shrink-0`}>
+        <div className={`flex items-center ${showExpanded ? 'justify-between' : 'justify-center'}`}>
           {showExpanded && (
             <>
               {isDetailPage ? (
                 <button
                   onClick={handleBack}
-                  className={`${SIDEBAR_STYLES.logo.expanded.text} font-semibold text-text-primary hover:text-accent transition-colors cursor-pointer`}
+                  className={`${SIDEBAR_STYLES.logo.expanded.text} font-semibold text-text-primary hover:text-accent transition-colors cursor-pointer truncate flex-1 min-w-0`}
                 >
                   {UI_LABELS.BRAND_NAME}
                 </button>
               ) : (
                 <Link
                   href="/"
-                  className={`${SIDEBAR_STYLES.logo.expanded.text} font-semibold text-text-primary`}
+                  className={`${SIDEBAR_STYLES.logo.expanded.text} font-semibold text-text-primary truncate flex-1 min-w-0`}
                 >
                   {UI_LABELS.BRAND_NAME}
                 </Link>
@@ -260,7 +260,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
               {isMobile && (
                 <button
                   onClick={() => setIsMobileOpen(false)}
-                  className="p-1 rounded-md interactive-hover"
+                  className="p-1 rounded-md interactive-hover flex-shrink-0 ml-2"
                   aria-label="Close sidebar"
                 >
                   <X
@@ -274,10 +274,10 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
             (isDetailPage ? (
               <button
                 onClick={handleBack}
-                className={`${SIDEBAR_STYLES.logo.collapsed.size} ${SIDEBAR_STYLES.button.borderRadius} bg-accent flex items-center justify-center mx-auto cursor-pointer hover:bg-accent/80 transition-colors`}
+                className={`${SIDEBAR_STYLES.logo.collapsed.size} ${SIDEBAR_STYLES.button.borderRadius} bg-accent flex items-center justify-center cursor-pointer hover:bg-accent/80 transition-colors`}
               >
                 <span
-                  className={`text-text-primary ${SIDEBAR_STYLES.logo.collapsed.text}`}
+                  className={`text-text-primary ${SIDEBAR_STYLES.logo.collapsed.text} font-bold`}
                 >
                   MVO
                 </span>
@@ -285,10 +285,10 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
             ) : (
               <Link
                 href="/"
-                className={`${SIDEBAR_STYLES.logo.collapsed.size} ${SIDEBAR_STYLES.button.borderRadius} bg-accent flex items-center justify-center mx-auto`}
+                className={`${SIDEBAR_STYLES.logo.collapsed.size} ${SIDEBAR_STYLES.button.borderRadius} bg-accent flex items-center justify-center`}
               >
                 <span
-                  className={`text-text-primary ${SIDEBAR_STYLES.logo.collapsed.text}`}
+                  className={`text-text-primary ${SIDEBAR_STYLES.logo.collapsed.text} font-bold`}
                 >
                   MVO
                 </span>

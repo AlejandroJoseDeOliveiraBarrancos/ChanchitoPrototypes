@@ -16,19 +16,33 @@ export interface TextContent {
   type: 'text'
   content: string
   size?: 'small' | 'medium' | 'large'
+  fontFamily?: string
+  color?: string
 }
 
 export interface HeadingContent {
   type: 'heading'
   level: 1 | 2 | 3 | 4
   text: string
+  fontFamily?: string
+  color?: string
+}
+
+export interface CropConfig {
+  x: number
+  y: number
+  width: number
+  height: number
+  scale?: number
 }
 
 export interface ImageContent {
   type: 'image'
   src: string
-  alt: string
   caption?: string
+  objectFit?: 'stretch' | 'fit' | 'cover'
+  alignment?: 'left' | 'center' | 'right'
+  crop?: CropConfig
 }
 
 export interface VideoContent {
@@ -36,6 +50,9 @@ export interface VideoContent {
   src: string
   title?: string
   description?: string
+  objectFit?: 'stretch' | 'fit' | 'cover'
+  alignment?: 'left' | 'center' | 'right'
+  crop?: CropConfig
 }
 
 export interface CarouselSlide {
