@@ -22,6 +22,11 @@ const nextConfig = {
         hostname: 'commondatastorage.googleapis.com',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'jgmgelapxzimzqwcjeit.storage.supabase.co',
+        pathname: '/**',
+      },
     ],
   },
   webpack: (config, { isServer }) => {
@@ -33,21 +38,25 @@ const nextConfig = {
         path: false,
         module: false,
       }
-      
+
       // Exclude fengari from client bundle
       config.externals = config.externals || []
       config.externals.push({
         fengari: 'commonjs fengari',
-        '../lib/env-validation/javascript_adapter.js': 'commonjs ../lib/env-validation/javascript_adapter.js',
+        '../lib/env-validation/javascript_adapter.js':
+          'commonjs ../lib/env-validation/javascript_adapter.js',
       })
-      
+
       // Suppress webpack warnings about dynamic requires in fengari
       config.ignoreWarnings = [
         { module: /node_modules\/fengari/ },
-        { message: /Critical dependency: the request of a dependency is an expression/ },
+        {
+          message:
+            /Critical dependency: the request of a dependency is an expression/,
+        },
       ]
     }
-    
+
     return config
   },
 }

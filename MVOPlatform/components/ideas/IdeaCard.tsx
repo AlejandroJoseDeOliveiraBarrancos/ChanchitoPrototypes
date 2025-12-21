@@ -10,6 +10,7 @@ import { Idea } from '@/lib/types/idea'
 import { useVideoPlayer } from '@/hooks/useVideoPlayer'
 import { useAppSelector } from '@/lib/hooks'
 import { ideaService } from '@/lib/services/ideaService'
+import { getCardMedia } from '@/lib/utils/media'
 
 interface IdeaCardProps {
   idea: Idea
@@ -22,9 +23,11 @@ export function IdeaCard({ idea }: IdeaCardProps) {
   const cardRef = useRef<HTMLDivElement>(null)
   const { isAuthenticated } = useAppSelector(state => state.auth)
 
+  const cardMedia = getCardMedia(currentIdea)
+
   // Use reusable video player hook with start time at 10 seconds
   const videoRef = useVideoPlayer({
-    videoSrc: currentIdea.video,
+    videoSrc: cardMedia.video,
     containerRef: cardRef,
     startTime: 10,
     threshold: 0.5,
@@ -75,29 +78,35 @@ export function IdeaCard({ idea }: IdeaCardProps) {
       <Link href={`/ideas/${currentIdea.id}`} onClick={handleClick}>
         <motion.article whileHover={{ y: -2 }} className="p-4 flex flex-col">
           {/* Media Section */}
-          {(currentIdea.image || currentIdea.video) && (
-            <div className="relative w-full aspect-video mb-3 rounded-md overflow-hidden bg-gray-100">
-              {currentIdea.video ? (
-                <video
-                  ref={videoRef}
-                  src={currentIdea.video}
-                  className="w-full h-full object-cover"
-                  loop
-                  muted
-                  playsInline
-                  preload="none"
-                />
-              ) : currentIdea.image ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={currentIdea.image}
-                  alt={currentIdea.title}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
-              ) : null}
-            </div>
-          )}
+          <div className="relative w-full aspect-video mb-3 rounded-md overflow-hidden">
+            {cardMedia.video ? (
+              <video
+                ref={videoRef}
+                src={cardMedia.video}
+                className="w-full h-full object-cover"
+                loop
+                muted
+                playsInline
+                preload="none"
+              />
+            ) : cardMedia.image ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={cardMedia.image}
+                alt={currentIdea.title}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-400 flex items-center justify-center">
+                <div className="text-center px-4">
+                  <h3 className="text-lg font-bold text-text-primary line-clamp-2">
+                    {currentIdea.title}
+                  </h3>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Content Section */}
           <div className="flex items-start justify-between gap-3 mb-3">

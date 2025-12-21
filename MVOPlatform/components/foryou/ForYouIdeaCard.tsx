@@ -19,6 +19,7 @@ import { commentService } from '@/lib/services/commentService'
 import { VoteDistributionBar } from '@/components/ui/VoteDistributionBar'
 import { useAppSelector } from '@/lib/hooks'
 import { ideaService } from '@/lib/services/ideaService'
+import { getCardMedia } from '@/lib/utils/media'
 
 interface ForYouIdeaCardProps {
   idea: Idea
@@ -62,9 +63,11 @@ export function ForYouIdeaCard({
     }
   }, [initialUserVotes])
 
+  const cardMedia = getCardMedia(currentIdea)
+
   // Use reusable video player hook with start time at 10 seconds
   const videoRef = useVideoPlayer({
-    videoSrc: currentIdea.video,
+    videoSrc: cardMedia.video,
     isActive,
     startTime: 45,
   })
@@ -178,11 +181,11 @@ export function ForYouIdeaCard({
     >
       {/* Background image/video area */}
       <div className="absolute inset-0">
-        {currentIdea.video ? (
+        {cardMedia.video ? (
           <>
             <video
               ref={videoRef}
-              src={currentIdea.video}
+              src={cardMedia.video}
               className="absolute inset-0 w-full h-full object-cover"
               loop
               muted
@@ -193,10 +196,10 @@ export function ForYouIdeaCard({
             {/* Black fade from bottom to top for text visibility */}
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent pointer-events-none" />
           </>
-        ) : currentIdea.image ? (
+        ) : cardMedia.image ? (
           <>
             <Image
-              src={currentIdea.image}
+              src={cardMedia.image}
               alt={currentIdea.title}
               fill
               className="object-cover"

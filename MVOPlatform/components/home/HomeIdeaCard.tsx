@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/VoteDistributionBar'
 import { useAppSelector } from '@/lib/hooks'
 import { ideaService } from '@/lib/services/ideaService'
+import { getCardMedia } from '@/lib/utils/media'
 
 interface HomeIdeaCardProps {
   idea: Idea
@@ -55,9 +56,11 @@ export function HomeIdeaCard({
     }
   }, [initialUserVotes])
 
+  const cardMedia = getCardMedia(currentIdea)
+
   // Use reusable video player hook with start time at 10 seconds
   const videoRef = useVideoPlayer({
-    videoSrc: currentIdea.video,
+    videoSrc: cardMedia.video,
     containerRef: cardRef,
     startTime: 10,
   })
@@ -139,50 +142,35 @@ export function HomeIdeaCard({
       <Link href={`/ideas/${currentIdea.id}`} onClick={handleClick}>
         <motion.article whileHover={{ y: -2 }} className="p-4 flex flex-col">
           {/* Media Section */}
-          {(currentIdea.image || currentIdea.video) && (
-            <div className="relative w-full aspect-video mb-3 rounded-md overflow-hidden bg-gray-100">
-              {currentIdea.video ? (
-                <video
-                  ref={videoRef}
-                  src={currentIdea.video}
-                  className="w-full h-full object-cover"
-                  loop
-                  muted
-                  playsInline
-                  preload="none"
-                />
-              ) : currentIdea.image ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={currentIdea.image}
-                  alt={currentIdea.title}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
-              ) : null}
-
-              {/* Validated Overlay - Only over media */}
-              {currentIdea.status_flag === 'validated' && mostVoted && (
-                <>
-                  {/* Darkened overlay */}
-                  <div className="absolute inset-0 bg-black/60 z-10" />
-                  {/* Most voted color overlay */}
-                  <div
-                    className="absolute inset-0 z-20 opacity-40"
-                    style={{ backgroundColor: mostVoted.color }}
-                  />
-                  {/* See Results Label - Centered */}
-                  <div className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none">
-                    <div className="px-6 py-3 bg-white/90 backdrop-blur-sm rounded-full shadow-xl">
-                      <span className="text-base font-bold text-text-primary tracking-wide">
-                        See Results
-                      </span>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-          )}
+          <div className="relative w-full aspect-video mb-3 rounded-md overflow-hidden">
+            {cardMedia.video ? (
+              <video
+                ref={videoRef}
+                src={cardMedia.video}
+                className="w-full h-full object-cover"
+                loop
+                muted
+                playsInline
+                preload="none"
+              />
+            ) : cardMedia.image ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={cardMedia.image}
+                alt={currentIdea.title}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-400 flex items-center justify-center">
+                <div className="text-center px-4">
+                  <h3 className="text-lg font-bold text-text-primary line-clamp-2">
+                    {currentIdea.title}
+                  </h3>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Content Section */}
           <div className="flex items-start justify-between gap-3 mb-3">
