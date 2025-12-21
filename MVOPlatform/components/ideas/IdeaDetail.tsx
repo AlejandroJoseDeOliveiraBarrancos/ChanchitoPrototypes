@@ -177,7 +177,11 @@ export function IdeaDetail({ ideaId }: IdeaDetailProps) {
                 </span>
               ))}
             </div>
-            <h1 className="text-3xl md:text-5xl font-bold text-white mb-4 drop-shadow-lg">
+            <h1 className="text-3xl md:text-5xl font-bold text-white mb-4 drop-shadow-lg break-words" style={{
+              overflowWrap: 'break-word',
+              wordBreak: 'break-word',
+              maxWidth: '100%',
+            }}>
               {idea.title}
             </h1>
             <div className="flex items-center gap-4 text-white/80 text-sm md:text-base">
@@ -219,7 +223,11 @@ export function IdeaDetail({ ideaId }: IdeaDetailProps) {
           transition={{ duration: 0.6 }}
           className="prose prose-invert max-w-none mb-12"
         >
-          <div className="text-body-large text-text-secondary leading-relaxed whitespace-pre-line">
+          <div className="text-body-large text-text-secondary leading-relaxed whitespace-pre-line break-words" style={{
+            overflowWrap: 'break-word',
+            wordBreak: 'break-word',
+            maxWidth: '100%',
+          }}>
             {idea.description}
           </div>
         </motion.div>

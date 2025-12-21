@@ -31,7 +31,7 @@ export function Header() {
           <Link href="/ideas" className="nav-link">
             {UI_LABELS.EXPLORE}
           </Link>
-          <Link href="/submit" className="nav-link">
+          <Link href="/upload" className="nav-link">
             {UI_LABELS.SUBMIT_IDEA}
           </Link>
 

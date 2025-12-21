@@ -45,7 +45,7 @@ function PaymentSuccessContent() {
         </p>
       )}
       <div className="flex flex-col sm:flex-row gap-4 justify-center">
-        <Link href="/submit">
+        <Link href="/upload">
           <Button variant="primary">Submit Your Idea</Button>
         </Link>
         <Link href="/ideas">

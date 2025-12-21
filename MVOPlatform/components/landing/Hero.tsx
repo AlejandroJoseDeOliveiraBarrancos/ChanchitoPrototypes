@@ -23,7 +23,7 @@ export function Hero() {
           Make informed decisions before investing time and resources.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link href="/submit">
+          <Link href="/upload">
             <Button size="lg" variant="primary">
               {UI_LABELS.SUBMIT_IDEA}
             </Button>

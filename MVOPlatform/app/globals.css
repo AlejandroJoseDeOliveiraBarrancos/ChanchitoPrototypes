@@ -324,4 +324,61 @@ a {
       transform: translateX(350%);
     }
   }
+
+  /* HTML embed styles - ensure embeds have proper height on desktop */
+  .html-embed-container {
+    overflow: hidden !important;
+    position: relative !important;
+    max-width: 100% !important;
+    z-index: 1 !important;
+  }
+
+  .html-embed-wrapper {
+    max-width: 100% !important;
+  }
+
+  /* Default styles for iframes */
+  .html-embed-wrapper iframe,
+  .html-embed-wrapper embed,
+  .html-embed-wrapper object {
+    max-width: 100% !important;
+  }
+
+  /* Only apply height: auto to iframes that are NOT absolutely positioned */
+  .html-embed-wrapper iframe:not([style*="absolute"]),
+  .html-embed-wrapper embed:not([style*="absolute"]),
+  .html-embed-wrapper object:not([style*="absolute"]) {
+    width: 100% !important;
+    min-height: 400px !important;
+    height: auto !important;
+    display: block !important;
+  }
+
+  /* Allow responsive containers to work properly - iframe with absolute positioning */
+  .html-embed-wrapper iframe[style*="absolute"] {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  /* Limit z-index in embedded content to prevent interference with sidebar */
+  .html-embed-container * {
+    z-index: auto !important;
+  }
+
+  /* For desktop screens, allow taller embeds - only for direct iframes */
+  @media (min-width: 768px) {
+    .html-embed-wrapper iframe:not([style*="absolute"]),
+    .html-embed-wrapper embed:not([style*="absolute"]),
+    .html-embed-wrapper object:not([style*="absolute"]) {
+      min-height: 600px !important;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .html-embed-wrapper iframe:not([style*="absolute"]),
+    .html-embed-wrapper embed:not([style*="absolute"]),
+    .html-embed-wrapper object:not([style*="absolute"]) {
+      min-height: 800px !important;
+    }
+  }
 }
