@@ -167,7 +167,7 @@ export function ForYouIdeaCard({
   }
 
   const voted = userVote.use
-  const votedDown = userVote.dislike
+  const downvoted = userVote.dislike
   const wouldPay = userVote.pay
   const voteCount = currentIdea.votes
 
@@ -297,7 +297,7 @@ export function ForYouIdeaCard({
                 onClick={handleDownVote}
                 whileTap={{ scale: 0.9 }}
                 className={`flex flex-col items-center gap-1 p-2.5 rounded-full transition-colors ${
-                  votedDown
+                  downvoted
                     ? 'bg-red-500 text-white'
                     : 'bg-white/10 backdrop-blur-sm text-white hover:bg-white/20'
                 }`}
@@ -421,7 +421,7 @@ export function ForYouIdeaCard({
                 onClick={handleDownVote}
                 whileTap={{ scale: 0.9 }}
                 className={`flex flex-col items-center gap-1 p-3 rounded-full transition-colors ${
-                  votedDown
+                  downvoted
                     ? 'bg-red-500 text-white'
                     : 'bg-white/10 backdrop-blur-sm text-white hover:bg-white/20'
                 }`}

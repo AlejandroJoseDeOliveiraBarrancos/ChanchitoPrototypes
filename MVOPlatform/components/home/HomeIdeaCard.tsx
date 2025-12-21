@@ -124,8 +124,8 @@ export function HomeIdeaCard({
     currentIdea.status_flag === 'validated'
       ? getMostVotedType(currentIdea.votesByType)
       : null
-  const votedUp = userVote.use
-  const votedDown = userVote.dislike
+  const upvoted = userVote.use
+  const downvoted = userVote.dislike
   const votedPay = userVote.pay
   const voteCount = currentIdea.votes
 
@@ -215,13 +215,13 @@ export function HomeIdeaCard({
               <button
                 onClick={handleUpVote}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-all duration-250 text-sm whitespace-nowrap flex-shrink-0 ${
-                  votedUp
+                  upvoted
                     ? 'bg-accent text-text-primary'
                     : 'bg-gray-100 text-text-secondary hover:bg-gray-200'
                 }`}
               >
                 <motion.div
-                  animate={votedUp ? { scale: [1, 1.2, 1] } : {}}
+                  animate={upvoted ? { scale: [1, 1.2, 1] } : {}}
                   transition={{ duration: 0.3 }}
                   className="flex-shrink-0"
                 >
@@ -234,13 +234,13 @@ export function HomeIdeaCard({
               <button
                 onClick={handleDownVote}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-all duration-250 text-sm whitespace-nowrap flex-shrink-0 ${
-                  votedDown
+                  downvoted
                     ? 'bg-red-500 text-white'
                     : 'bg-gray-100 text-text-secondary hover:bg-gray-200'
                 }`}
               >
                 <motion.div
-                  animate={votedDown ? { scale: [1, 1.2, 1] } : {}}
+                  animate={downvoted ? { scale: [1, 1.2, 1] } : {}}
                   transition={{ duration: 0.3 }}
                   className="flex-shrink-0"
                 >
