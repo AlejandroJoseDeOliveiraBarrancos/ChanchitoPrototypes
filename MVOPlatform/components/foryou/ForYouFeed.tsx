@@ -3,17 +3,19 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { ForYouIdeaCard } from './ForYouIdeaCard'
-import { UI_LABELS } from '@/lib/constants/ui'
 import { Idea } from '@/lib/types/idea'
 import { ideaService } from '@/lib/services/ideaService'
 import { ExploreIdeaSkeleton } from '@/components/ui/Skeleton'
 import { useAppSelector } from '@/lib/hooks'
+import { useTranslations, useLocale } from '@/components/providers/I18nProvider'
 
 interface ForYouFeedProps {
   initialIdeaId?: string
 }
 
 export function ForYouFeed({ initialIdeaId }: ForYouFeedProps) {
+  const t = useTranslations()
+  const { locale } = useLocale()
   const [ideas, setIdeas] = useState<Idea[]>([])
   const [loading, setLoading] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
@@ -37,7 +39,7 @@ export function ForYouFeed({ initialIdeaId }: ForYouFeedProps) {
       if (e.key === 'ArrowUp') {
         e.preventDefault()
         if (!isAuthenticated) {
-          alert('Please sign in to vote')
+          alert(t('auth.sign_in_to_vote'))
           return
         }
         setIsVoting(true)
@@ -54,7 +56,7 @@ export function ForYouFeed({ initialIdeaId }: ForYouFeedProps) {
       } else if (e.key === 'ArrowDown') {
         e.preventDefault()
         if (!isAuthenticated) {
-          alert('Please sign in to vote')
+          alert(t('auth.sign_in_to_vote'))
           return
         }
         setIsVoting(true)
@@ -176,7 +178,7 @@ export function ForYouFeed({ initialIdeaId }: ForYouFeedProps) {
       const currentIdea = ideas[activeIndex]
       if (currentIdea && currentIdea.id !== lastUrlIdeaId.current) {
         lastUrlIdeaId.current = currentIdea.id
-        router.replace(`/for-you?id=${currentIdea.id}`, {
+        router.replace(`/${locale}/for-you?id=${currentIdea.id}`, {
           scroll: false,
         })
       }
@@ -291,7 +293,7 @@ export function ForYouFeed({ initialIdeaId }: ForYouFeedProps) {
       {loading && initialized && (
         <div className="h-screen snap-start snap-mandatory flex items-center justify-center bg-black">
           <div className="text-white text-lg">
-            {UI_LABELS.LOADING_MORE_IDEAS}
+            {t('status.loading_more_ideas')}
           </div>
         </div>
       )}

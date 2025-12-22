@@ -3,9 +3,11 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { useLocale } from '@/components/providers/I18nProvider'
 
 export default function AuthCallbackPage() {
   const router = useRouter()
+  const { locale } = useLocale()
 
   useEffect(() => {
     const handleCallback = async () => {
@@ -15,13 +17,13 @@ export default function AuthCallbackPage() {
         if (error) throw error
 
         if (data.session) {
-          router.push('/')
+          router.push(`/${locale}`)
         } else {
-          router.push('/auth')
+          router.push(`/${locale}/auth`)
         }
       } catch (error) {
         console.error('Error handling auth callback:', error)
-        router.push('/auth')
+        router.push(`/${locale}/auth`)
       }
     }
 

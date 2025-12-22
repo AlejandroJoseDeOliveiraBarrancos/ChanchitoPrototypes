@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { loadStripe } from '@stripe/stripe-js'
 import { Button } from '@/components/ui/Button'
 import { clientEnv } from '@/config/env'
-import { UI_LABELS } from '@/lib/constants/ui'
+import { useTranslations } from '@/components/providers/I18nProvider'
 
 const stripePromise = loadStripe(clientEnv.stripePublishableKey)
 
@@ -14,6 +14,7 @@ interface CheckoutButtonProps {
 }
 
 export function CheckoutButton({ planId, userId }: CheckoutButtonProps) {
+  const t = useTranslations()
   const [loading, setLoading] = useState(false)
 
   const handleCheckout = async () => {
@@ -45,8 +46,7 @@ export function CheckoutButton({ planId, userId }: CheckoutButtonProps) {
 
   return (
     <Button onClick={handleCheckout} disabled={loading} variant="primary">
-      {loading ? UI_LABELS.PROCESSING : UI_LABELS.CHECKOUT}
+      {loading ? t('actions.processing') : t('actions.checkout')}
     </Button>
   )
 }
-

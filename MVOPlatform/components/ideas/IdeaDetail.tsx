@@ -14,7 +14,6 @@ import {
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { formatDate } from '@/lib/utils/date'
-import { UI_LABELS } from '@/lib/constants/ui'
 import { Idea } from '@/lib/types/idea'
 import { Comment } from '@/lib/types/comment'
 import { ideaService } from '@/lib/services/ideaService'
@@ -26,12 +25,14 @@ import { ContentRenderer } from './ContentRenderer'
 import { IdeaDetailSkeleton } from '@/components/ui/Skeleton'
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
 import { getCardMedia } from '@/lib/utils/media'
+import { useTranslations } from '@/components/providers/I18nProvider'
 
 interface IdeaDetailProps {
   ideaId: string
 }
 
 export function IdeaDetail({ ideaId }: IdeaDetailProps) {
+  const t = useTranslations()
   const [idea, setIdea] = useState<Idea | null>(null)
   const [loading, setLoading] = useState(true)
   const [commentCount, setCommentCount] = useState(0)
@@ -101,7 +102,7 @@ export function IdeaDetail({ ideaId }: IdeaDetailProps) {
 
   const handleVoteUp = () => {
     if (!isAuthenticated) {
-      alert('Please sign in to vote')
+      alert(t('auth.sign_in_to_vote'))
       return
     }
     if (!idea || isVoting) return
@@ -111,7 +112,7 @@ export function IdeaDetail({ ideaId }: IdeaDetailProps) {
 
   const handleVoteDown = () => {
     if (!isAuthenticated) {
-      alert('Please sign in to vote')
+      alert(t('auth.sign_in_to_vote'))
       return
     }
     if (!idea || isVoting) return
@@ -121,7 +122,7 @@ export function IdeaDetail({ ideaId }: IdeaDetailProps) {
 
   const handleLike = () => {
     if (!isAuthenticated) {
-      alert('Please sign in to vote')
+      alert(t('auth.sign_in_to_vote'))
       return
     }
     if (isVoting) return
@@ -145,7 +146,7 @@ export function IdeaDetail({ ideaId }: IdeaDetailProps) {
   if (!idea) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-text-primary">Idea no encontrada</div>
+        <div className="text-text-primary">{t('messages.idea_not_found')}</div>
       </div>
     )
   }

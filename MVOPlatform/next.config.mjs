@@ -1,5 +1,3 @@
-import createNextIntlPlugin from 'next-intl/plugin'
-
 const nextConfig = {
   images: {
     domains: ['lh3.googleusercontent.com', 'images.unsplash.com'],
@@ -18,5 +16,4 @@ const nextConfig = {
   },
 }
 
-const withNextIntl = createNextIntlPlugin()
-export default withNextIntl(nextConfig)
+export default nextConfig

@@ -5,11 +5,11 @@ import { Sidebar } from '@/components/layout/Sidebar'
 import { Footer } from '@/components/layout/Footer'
 import { HomeIdeaCard } from '@/components/home/HomeIdeaCard'
 import { motion } from 'framer-motion'
-import { UI_LABELS } from '@/lib/constants/ui'
 import { Idea } from '@/lib/types/idea'
 import { ideaService } from '@/lib/services/ideaService'
 import { IdeaCardSkeleton } from '@/components/ui/Skeleton'
 import { useAppSelector } from '@/lib/hooks'
+import { useTranslations } from '@/components/providers/I18nProvider'
 
 interface HomeFeedProps {
   showHeader?: boolean
@@ -20,6 +20,7 @@ export function HomeFeed({
   showHeader = true,
   showFooter = true,
 }: HomeFeedProps) {
+  const t = useTranslations()
   const [ideas, setIdeas] = useState<Idea[]>([])
   const [newIdeas, setNewIdeas] = useState<Idea[]>([])
   const [loading, setLoading] = useState(false)
@@ -43,7 +44,7 @@ export function HomeFeed({
       if (e.key === 'ArrowUp') {
         e.preventDefault()
         if (!isAuthenticated) {
-          alert('Please sign in to vote')
+          alert(t('auth.sign_in_to_vote'))
           return
         }
         setIsVoting(true)
@@ -66,7 +67,7 @@ export function HomeFeed({
       } else if (e.key === 'ArrowDown') {
         e.preventDefault()
         if (!isAuthenticated) {
-          alert('Please sign in to vote')
+          alert(t('auth.sign_in_to_vote'))
           return
         }
         setIsVoting(true)
@@ -256,7 +257,7 @@ export function HomeFeed({
             <div className="mb-6 md:mb-8">
               <div className="flex items-center gap-3 mb-4">
                 <span className="px-3 py-1 bg-accent/20 text-accent text-sm font-semibold rounded-full">
-                  New Ideas
+                  {t('ideas.new_ideas')}
                 </span>
                 <div className="flex-1 h-px bg-border"></div>
               </div>
@@ -309,7 +310,7 @@ export function HomeFeed({
           {loading && (
             <div className="mt-8 text-center">
               <div className="text-text-secondary">
-                {UI_LABELS.LOADING_MORE_IDEAS}
+                {t('status.loading_more_ideas')}
               </div>
             </div>
           )}
@@ -317,7 +318,9 @@ export function HomeFeed({
           {/* No more items indicator */}
           {!hasMore && ideas.length > 0 && (
             <div className="mt-8 text-center">
-              <div className="text-text-secondary">No hay más ideas</div>
+              <div className="text-text-secondary">
+                {t('status.no_more_ideas')}
+              </div>
             </div>
           )}
         </>

@@ -7,6 +7,7 @@ import { useAppSelector } from '@/lib/hooks'
 import { signInWithGoogle, signOut } from '@/lib/slices/authSlice'
 import { useAppDispatch } from '@/lib/hooks'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useTranslations } from '@/components/providers/I18nProvider'
 import {
   Home,
   Heart,
@@ -20,7 +21,6 @@ import {
 import { clientEnv } from '@/config/env'
 import { UserMenu } from '@/components/ui/UserMenu'
 import Image from 'next/image'
-import { useTranslations } from '@/components/providers/I18nProvider'
 
 interface SidebarProps {
   activeTab?: 'home' | 'foryou'
@@ -119,6 +119,9 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
 
+  // Extract current locale from pathname
+  const currentLocale = pathname.startsWith('/es') ? 'es' : 'en'
+
   // Check if we're on a detail page that needs fixed sidebar
   const isDetailPage = pathname?.startsWith('/ideas/') && pathname !== '/ideas'
 
@@ -176,7 +179,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       id: 'home',
       label: t('navigation.home'),
       icon: Home,
-      href: '/',
+      href: currentLocale === 'en' ? '/' : `/${currentLocale}`,
       onClick: () => {
         if (isDetailPage) {
           // On detail pages, use back navigation
@@ -185,28 +188,28 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
           onTabChange('home')
         }
       },
-      active: pathname === '/',
+      active: pathname === '/' || pathname === `/${currentLocale}`,
     },
     {
       id: 'foryou',
       label: t('navigation.for_you'),
       icon: Heart,
-      href: '/for-you',
-      active: pathname === '/for-you',
+      href: `/${currentLocale}/for-you`,
+      active: pathname === `/${currentLocale}/for-you`,
     },
     {
       id: 'activity',
       label: t('navigation.activity'),
       icon: Activity,
-      href: '/activity',
-      active: pathname === '/activity',
+      href: `/${currentLocale}/activity`,
+      active: pathname === `/${currentLocale}/activity`,
     },
     {
       id: 'upload',
       label: t('navigation.upload'),
       icon: Plus,
-      href: '/upload',
-      active: pathname === '/upload',
+      href: `/${currentLocale}/upload`,
+      active: pathname === `/${currentLocale}/upload`,
     },
   ]
 
@@ -215,8 +218,8 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       id: 'more',
       label: t('navigation.more'),
       icon: MoreHorizontal,
-      href: '/more',
-      active: pathname === '/more',
+      href: `/${currentLocale}/more`,
+      active: pathname === `/${currentLocale}/more`,
     },
   ]
 

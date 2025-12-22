@@ -5,18 +5,20 @@ import { useRouter } from 'next/navigation'
 import { useAppDispatch, useAppSelector } from '@/lib/hooks'
 import { clearError, signInWithGoogle } from '@/lib/slices/authSlice'
 import { Button } from '@/components/ui/Button'
+import { useLocale } from '@/components/providers/I18nProvider'
 
 export default function AuthPage() {
   const router = useRouter()
+  const { locale } = useLocale()
   const dispatch = useAppDispatch()
   const { loading, error, isAuthenticated, profile, initialized } =
     useAppSelector(state => state.auth)
 
   useEffect(() => {
     if (initialized && isAuthenticated && profile) {
-      router.replace('/')
+      router.replace(`/${locale}`)
     }
-  }, [initialized, isAuthenticated, profile, router])
+  }, [initialized, isAuthenticated, profile, router, locale])
 
   useEffect(() => {
     return () => {

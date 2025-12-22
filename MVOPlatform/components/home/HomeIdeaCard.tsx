@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { ArrowUp, ArrowDown, MessageSquare, DollarSign } from 'lucide-react'
 import { formatDate } from '@/lib/utils/date'
-import { UI_LABELS } from '@/lib/constants/ui'
 import { Idea } from '@/lib/types/idea'
 import { useVideoPlayer } from '@/hooks/useVideoPlayer'
 import {
@@ -14,6 +13,7 @@ import {
 } from '@/components/ui/VoteDistributionBar'
 import { useAppSelector } from '@/lib/hooks'
 import { ideaService } from '@/lib/services/ideaService'
+import { useTranslations } from '@/components/providers/I18nProvider'
 import { getCardMedia } from '@/lib/utils/media'
 
 interface HomeIdeaCardProps {
@@ -33,6 +33,7 @@ export function HomeIdeaCard({
   onMouseLeave,
   initialUserVotes,
 }: HomeIdeaCardProps) {
+  const t = useTranslations()
   const [currentIdea, setCurrentIdea] = useState(idea)
   const [isVoting, setIsVoting] = useState(false)
   const [userVote, setUserVote] = useState<{
@@ -71,7 +72,7 @@ export function HomeIdeaCard({
   ) => {
     e.preventDefault()
     if (!isAuthenticated) {
-      alert('Please sign in to vote')
+      alert(t('auth.sign_in_to_vote'))
       return
     }
     if (isVoting) return
@@ -187,7 +188,7 @@ export function HomeIdeaCard({
                 {currentIdea.score}
               </div>
               <div className="text-xs text-text-secondary whitespace-nowrap">
-                {UI_LABELS.SCORE}
+                {t('common.score')}
               </div>
             </div>
           </div>

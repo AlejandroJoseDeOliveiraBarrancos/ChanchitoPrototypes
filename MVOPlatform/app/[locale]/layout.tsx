@@ -5,6 +5,7 @@ import { GoogleAnalytics } from '@/components/GoogleAnalytics'
 
 type Props = {
   children: React.ReactNode
+  params: { locale: string }
 }
 
 export const metadata: Metadata = {
@@ -13,12 +14,13 @@ export const metadata: Metadata = {
     'Validate your business idea in 48 hours with data-driven insights',
 }
 
-export default function RootLayout({ children }: Props) {
+export default function RootLayout({ children, params }: Props) {
+  const locale = params.locale as 'en' | 'es'
   return (
     <html>
       <body>
         <GoogleAnalytics />
-        <Providers>{children}</Providers>
+        <Providers locale={locale}>{children}</Providers>
       </body>
     </html>
   )

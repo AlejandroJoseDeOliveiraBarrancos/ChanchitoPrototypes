@@ -6,6 +6,7 @@ import { ArrowUp, MessageSquare } from 'lucide-react'
 import { Comment } from '@/lib/types/comment'
 import { useAppSelector } from '@/lib/hooks'
 import { commentService } from '@/lib/services/commentService'
+import { useTranslations } from '@/components/providers/I18nProvider'
 import { CommentTree } from './CommentTree'
 
 interface CommentsBlockProps {
@@ -13,6 +14,7 @@ interface CommentsBlockProps {
 }
 
 export function CommentsBlock({ ideaId }: CommentsBlockProps) {
+  const t = useTranslations()
   const [comments, setComments] = useState<Comment[]>([])
   const [newComment, setNewComment] = useState('')
   const [loading, setLoading] = useState(true)
@@ -83,7 +85,7 @@ export function CommentsBlock({ ideaId }: CommentsBlockProps) {
 
   const handleUpvoteComment = async (commentId: string) => {
     if (!user) {
-      alert('Please sign in to vote')
+      alert(t('auth.sign_in_to_vote'))
       return
     }
     try {
@@ -99,7 +101,7 @@ export function CommentsBlock({ ideaId }: CommentsBlockProps) {
 
   const handleDownvoteComment = async (commentId: string) => {
     if (!user) {
-      alert('Please sign in to vote')
+      alert(t('auth.sign_in_to_vote'))
       return
     }
     try {
@@ -150,7 +152,7 @@ export function CommentsBlock({ ideaId }: CommentsBlockProps) {
     if (!replyContent || submitting) return
 
     if (!user) {
-      alert('Please sign in to comment')
+      alert(t('auth.sign_in_to_comment'))
       return
     }
 
@@ -235,7 +237,7 @@ export function CommentsBlock({ ideaId }: CommentsBlockProps) {
     if (!newComment.trim() || submitting) return
 
     if (!user) {
-      alert('Please sign in to comment')
+      alert(t('auth.sign_in_to_comment'))
       return
     }
 

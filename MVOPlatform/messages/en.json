@@ -23,7 +23,12 @@
     "submitting": "Submitting...",
     "load_more": "Load More",
     "checkout": "Checkout",
-    "processing": "Processing..."
+    "processing": "Processing...",
+    "cancel": "Cancel",
+    "add": "Add",
+    "edit": "Edit",
+    "preview": "Preview",
+    "save": "Save"
   },
   "status": {
     "loading": "Loading...",
@@ -40,20 +45,186 @@
   "auth": {
     "sign_in_required": "Sign In Required",
     "sign_in_with_google": "Sign In with Google",
-    "sign_in_description": "Please sign in with your Google account to submit an idea."
+    "sign_in_description": "Please sign in with your Google account to submit an idea.",
+    "sign_in_to_upload": "Please sign in with your Google account to upload an idea."
   },
   "ideas": {
     "browse_ideas": "Browse Ideas",
     "discover_ideas": "Discover and vote on validated business ideas",
     "for_you_title": "For You",
-    "for_you_subtitle": "Ideas curated just for you"
+    "for_you_subtitle": "Ideas curated just for you",
+    "new_ideas": "New Ideas"
   },
   "brand": {
-    "name": "MVO"
+    "name": "MVO",
+    "full_name": "MVO Platform"
+  },
+  "cta": {
+    "title": "Ready to Validate Your Idea?",
+    "description": "Join hundreds of entrepreneurs who have validated their business ideas with our platform."
+  },
+  "process": {
+    "title": "How It Works",
+    "subtitle": "A simple three-step process to validate your business idea",
+    "steps": {
+      "submit": {
+        "title": "Submit Idea",
+        "description": "Fill out a simple form with your business idea details."
+      },
+      "analysis": {
+        "title": "AI Analysis",
+        "description": "Our system analyzes your idea using market data and validation frameworks."
+      },
+      "results": {
+        "title": "Get Results",
+        "description": "Receive a comprehensive validation report within 48 hours."
+      }
+    }
+  },
+  "footer": {
+    "description": "Validate your business idea in 48 hours",
+    "sections": {
+      "product": "Product",
+      "company": "Company",
+      "legal": "Legal"
+    },
+    "links": {
+      "about": "About",
+      "contact": "Contact",
+      "privacy_policy": "Privacy Policy",
+      "terms_of_service": "Terms of Service"
+    },
+    "copyright": "All rights reserved"
   },
   "messages": {
     "generic_error": "Something went wrong. Please try again.",
     "idea_submitted": "Your idea has been submitted successfully!",
-    "no_ideas": "No ideas found."
+    "no_ideas": "No ideas found.",
+    "see_results": "See Results",
+    "idea_not_found": "Idea not found"
+  },
+  "carousel": {
+    "trending": "Trending",
+    "view_details": "View Details",
+    "votes": "votes",
+    "score": "Score"
+  },
+  "validation": {
+    "title_min_length": "Title must be at least 10 characters",
+    "space_required": "You must select a space",
+    "content_required": "Please add at least one content block with content",
+    "idea_creation_error": "Error creating idea. Please try again."
+  },
+  "form": {
+    "create_idea": "Create Idea",
+    "enter_title": "Enter your idea title...",
+    "add_tags_hint": "Add tags below to categorize your idea",
+    "space_label": "Space",
+    "required": "Required",
+    "select_space": "Select a space",
+    "tags": "Tags",
+    "type_tag_placeholder": "Type a tag and press Enter",
+    "upload_image": "Upload Image",
+    "upload_video": "Upload Video",
+    "add_image": "Add Image",
+    "add_video": "Add Video",
+    "crop_adjust": "Crop/Adjust",
+    "remove": "Remove",
+    "crop_adjust_media": "Crop & Adjust Hero Media",
+    "creating_idea": "Creating idea...",
+    "no_content": "No content blocks added yet.",
+    "drag_position": "Drag to position",
+    "zoom": "Zoom"
+  },
+  "prompts": {
+    "enter_image_url": "Enter image URL:",
+    "enter_url": "Enter URL:",
+    "enter_video_url": "Enter video URL:"
+  },
+  "editor": {
+    "block_types": {
+      "heading_1": "Heading 1",
+      "heading_2": "Heading 2",
+      "heading_3": "Heading 3",
+      "text": "Text",
+      "image": "Image",
+      "video": "Video",
+      "carousel": "Carousel",
+      "html": "HTML"
+    },
+    "actions": {
+      "upload": "Upload",
+      "upload_new": "Upload New",
+      "paste_url": "Paste URL",
+      "change_url": "Change URL",
+      "crop_adjust": "Crop/Adjust",
+      "add_slide": "Add slide",
+      "change_image": "Change Image",
+      "change_video": "Change Video",
+      "cancel": "Cancel",
+      "save": "Save",
+      "add": "Add"
+    },
+    "messages": {
+      "add_image": "Add an image",
+      "add_video": "Add a video",
+      "add_image_or_video": "Add image or video",
+      "preview_may_not_exact": "Preview (may not be exact):",
+      "slide_number": "Slide {number}",
+      "drag_to_position": "Drag to position",
+      "zoom_level": "Zoom: {level}%"
+    },
+    "sizes": {
+      "small": "Small",
+      "medium": "Medium",
+      "large": "Large"
+    },
+    "fonts": {
+      "default": "Default",
+      "arial": "Arial",
+      "georgia": "Georgia",
+      "times_new_roman": "Times New Roman",
+      "courier_new": "Courier New",
+      "verdana": "Verdana",
+      "trebuchet_ms": "Trebuchet MS",
+      "comic_sans_ms": "Comic Sans MS"
+    },
+    "tooltips": {
+      "text_color": "Text color",
+      "insert_block": "Insert block",
+      "change_block_type": "Change block type",
+      "move_up": "Move up",
+      "move_down": "Move down",
+      "delete": "Delete"
+    },
+    "headers": {
+      "enter_image_url": "Enter Image URL",
+      "enter_video_url": "Enter Video URL",
+      "crop_adjust": "Crop & Adjust"
+    },
+    "placeholders": {
+      "add_heading": "Add a heading...",
+      "start_typing": "Start typing...",
+      "write_text": "Write your text here...",
+      "custom_html": "Custom HTML code",
+      "caption_optional": "Caption (optional)",
+      "video_title_optional": "Video title (optional)",
+      "description_optional": "Description (optional)",
+      "description": "Description",
+      "heading_1": "Heading 1",
+      "heading_2": "Heading 2",
+      "heading_3": "Heading 3"
+    },
+    "carousel": {
+      "title": "Carousel ({count} slides)",
+      "add_slide": "Add slide",
+      "slide_number": "Slide {number}",
+      "add_image_or_video": "Add image or video"
+    },
+    "buttons": {
+      "change_image": "Change Image",
+      "change_video": "Change Video",
+      "change_url": "Change URL"
+    }
   }
 }

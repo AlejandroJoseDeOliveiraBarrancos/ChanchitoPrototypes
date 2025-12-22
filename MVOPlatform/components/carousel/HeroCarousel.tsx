@@ -5,8 +5,8 @@ import { ArrowUp, Share2, Bookmark, TrendingUp } from 'lucide-react'
 import { Idea } from '@/lib/types/idea'
 import { ideaService } from '@/lib/services/ideaService'
 import { formatDate } from '@/lib/utils/date'
-import { UI_LABELS } from '@/lib/constants/ui'
 import Image from 'next/image'
+import { useTranslations, useLocale } from '@/components/providers/I18nProvider'
 import Link from 'next/link'
 import { useVideoPlayer } from '@/hooks/useVideoPlayer'
 import { CarouselItemSkeleton } from '@/components/ui/Skeleton'
@@ -111,6 +111,8 @@ function CarouselVideoItem({
 }
 
 export function HeroCarousel({ ideas: initialIdeas }: HeroCarouselProps) {
+  const t = useTranslations()
+  const { locale } = useLocale()
   const [ideas, setIdeas] = useState<Idea[]>(initialIdeas || [])
   const [activeIndex, setActiveIndex] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
@@ -217,7 +219,7 @@ export function HeroCarousel({ ideas: initialIdeas }: HeroCarouselProps) {
         <div className="flex items-center gap-2 px-5 py-2.5 md:px-6 md:py-3 bg-accent/90 backdrop-blur-sm rounded-full shadow-xl">
           <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-text-primary" />
           <span className="text-base md:text-lg font-bold text-text-primary tracking-wide uppercase">
-            Trending
+            {t('carousel.trending')}
           </span>
         </div>
       </div>
@@ -312,18 +314,18 @@ export function HeroCarousel({ ideas: initialIdeas }: HeroCarouselProps) {
                     <span className="hidden md:inline">•</span>
                     <span className="hidden md:flex items-center gap-1">
                       <ArrowUp className="w-4 h-4" />
-                      {idea.votes} votes
+                      {idea.votes} {t('carousel.votes')}
                     </span>
                     <span className="hidden md:inline">•</span>
                     <span className="hidden md:inline text-accent font-semibold">
-                      Score: {idea.score}
+                      {t('carousel.score')}: {idea.score}
                     </span>
                   </div>
 
                   {/* Action Buttons - Simplified on mobile */}
                   <div className="flex items-center gap-2 md:gap-4">
                     <Link
-                      href={`/ideas/${idea.id}`}
+                      href={`/${locale}/ideas/${idea.id}`}
                       onClick={() => {
                         // Save current path and scroll position before navigating
                         if (typeof window !== 'undefined') {
@@ -347,7 +349,7 @@ export function HeroCarousel({ ideas: initialIdeas }: HeroCarouselProps) {
                       }}
                       className="px-4 md:px-8 py-2 md:py-3 bg-white text-black text-sm md:text-base font-semibold rounded-md hover:bg-gray-200 transition-colors"
                     >
-                      View Details
+                      {t('carousel.view_details')}
                     </Link>
                     <button className="hidden md:block p-3 bg-white/10 backdrop-blur-sm rounded-full hover:bg-white/20 transition-colors">
                       <Bookmark className="w-5 h-5" />
@@ -364,7 +366,7 @@ export function HeroCarousel({ ideas: initialIdeas }: HeroCarouselProps) {
       </div>
 
       {/* Sidebar Thumbnails - All ideas visible, compact layout */}
-      <div className="hidden md:block absolute right-0 top-0 bottom-0 w-64 lg:w-72 bg-black z-30 border-l border-gray-800 flex flex-col">
+      <div className="hidden md:block absolute right-0 top-0 bottom-0 w-64 lg:w-72 bg-black z-30 border-l border-gray-800 flex-col">
         <div className="flex-1 flex flex-col p-2 md:p-3 space-y-1.5 md:space-y-2 overflow-y-auto scrollbar-hide">
           {ideas.slice(0, 5).map((idea, index) => (
             <button
@@ -425,7 +427,7 @@ export function HeroCarousel({ ideas: initialIdeas }: HeroCarouselProps) {
       </div>
 
       {/* Mobile: Simplified carousel with navigation dots */}
-      <div className="md:hidden absolute bottom-6 left-1/2 -translate-x-1/2 z-[10] flex gap-2">
+      <div className="md:hidden absolute bottom-6 left-1/2 -translate-x-1/2 z-[100] flex gap-2">
         {ideas.map((_, index) => (
           <button
             key={index}

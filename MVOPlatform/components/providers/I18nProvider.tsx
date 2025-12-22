@@ -15,12 +15,30 @@ interface I18nContextType {
 
 const I18nContext = createContext<I18nContextType | undefined>(undefined)
 
-export function I18nProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>('en')
-  const [messages, setMessages] = useState<any>(en)
+export function I18nProvider({
+  children,
+  locale: initialLocale,
+}: {
+  children: React.ReactNode
+  locale?: Locale
+}) {
+  // Use provided locale or detect synchronously if possible
+  const getInitialLocale = (): Locale => {
+    if (initialLocale) return initialLocale
+    if (typeof window !== 'undefined') {
+      const pathname = window.location.pathname
+      return pathname.startsWith('/es') ? 'es' : 'en'
+    }
+    return 'en'
+  }
+
+  const [locale, setLocaleState] = useState<Locale>(getInitialLocale)
+  const [messages, setMessages] = useState<any>(
+    getInitialLocale() === 'es' ? es : en
+  )
 
   useEffect(() => {
-    // Detect locale from URL path on client side
+    // Re-detect locale from URL path on client side in case it changed
     const pathname = window.location.pathname
     const detectedLocale = pathname.startsWith('/es') ? 'es' : 'en'
     console.log(
@@ -30,9 +48,11 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
       pathname
     )
 
-    setLocaleState(detectedLocale)
-    setMessages(detectedLocale === 'es' ? es : en)
-  }, [])
+    if (detectedLocale !== locale) {
+      setLocaleState(detectedLocale)
+      setMessages(detectedLocale === 'es' ? es : en)
+    }
+  }, [locale])
 
   const setLocale = (newLocale: Locale) => {
     setLocaleState(newLocale)

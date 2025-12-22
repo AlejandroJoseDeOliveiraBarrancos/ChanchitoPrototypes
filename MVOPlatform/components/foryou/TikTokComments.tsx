@@ -6,6 +6,7 @@ import { ArrowUp, MessageSquare, X } from 'lucide-react'
 import { Comment } from '@/lib/types/comment'
 import { useAppSelector } from '@/lib/hooks'
 import { commentService } from '@/lib/services/commentService'
+import { useTranslations } from '@/components/providers/I18nProvider'
 import { CommentTree } from '../ideas/CommentTree'
 
 interface TikTokCommentsProps {
@@ -21,6 +22,7 @@ export function TikTokComments({
   onClose,
   onCommentCountChange,
 }: TikTokCommentsProps) {
+  const t = useTranslations()
   const [comments, setComments] = useState<Comment[]>([])
   const [newComment, setNewComment] = useState('')
   const [loading, setLoading] = useState(true)
@@ -111,7 +113,7 @@ export function TikTokComments({
 
   const handleUpvoteComment = async (commentId: string) => {
     if (!user) {
-      alert('Please sign in to vote')
+      alert(t('auth.sign_in_to_vote'))
       return
     }
     try {
@@ -127,7 +129,7 @@ export function TikTokComments({
 
   const handleDownvoteComment = async (commentId: string) => {
     if (!user) {
-      alert('Please sign in to vote')
+      alert(t('auth.sign_in_to_vote'))
       return
     }
     try {
@@ -178,7 +180,7 @@ export function TikTokComments({
     if (!replyContent || submitting) return
 
     if (!user) {
-      alert('Please sign in to comment')
+      alert(t('auth.sign_in_to_comment'))
       return
     }
 
@@ -267,7 +269,7 @@ export function TikTokComments({
     if (!newComment.trim() || submitting) return
 
     if (!user) {
-      alert('Please sign in to comment')
+      alert(t('auth.sign_in_to_comment'))
       return
     }
 

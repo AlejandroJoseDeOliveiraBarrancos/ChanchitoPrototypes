@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
-import { UI_LABELS } from '@/lib/constants/ui'
+import { useTranslations } from '@/components/providers/I18nProvider'
 
 interface UserMenuProps {
   user: {
@@ -23,6 +23,7 @@ export function UserMenu({
   showProfileLink = false,
   position = 'below',
 }: UserMenuProps) {
+  const t = useTranslations()
   const [isOpen, setIsOpen] = useState(false)
   const buttonRef = useRef<HTMLButtonElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -85,14 +86,14 @@ export function UserMenu({
                 onClick={() => setIsOpen(false)}
                 className="block px-4 py-2 text-sm text-text-secondary interactive-hover"
               >
-                {UI_LABELS.PROFILE}
+                {t('navigation.profile')}
               </Link>
             )}
             <button
               onClick={onSignOut}
               className="w-full text-left px-4 py-2 text-sm text-text-secondary interactive-hover"
             >
-              {UI_LABELS.SIGN_OUT}
+              {t('actions.sign_out')}
             </button>
           </motion.div>
         )}
