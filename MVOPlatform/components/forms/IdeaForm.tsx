@@ -313,29 +313,57 @@ export function IdeaForm() {
     setValue('tags', newTags.join(','))
   }
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const uploadFile = async (
+    file: File,
+    folder: string = 'uploads'
+  ): Promise<string> => {
+    if (file.size > 50 * 1024 * 1024) {
+      throw new Error('File size exceeds 50MB limit')
+    }
+
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('folder', folder)
+
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+    })
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.error || 'Upload failed')
+    }
+
+    const data = await response.json()
+    return data.url
+  }
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setHeroImage(reader.result as string)
+      try {
+        const url = await uploadFile(file, 'images')
+        setHeroImage(url)
         setHeroVideo(null)
         setShowImageUpload(false)
+      } catch (error) {
+        alert(error instanceof Error ? error.message : 'Upload failed')
       }
-      reader.readAsDataURL(file)
     }
   }
 
-  const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setHeroVideo(reader.result as string)
+      try {
+        const url = await uploadFile(file, 'videos')
+        setHeroVideo(url)
         setHeroImage(null)
         setShowVideoUpload(false)
+      } catch (error) {
+        alert(error instanceof Error ? error.message : 'Upload failed')
       }
-      reader.readAsDataURL(file)
     }
   }
 
@@ -667,7 +695,7 @@ export function IdeaForm() {
                 <div className="space-y-4">
                   <label className="flex flex-col items-center gap-2 px-6 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg text-white transition-colors cursor-pointer">
                     <Upload className="w-8 h-8" />
-                    <span>Upload Image</span>
+                    <span>Upload Image (max 50MB)</span>
                     <input
                       type="file"
                       accept="image/*"
@@ -675,19 +703,35 @@ export function IdeaForm() {
                       className="hidden"
                     />
                   </label>
-                  <button
-                    type="button"
-                    onClick={() => setShowImageUpload(false)}
-                    className="text-white/80 hover:text-white text-sm"
-                  >
-                    Cancel
-                  </button>
+                  <div className="flex gap-2 justify-center">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const url = prompt('Enter image URL:')
+                        if (url && url.trim()) {
+                          setHeroImage(url.trim())
+                          setHeroVideo(null)
+                          setShowImageUpload(false)
+                        }
+                      }}
+                      className="px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg text-white transition-colors text-sm"
+                    >
+                      Paste URL
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowImageUpload(false)}
+                      className="text-white/80 hover:text-white text-sm"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
               ) : showVideoUpload ? (
                 <div className="space-y-4">
                   <label className="flex flex-col items-center gap-2 px-6 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg text-white transition-colors cursor-pointer">
                     <Upload className="w-8 h-8" />
-                    <span>Upload Video</span>
+                    <span>Upload Video (max 50MB)</span>
                     <input
                       type="file"
                       accept="video/*"
@@ -695,13 +739,29 @@ export function IdeaForm() {
                       className="hidden"
                     />
                   </label>
-                  <button
-                    type="button"
-                    onClick={() => setShowVideoUpload(false)}
-                    className="text-white/80 hover:text-white text-sm"
-                  >
-                    Cancel
-                  </button>
+                  <div className="flex gap-2 justify-center">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const url = prompt('Enter video URL:')
+                        if (url && url.trim()) {
+                          setHeroVideo(url.trim())
+                          setHeroImage(null)
+                          setShowVideoUpload(false)
+                        }
+                      }}
+                      className="px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg text-white transition-colors text-sm"
+                    >
+                      Paste URL
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowVideoUpload(false)}
+                      className="text-white/80 hover:text-white text-sm"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div className="flex gap-4 justify-center">
@@ -961,6 +1021,33 @@ export function IdeaForm() {
               ) : (
                 UI_LABELS.SUBMIT_IDEA
               )}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                // Clear draft from localStorage and reset form
+                if (typeof window !== 'undefined') {
+                  try {
+                    localStorage.removeItem(FORM_STORAGE_KEY)
+                  } catch (error) {
+                    console.error('Error clearing draft:', error)
+                  }
+                }
+                // Reset form values
+                setValue('title', '')
+                setValue('space_id', '')
+                setValue('tags', '')
+                // Reset state
+                setContentBlocks([])
+                setSelectedTags([])
+                setHeroImage(null)
+                setHeroVideo(null)
+                setHeroCrop(null)
+              }}
+              disabled={isSubmitting}
+            >
+              Clear Draft
             </Button>
             <Button
               type="button"

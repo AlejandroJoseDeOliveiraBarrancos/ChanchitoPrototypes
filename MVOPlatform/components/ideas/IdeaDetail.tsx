@@ -25,6 +25,7 @@ import { IdeaActions } from './IdeaActions'
 import { ContentRenderer } from './ContentRenderer'
 import { IdeaDetailSkeleton } from '@/components/ui/Skeleton'
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
+import { getCardMedia } from '@/lib/utils/media'
 
 interface IdeaDetailProps {
   ideaId: string
@@ -88,9 +89,11 @@ export function IdeaDetail({ ideaId }: IdeaDetailProps) {
     loadIdea()
   }, [ideaId, isAuthenticated])
 
+  const cardMedia = idea ? getCardMedia(idea) : {}
+
   // Use video player hook - auto-play when in viewport
   const videoPlayerRef = useVideoPlayer({
-    videoSrc: idea?.video,
+    videoSrc: cardMedia.video,
     containerRef: containerRef,
     startTime: 35,
     threshold: 0.1, // Start playing when 10% visible
@@ -152,11 +155,11 @@ export function IdeaDetail({ ideaId }: IdeaDetailProps) {
       {/* Hero Section - Main content at the top */}
       <div className="relative w-full bg-black">
         {/* Media Section */}
-        {idea.video ? (
+        {cardMedia.video ? (
           <div ref={containerRef} className="relative w-full aspect-video">
             <video
               ref={videoPlayerRef}
-              src={idea.video}
+              src={cardMedia.video}
               className="w-full h-full object-cover pointer-events-none"
               loop
               muted
@@ -179,10 +182,10 @@ export function IdeaDetail({ ideaId }: IdeaDetailProps) {
               style={{ pointerEvents: 'none' }}
             />
           </div>
-        ) : idea.image ? (
+        ) : cardMedia.image ? (
           <div className="relative w-full aspect-video">
             <Image
-              src={idea.image}
+              src={cardMedia.image}
               alt={idea.title}
               fill
               className="object-cover"
@@ -288,8 +291,8 @@ export function IdeaDetail({ ideaId }: IdeaDetailProps) {
           </motion.div>
         )}
 
-        {/* Additional Images Section */}
-        {idea.image && idea.video && (
+        {/* Additional Images Section - Show image if there's a video being displayed and an image is available */}
+        {cardMedia.video && idea.image && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

@@ -11,6 +11,12 @@
 /* eslint-disable no-restricted-syntax */
 const rawServerEnv = {
   stripeSecretKey: process.env.STRIPE_SECRET_KEY!,
+  supabaseStorageEndpoint: process.env.SUPABASE_STORAGE_ENDPOINT!,
+  supabaseStorageRegion: process.env.SUPABASE_STORAGE_REGION!,
+  supabaseStorageAccessKeyId: process.env.SUPABASE_STORAGE_ACCESS_KEY_ID!,
+  supabaseStorageSecretAccessKey:
+    process.env.SUPABASE_STORAGE_SECRET_ACCESS_KEY!,
+  supabaseStorageBucketName: process.env.SUPABASE_STORAGE_BUCKET_NAME!,
 } as const
 
 // Client-side environment variables (must be prefixed with NEXT_PUBLIC_)
