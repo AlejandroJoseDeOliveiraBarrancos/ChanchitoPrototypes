@@ -67,6 +67,45 @@
     "for_you_subtitle": "Ideas curated just for you",
     "new_ideas": "New Ideas"
   },
+  "activity": {
+    "title": "Activity",
+    "my_ideas": "My Ideas",
+    "analytics": "Analytics",
+    "no_ideas": "You haven't created any ideas yet",
+    "no_ideas_description": "Start by sharing your first idea to see your activity here",
+    "ideas_list": {
+      "title": "Your Ideas",
+      "subtitle": "Ideas you've created",
+      "sort_by": "Sort by",
+      "sort_options": {
+        "recent": "Most Recent",
+        "popular": "Most Popular",
+        "most_votes": "Most Votes",
+        "highest_score": "Highest Score"
+      }
+    },
+    "analytics": {
+      "title": "Analytics Dashboard",
+      "subtitle": "Insights about your ideas performance",
+      "overview": {
+        "total_ideas": "Total Ideas",
+        "total_votes": "Total Votes",
+        "total_comments": "Total Comments",
+        "avg_score": "Average Score"
+      },
+      "charts": {
+        "votes_distribution": "Votes Distribution",
+        "ideas_performance": "Ideas Performance",
+        "interaction_timeline": "Interaction Timeline",
+        "top_performing_ideas": "Top Performing Ideas",
+        "vote_types_breakdown": "Vote Types Breakdown"
+      },
+      "best_idea": "Best Performing Idea",
+      "worst_idea": "Needs Improvement",
+      "most_interacted": "Most Discussed",
+      "no_data": "No data available yet"
+    }
+  },
   "brand": {
     "name": "MVO",
     "full_name": "MVO Platform"

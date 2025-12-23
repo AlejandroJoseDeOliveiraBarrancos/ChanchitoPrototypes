@@ -68,6 +68,45 @@
     "for_you_subtitle": "Ideas curadas especialmente para ti",
     "new_ideas": "Nuevas Ideas"
   },
+  "activity": {
+    "title": "Actividad",
+    "my_ideas": "Mis Ideas",
+    "analytics": "Analíticas",
+    "no_ideas": "Aún no has creado ninguna idea",
+    "no_ideas_description": "Comienza compartiendo tu primera idea para ver tu actividad aquí",
+    "ideas_list": {
+      "title": "Tus Ideas",
+      "subtitle": "Ideas que has creado",
+      "sort_by": "Ordenar por",
+      "sort_options": {
+        "recent": "Más Recientes",
+        "popular": "Más Populares",
+        "most_votes": "Más Votos",
+        "highest_score": "Mejor Puntuación"
+      }
+    },
+    "analytics": {
+      "title": "Panel de Analíticas",
+      "subtitle": "Insights sobre el rendimiento de tus ideas",
+      "overview": {
+        "total_ideas": "Total de Ideas",
+        "total_votes": "Total de Votos",
+        "total_comments": "Total de Comentarios",
+        "avg_score": "Puntuación Promedio"
+      },
+      "charts": {
+        "votes_distribution": "Distribución de Votos",
+        "ideas_performance": "Rendimiento de Ideas",
+        "interaction_timeline": "Línea de Tiempo de Interacciones",
+        "top_performing_ideas": "Ideas con Mejor Rendimiento",
+        "vote_types_breakdown": "Desglose de Tipos de Votos"
+      },
+      "best_idea": "Idea con Mejor Rendimiento",
+      "worst_idea": "Necesita Mejoras",
+      "most_interacted": "Más Discutida",
+      "no_data": "No hay datos disponibles aún"
+    }
+  },
   "brand": {
     "name": "MVO",
     "full_name": "Plataforma MVO"

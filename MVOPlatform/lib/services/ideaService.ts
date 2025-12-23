@@ -109,6 +109,32 @@ export interface IIdeaService {
   getUserVotesForIdeas(
     ideaIds: string[]
   ): Promise<Record<string, { use: boolean; dislike: boolean; pay: boolean }>>
+
+  /**
+   * Get ideas created by the current user
+   * @param limit Optional limit for number of ideas to return
+   * @param offset Optional offset for pagination
+   */
+  getUserIdeas(limit?: number, offset?: number): Promise<Idea[]>
+
+  /**
+   * Get analytics data for user's ideas
+   */
+  getUserIdeasAnalytics(): Promise<{
+    totalIdeas: number
+    totalVotes: number
+    totalComments: number
+    averageScore: number
+    ideasWithStats: Array<{
+      idea: Idea
+      engagementRate: number
+      voteDistribution: { use: number; dislike: number; pay: number }
+    }>
+    topPerformingIdeas: Idea[]
+    worstPerformingIdeas: Idea[]
+    mostDiscussedIdeas: Idea[]
+    voteTypeBreakdown: { use: number; dislike: number; pay: number }
+  }>
 }
 
 /**
@@ -545,6 +571,149 @@ class SupabaseIdeaService implements IIdeaService {
     })
 
     return result
+  }
+
+  async getUserIdeas(limit?: number, offset = 0): Promise<Idea[]> {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) throw new Error('User not authenticated')
+
+    const { data, error } = await supabase
+      .from('ideas')
+      .select(
+        `
+        id,
+        title,
+        status_flag,
+        content,
+        created_at,
+        users!ideas_creator_id_fkey (
+          username,
+          full_name
+        ),
+        idea_votes (
+          vote_type
+        ),
+        idea_tags (
+          tags (
+            name
+          )
+        ),
+        comments!left (
+          id
+        )
+      `
+      )
+      .eq('creator_id', user.id)
+      .order('created_at', { ascending: false })
+      .range(offset, limit ? offset + limit - 1 : undefined)
+
+    if (error) throw error
+
+    return data?.map(this.mapDbIdeaToIdea) || []
+  }
+
+  async getUserIdeasAnalytics() {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) throw new Error('User not authenticated')
+
+    const { data: ideas, error } = await supabase
+      .from('ideas')
+      .select(
+        `
+        id,
+        title,
+        status_flag,
+        content,
+        created_at,
+        users!ideas_creator_id_fkey (
+          username,
+          full_name
+        ),
+        idea_votes (
+          vote_type
+        ),
+        idea_tags (
+          tags (
+            name
+          )
+        ),
+        comments!left (
+          id
+        )
+      `
+      )
+      .eq('creator_id', user.id)
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+    if (!ideas || ideas.length === 0) {
+      return {
+        totalIdeas: 0,
+        totalVotes: 0,
+        totalComments: 0,
+        averageScore: 0,
+        ideasWithStats: [],
+        topPerformingIdeas: [],
+        worstPerformingIdeas: [],
+        mostDiscussedIdeas: [],
+        voteTypeBreakdown: { use: 0, dislike: 0, pay: 0 },
+      }
+    }
+
+    const mappedIdeas = ideas.map(this.mapDbIdeaToIdea)
+
+    const totalVotes = mappedIdeas.reduce((sum, idea) => sum + idea.votes, 0)
+    const totalComments = mappedIdeas.reduce(
+      (sum, idea) => sum + idea.commentCount,
+      0
+    )
+    const averageScore =
+      mappedIdeas.reduce((sum, idea) => sum + idea.score, 0) /
+      mappedIdeas.length
+
+    const voteTypeBreakdown = mappedIdeas.reduce(
+      (acc, idea) => ({
+        use: acc.use + idea.votesByType.use,
+        dislike: acc.dislike + idea.votesByType.dislike,
+        pay: acc.pay + idea.votesByType.pay,
+      }),
+      { use: 0, dislike: 0, pay: 0 }
+    )
+
+    const ideasWithStats = mappedIdeas.map(idea => {
+      const totalInteractions = idea.votes + idea.commentCount
+      const engagementRate =
+        totalInteractions > 0
+          ? (totalInteractions / (idea.votes + idea.commentCount)) * 100
+          : 0
+
+      return {
+        idea,
+        engagementRate,
+        voteDistribution: idea.votesByType,
+      }
+    })
+
+    const sortedByScore = [...mappedIdeas].sort((a, b) => b.score - a.score)
+    const sortedByComments = [...mappedIdeas].sort(
+      (a, b) => b.commentCount - a.commentCount
+    )
+
+    return {
+      totalIdeas: mappedIdeas.length,
+      totalVotes,
+      totalComments,
+      averageScore,
+      ideasWithStats,
+      topPerformingIdeas: sortedByScore.slice(0, 5),
+      worstPerformingIdeas: sortedByScore.slice(-3).reverse(),
+      mostDiscussedIdeas: sortedByComments.slice(0, 3),
+      voteTypeBreakdown,
+    }
   }
 
   private mapDbIdeaToIdea(dbIdea: any): Idea {
