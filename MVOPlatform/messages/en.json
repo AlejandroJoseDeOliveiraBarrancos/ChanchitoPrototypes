@@ -45,7 +45,9 @@
     "overall_score": "Overall Score",
     "overall_validation_score": "Overall Validation Score",
     "submitted": "Submitted",
-    "validation_report": "Validation Report"
+    "validation_report": "Validation Report",
+    "anonymous": "Anonymous",
+    "by": "By"
   },
   "auth": {
     "sign_in_required": "Sign In Required",
@@ -155,7 +157,9 @@
     "creating_idea": "Creating idea...",
     "no_content": "No content blocks added yet.",
     "drag_position": "Drag to position",
-    "zoom": "Zoom"
+    "zoom": "Zoom",
+    "post_anonymously": "Post anonymously",
+    "post_anonymously_description": "Hide your name when this idea is shown to the public"
   },
   "prompts": {
     "enter_image_url": "Enter image URL:",

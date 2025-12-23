@@ -28,6 +28,8 @@ import {
   Eye,
   Edit,
   Loader2,
+  UserX,
+  Check,
 } from 'lucide-react'
 import Image from 'next/image'
 
@@ -66,6 +68,7 @@ export function IdeaForm() {
   const [showVideoUpload, setShowVideoUpload] = useState(false)
   const [showHeroCrop, setShowHeroCrop] = useState(false)
   const [isPreviewMode, setIsPreviewMode] = useState(false)
+  const [isAnonymous, setIsAnonymous] = useState(false)
   const imageInputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
   const { profile } = useAppSelector(state => state.auth)
@@ -164,6 +167,9 @@ export function IdeaForm() {
         if (parsed.heroCrop) {
           setHeroCrop(parsed.heroCrop)
         }
+        if (parsed.isAnonymous !== undefined) {
+          setIsAnonymous(parsed.isAnonymous)
+        }
       }
     } catch (error) {
       console.error('Error loading saved form data:', error)
@@ -234,6 +240,7 @@ export function IdeaForm() {
       heroImage: heroImage,
       heroVideo: heroVideo,
       heroCrop: heroCrop,
+      isAnonymous: isAnonymous,
     }
 
     // Fallback: save without video if video is too large
@@ -245,6 +252,7 @@ export function IdeaForm() {
       heroImage: heroImage,
       heroVideo: null, // Don't save video if it's too large
       heroCrop: heroCrop,
+      isAnonymous: isAnonymous,
     }
 
     // Only save if there's actual content
@@ -484,6 +492,7 @@ export function IdeaForm() {
         video: heroVideo || undefined,
         content: serializedContentBlocks, // Include all properly serialized content blocks
         status_flag: 'new', // New ideas have 'new' status
+        anonymous: isAnonymous, // Anonymous flag
       }
 
       setSubmitProgress('Uploading to Supabase...')
@@ -1017,6 +1026,85 @@ export function IdeaForm() {
             />
           </div>
 
+          {/* Anonymous Option */}
+          <div className="mb-6 p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30 transition-colors hover:border-accent/30 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+            <motion.label
+              className="flex items-start gap-4 cursor-pointer group"
+              whileHover={{ scale: 1.005 }}
+              whileTap={{ scale: 0.995 }}
+            >
+              {/* Custom Styled Toggle Switch */}
+              <div className="relative flex-shrink-0 mt-0.5">
+                <input
+                  type="checkbox"
+                  checked={isAnonymous}
+                  onChange={e => setIsAnonymous(e.target.checked)}
+                  className="sr-only"
+                />
+                <motion.div
+                  className={`relative w-12 h-6 rounded-full transition-colors duration-250 ease-in-out ${
+                    isAnonymous ? 'bg-accent' : 'bg-gray-300'
+                  }`}
+                >
+                  <motion.div
+                    className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md flex items-center justify-center"
+                    animate={{
+                      x: isAnonymous ? 24 : 0,
+                    }}
+                    transition={{
+                      type: 'spring',
+                      stiffness: 500,
+                      damping: 30,
+                    }}
+                  >
+                    {isAnonymous ? (
+                      <motion.div
+                        initial={{ scale: 0, rotate: -180 }}
+                        animate={{ scale: 1, rotate: 0 }}
+                        transition={{ type: 'spring', stiffness: 500 }}
+                      >
+                        <UserX className="w-3 h-3 text-accent" />
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: 'spring', stiffness: 500 }}
+                      >
+                        <Check className="w-3 h-3 text-gray-400" />
+                      </motion.div>
+                    )}
+                  </motion.div>
+                </motion.div>
+              </div>
+
+              {/* Label Content */}
+              <div className="flex-1 pt-0.5">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <UserX
+                    className={`w-4 h-4 transition-colors duration-250 ${
+                      isAnonymous
+                        ? 'text-accent'
+                        : 'text-text-secondary group-hover:text-accent'
+                    }`}
+                  />
+                  <div
+                    className={`text-sm font-semibold transition-colors duration-250 ${
+                      isAnonymous
+                        ? 'text-accent'
+                        : 'text-text-primary group-hover:text-accent'
+                    }`}
+                  >
+                    {t('form.post_anonymously')}
+                  </div>
+                </div>
+                <div className="text-xs text-text-secondary leading-relaxed pl-6">
+                  {t('form.post_anonymously_description')}
+                </div>
+              </div>
+            </motion.label>
+          </div>
+
           {/* Submit Buttons */}
           <div className="flex gap-4">
             <Button type="submit" variant="primary" disabled={isSubmitting}>
@@ -1051,6 +1139,7 @@ export function IdeaForm() {
                 setHeroImage(null)
                 setHeroVideo(null)
                 setHeroCrop(null)
+                setIsAnonymous(false)
               }}
               disabled={isSubmitting}
             >

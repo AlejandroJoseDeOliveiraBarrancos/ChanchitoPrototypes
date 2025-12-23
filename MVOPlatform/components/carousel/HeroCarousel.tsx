@@ -306,7 +306,9 @@ export function HeroCarousel({ ideas: initialIdeas }: HeroCarouselProps) {
 
                   {/* Meta Info - Simplified on mobile */}
                   <div className="flex flex-wrap items-center gap-2 md:gap-6 mb-4 md:mb-8 text-xs md:text-sm text-gray-400">
-                    <span>{idea.author}</span>
+                    <span>
+                      {idea.anonymous ? t('common.anonymous') : idea.author}
+                    </span>
                     <span className="hidden md:inline">•</span>
                     <span className="hidden md:inline">
                       {formatDate(idea.createdAt)}
@@ -419,7 +421,9 @@ export function HeroCarousel({ ideas: initialIdeas }: HeroCarouselProps) {
                 <p className="text-xs md:text-sm font-medium text-white line-clamp-2">
                   {idea.title}
                 </p>
-                <p className="text-xs text-gray-400 mt-0.5">{idea.author}</p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {idea.anonymous ? t('common.anonymous') : idea.author}
+                </p>
               </div>
             </button>
           ))}
