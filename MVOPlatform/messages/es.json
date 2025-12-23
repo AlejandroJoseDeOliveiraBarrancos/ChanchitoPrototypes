@@ -1,0 +1,251 @@
+{
+  "hero": {
+    "title": "Valida tu idea de negocio en",
+    "title_highlight": "48 horas",
+    "description": "Obtén insights basados en datos y puntajes de validación para tu idea de negocio. Toma decisiones informadas antes de invertir tiempo y recursos."
+  },
+  "navigation": {
+    "home": "Inicio",
+    "for_you": "Para Ti",
+    "explore": "Explorar",
+    "activity": "Actividad",
+    "upload": "Subir",
+    "profile": "Perfil",
+    "more": "Más",
+    "admin": "Admin"
+  },
+  "actions": {
+    "sign_in": "Iniciar Sesión",
+    "sign_out": "Cerrar Sesión",
+    "submit_idea": "Enviar Idea",
+    "submit_your_idea": "Envía Tu Idea",
+    "submit_your_idea_now": "Envía Tu Idea Ahora",
+    "submitting": "Enviando...",
+    "load_more": "Cargar Más",
+    "checkout": "Pagar",
+    "processing": "Procesando...",
+    "cancel": "Cancelar",
+    "add": "Agregar",
+    "edit": "Editar",
+    "preview": "Vista Previa",
+    "save": "Guardar",
+    "up": "Me gusta",
+    "down": "No me gusta",
+    "id_pay": "Pagar",
+    "comments": "Comentarios",
+    "share": "Compartir"
+  },
+  "status": {
+    "loading": "Cargando...",
+    "loading_more_ideas": "Cargando más ideas...",
+    "no_more_ideas": "No hay más ideas para cargar"
+  },
+  "common": {
+    "score": "Puntuación",
+    "overall_score": "Puntuación General",
+    "overall_validation_score": "Puntuación General de Validación",
+    "submitted": "Enviado",
+    "validation_report": "Informe de Validación"
+  },
+  "auth": {
+    "sign_in_required": "Inicio de Sesión Requerido",
+    "sign_in_with_google": "Iniciar Sesión con Google",
+    "sign_in_description": "Por favor inicia sesión con tu cuenta de Google para enviar una idea.",
+    "sign_in_to_upload": "Por favor inicia sesión con tu cuenta de Google para subir una idea.",
+    "sign_in_to_vote": "Por favor inicia sesión para votar",
+    "sign_in_to_comment": "Por favor inicia sesión para comentar"
+  },
+  "ideas": {
+    "browse_ideas": "Explorar Ideas",
+    "discover_ideas": "Descubre y vota por ideas de negocio validadas",
+    "for_you_title": "Para Ti",
+    "for_you_subtitle": "Ideas curadas especialmente para ti",
+    "new_ideas": "Nuevas Ideas"
+  },
+  "brand": {
+    "name": "MVO",
+    "full_name": "Plataforma MVO"
+  },
+  "cta": {
+    "title": "¿Listo para Validar Tu Idea?",
+    "description": "Únete a cientos de emprendedores que han validado sus ideas de negocio con nuestra plataforma."
+  },
+  "process": {
+    "title": "Cómo Funciona",
+    "subtitle": "Un proceso simple de tres pasos para validar tu idea de negocio",
+    "steps": {
+      "submit": {
+        "title": "Enviar Idea",
+        "description": "Completa un formulario simple con los detalles de tu idea de negocio."
+      },
+      "analysis": {
+        "title": "Análisis IA",
+        "description": "Nuestro sistema analiza tu idea utilizando datos de mercado y marcos de validación."
+      },
+      "results": {
+        "title": "Obtener Resultados",
+        "description": "Recibe un informe de validación completo dentro de 48 horas."
+      }
+    }
+  },
+  "footer": {
+    "description": "Valida tu idea de negocio en 48 horas",
+    "sections": {
+      "product": "Producto",
+      "company": "Empresa",
+      "legal": "Legal"
+    },
+    "links": {
+      "about": "Acerca de",
+      "contact": "Contacto",
+      "privacy_policy": "Política de Privacidad",
+      "terms_of_service": "Términos de Servicio"
+    },
+    "copyright": "Todos los derechos reservados"
+  },
+  "messages": {
+    "generic_error": "Algo salió mal. Por favor intenta de nuevo.",
+    "idea_submitted": "¡Tu idea ha sido enviada exitosamente!",
+    "no_ideas": "No se encontraron ideas.",
+    "see_results": "Ver Resultados",
+    "idea_not_found": "Idea no encontrada"
+  },
+  "comments": {
+    "title": "Comentarios",
+    "write_comment": "Escribe un comentario...",
+    "posting": "Publicando...",
+    "post": "Publicar",
+    "loading": "Cargando comentarios...",
+    "no_comments": "Aún no hay comentarios. ¡Sé el primero en comentar!",
+    "no_comments_title": "Aún no hay comentarios",
+    "reply": "Responder",
+    "reply_placeholder": "Escribe una respuesta...",
+    "replies": "respuestas",
+    "reply_single": "respuesta",
+    "add_comment": "Agregar un comentario..."
+  },
+  "carousel": {
+    "trending": "Tendencias",
+    "view_details": "Ver Detalles",
+    "votes": "votos",
+    "score": "Puntuación"
+  },
+  "validation": {
+    "title_min_length": "El título debe tener al menos 10 caracteres",
+    "space_required": "Debes seleccionar un espacio",
+    "content_required": "Por favor agrega al menos un bloque de contenido con contenido",
+    "idea_creation_error": "Error al crear la idea. Por favor intenta de nuevo."
+  },
+  "form": {
+    "create_idea": "Crear Idea",
+    "enter_title": "Ingresa el título de tu idea...",
+    "add_tags_hint": "Agrega etiquetas abajo para categorizar tu idea",
+    "space_label": "Espacio",
+    "required": "Requerido",
+    "select_space": "Selecciona un espacio",
+    "tags": "Etiquetas",
+    "type_tag_placeholder": "Escribe una etiqueta y presiona Enter",
+    "upload_image": "Subir Imagen",
+    "upload_video": "Subir Video",
+    "add_image": "Agregar Imagen",
+    "add_video": "Agregar Video",
+    "crop_adjust": "Recortar/Ajustar",
+    "remove": "Remover",
+    "crop_adjust_media": "Recortar y Ajustar Medio Hero",
+    "creating_idea": "Creando idea...",
+    "no_content": "No se han agregado bloques de contenido aún.",
+    "drag_position": "Arrastrar para posicionar",
+    "zoom": "Zoom"
+  },
+  "prompts": {
+    "enter_image_url": "Ingresa la URL de la imagen:",
+    "enter_url": "Ingresa la URL:",
+    "enter_video_url": "Ingresa la URL del video:"
+  },
+  "editor": {
+    "block_types": {
+      "heading_1": "Encabezado 1",
+      "heading_2": "Encabezado 2",
+      "heading_3": "Encabezado 3",
+      "text": "Texto",
+      "image": "Imagen",
+      "video": "Video",
+      "carousel": "Carrusel",
+      "html": "HTML"
+    },
+    "actions": {
+      "upload": "Subir",
+      "upload_new": "Subir Nuevo",
+      "paste_url": "Pegar URL",
+      "change_url": "Cambiar URL",
+      "crop_adjust": "Recortar/Ajustar",
+      "add_slide": "Agregar diapositiva",
+      "change_image": "Cambiar Imagen",
+      "change_video": "Cambiar Video",
+      "cancel": "Cancelar",
+      "save": "Guardar",
+      "add": "Agregar"
+    },
+    "messages": {
+      "add_image": "Agregar una imagen",
+      "add_video": "Agregar un video",
+      "add_image_or_video": "Agregar imagen o video",
+      "preview_may_not_exact": "Vista previa (puede no ser exacta):",
+      "slide_number": "Diapositiva {number}",
+      "drag_to_position": "Arrastrar para posicionar",
+      "zoom_level": "Zoom: {level}%"
+    },
+    "sizes": {
+      "small": "Pequeño",
+      "medium": "Mediano",
+      "large": "Grande"
+    },
+    "fonts": {
+      "default": "Predeterminado",
+      "arial": "Arial",
+      "georgia": "Georgia",
+      "times_new_roman": "Times New Roman",
+      "courier_new": "Courier New",
+      "verdana": "Verdana",
+      "trebuchet_ms": "Trebuchet MS",
+      "comic_sans_ms": "Comic Sans MS"
+    },
+    "tooltips": {
+      "text_color": "Color del texto",
+      "insert_block": "Insertar bloque",
+      "change_block_type": "Cambiar tipo de bloque",
+      "move_up": "Mover arriba",
+      "move_down": "Mover abajo",
+      "delete": "Eliminar"
+    },
+    "headers": {
+      "enter_image_url": "Ingresa URL de Imagen",
+      "enter_video_url": "Ingresa URL de Video",
+      "crop_adjust": "Recortar y Ajustar"
+    },
+    "placeholders": {
+      "add_heading": "Agregar un encabezado...",
+      "start_typing": "Comienza a escribir...",
+      "write_text": "Escribe tu texto aquí...",
+      "custom_html": "Código HTML personalizado",
+      "caption_optional": "Subtítulo (opcional)",
+      "video_title_optional": "Título del video (opcional)",
+      "description_optional": "Descripción (opcional)",
+      "description": "Descripción",
+      "heading_1": "Encabezado 1",
+      "heading_2": "Encabezado 2",
+      "heading_3": "Encabezado 3"
+    },
+    "carousel": {
+      "title": "Carrusel ({count} diapositivas)",
+      "add_slide": "Agregar diapositiva",
+      "slide_number": "Diapositiva {number}",
+      "add_image_or_video": "Agregar imagen o video"
+    },
+    "buttons": {
+      "change_image": "Cambiar Imagen",
+      "change_video": "Cambiar Video",
+      "change_url": "Cambiar URL"
+    }
+  }
+}

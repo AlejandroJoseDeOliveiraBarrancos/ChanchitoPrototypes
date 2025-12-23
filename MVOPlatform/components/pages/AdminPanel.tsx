@@ -7,9 +7,11 @@ import { Footer } from '@/components/layout/Footer'
 import { AdminDashboard } from '@/components/admin/AdminDashboard'
 import { motion } from 'framer-motion'
 import { clientEnv } from '@/config/env'
-import { UI_LABELS } from '@/lib/constants/ui'
+import { useTranslations, useLocale } from '@/components/providers/I18nProvider'
 
 export function AdminPanel() {
+  const t = useTranslations()
+  const { locale } = useLocale()
   const { profile, isAuthenticated, loading } = useAppSelector(
     state => state.auth
   )
@@ -18,13 +20,13 @@ export function AdminPanel() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-text-secondary">{UI_LABELS.LOADING}</div>
+        <div className="text-text-secondary">{t('status.loading')}</div>
       </div>
     )
   }
 
   if (!isAuthenticated || profile?.email !== clientEnv.adminEmail) {
-    router.push('/')
+    router.push(`/${locale}`)
     return null
   }
 

@@ -1,27 +1,28 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { UI_LABELS } from '@/lib/constants/ui'
+import { useTranslations } from '@/components/providers/I18nProvider'
 
 const steps = [
   {
     number: '01',
-    title: UI_LABELS.SUBMIT_IDEA,
-    description: 'Fill out a simple form with your business idea details.',
+    titleKey: 'process.steps.submit.title',
+    descriptionKey: 'process.steps.submit.description',
   },
   {
     number: '02',
-    title: 'AI Analysis',
-    description: 'Our system analyzes your idea using market data and validation frameworks.',
+    titleKey: 'process.steps.analysis.title',
+    descriptionKey: 'process.steps.analysis.description',
   },
   {
     number: '03',
-    title: 'Get Results',
-    description: 'Receive a comprehensive validation report within 48 hours.',
+    titleKey: 'process.steps.results.title',
+    descriptionKey: 'process.steps.results.description',
   },
 ]
 
 export function Process() {
+  const t = useTranslations()
   return (
     <section className="bg-background py-24">
       <div className="max-w-7xl mx-auto px-6">
@@ -32,11 +33,9 @@ export function Process() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-heading-1 mb-4">
-            How It Works
-          </h2>
+          <h2 className="text-heading-1 mb-4">{t('process.title')}</h2>
           <p className="text-body-large max-w-2xl mx-auto">
-            A simple three-step process to validate your business idea
+            {t('process.subtitle')}
           </p>
         </motion.div>
 
@@ -54,10 +53,10 @@ export function Process() {
                 {step.number}
               </div>
               <h3 className="text-xl font-medium text-text-primary mb-3">
-                {step.title}
+                {t(step.titleKey)}
               </h3>
               <p className="text-base text-text-secondary leading-relaxed">
-                {step.description}
+                {t(step.descriptionKey)}
               </p>
             </motion.div>
           ))}
@@ -66,4 +65,3 @@ export function Process() {
     </section>
   )
 }
-

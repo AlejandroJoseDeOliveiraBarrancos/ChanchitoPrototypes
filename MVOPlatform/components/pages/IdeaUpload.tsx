@@ -10,9 +10,10 @@ import { Footer } from '@/components/layout/Footer'
 import { IdeaForm } from '@/components/forms/IdeaForm'
 import { Button } from '@/components/ui/Button'
 import { motion } from 'framer-motion'
-import { UI_LABELS } from '@/lib/constants/ui'
+import { useTranslations } from '@/components/providers/I18nProvider'
 
 export function IdeaUpload() {
+  const t = useTranslations()
   const dispatch = useAppDispatch()
   const { isAuthenticated, loading } = useAppSelector(state => state.auth)
   const router = useRouter()
@@ -20,7 +21,7 @@ export function IdeaUpload() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-text-secondary">{UI_LABELS.LOADING}</div>
+        <div className="text-text-secondary">{t('status.loading')}</div>
       </div>
     )
   }
@@ -37,13 +38,13 @@ export function IdeaUpload() {
               className="text-center max-w-md"
             >
               <h1 className="text-3xl font-semibold text-text-primary mb-4">
-                {UI_LABELS.SIGN_IN_REQUIRED}
+                {t('auth.sign_in_required')}
               </h1>
               <p className="text-base text-text-secondary mb-8">
-                Please sign in with your Google account to upload an idea.
+                {t('auth.sign_in_to_upload')}
               </p>
               <Button onClick={() => dispatch(signInWithGoogle())}>
-                {UI_LABELS.SIGN_IN_WITH_GOOGLE}
+                {t('auth.sign_in_with_google')}
               </Button>
             </motion.div>
           </main>

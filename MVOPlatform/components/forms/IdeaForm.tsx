@@ -7,13 +7,13 @@ import { z } from 'zod'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/Button'
 import { useRouter } from 'next/navigation'
-import { UI_LABELS } from '@/lib/constants/ui'
 import { RichContentEditor } from './RichContentEditor'
 import { ContentBlock } from '@/lib/types/content'
 import { useAppSelector } from '@/lib/hooks'
 import { ContentRenderer } from '@/components/ideas/ContentRenderer'
 import { ideaService } from '@/lib/services/ideaService'
 import { Idea } from '@/lib/types/idea'
+import { useTranslations, useLocale } from '@/components/providers/I18nProvider'
 import {
   X,
   ChevronDown,
@@ -31,19 +31,19 @@ import {
 } from 'lucide-react'
 import Image from 'next/image'
 
-const ideaSchema = z.object({
-  title: z.string().min(10, 'Title must be at least 10 characters'),
-  space_id: z.string().min(1, 'You must select a space'),
-  tags: z.string().optional(),
-})
-
-type IdeaFormData = z.infer<typeof ideaSchema>
+type IdeaFormData = {
+  title: string
+  space_id: string
+  tags?: string
+}
 
 // LocalStorage key for form persistence
 const FORM_STORAGE_KEY = 'idea_form_draft'
 
 export function IdeaForm() {
   const router = useRouter()
+  const t = useTranslations()
+  const { locale } = useLocale()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitProgress, setSubmitProgress] = useState('')
   const [spaces, setSpaces] = useState<
@@ -69,6 +69,12 @@ export function IdeaForm() {
   const imageInputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
   const { profile } = useAppSelector(state => state.auth)
+
+  const ideaSchema = z.object({
+    title: z.string().min(10, t('validation.title_min_length')),
+    space_id: z.string().min(1, t('validation.space_required')),
+    tags: z.string().optional(),
+  })
 
   const {
     register,
@@ -385,7 +391,7 @@ export function IdeaForm() {
     })
 
     if (validBlocks.length === 0) {
-      alert('Please add at least one content block with content')
+      alert(t('validation.content_required'))
       return
     }
 
@@ -497,11 +503,11 @@ export function IdeaForm() {
       }
 
       // Redirect to the created idea page
-      router.push(`/ideas/${createdIdea.id}`)
+      router.push(`/${locale}/ideas/${createdIdea.id}`)
     } catch (error) {
       console.error('Error creating idea:', error)
       setSubmitProgress('')
-      alert('Error creating idea. Please try again.')
+      alert(t('validation.idea_creation_error'))
     } finally {
       setIsSubmitting(false)
       setSubmitProgress('')
@@ -517,7 +523,7 @@ export function IdeaForm() {
         {/* Preview Mode Header */}
         <div className="sticky top-0 z-50 bg-background border-b border-border-color px-4 py-3 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-text-primary truncate flex-1 min-w-0 mr-4">
-            Preview Mode
+            {t('actions.preview')}
           </h2>
           <button
             type="button"
@@ -525,7 +531,7 @@ export function IdeaForm() {
             className="flex items-center gap-2 px-3 md:px-4 py-2 bg-accent text-text-primary rounded-lg hover:bg-accent/90 transition-colors flex-shrink-0"
           >
             <Edit className="w-4 h-4" />
-            <span className="hidden sm:inline">Edit</span>
+            <span className="hidden sm:inline">{t('actions.edit')}</span>
           </button>
         </div>
 
@@ -620,7 +626,7 @@ export function IdeaForm() {
             <ContentRenderer content={contentBlocks} />
           ) : (
             <div className="text-center text-text-secondary py-12">
-              <p>No content blocks added yet.</p>
+              <p>{t('form.no_content')}</p>
             </div>
           )}
         </article>
@@ -633,7 +639,7 @@ export function IdeaForm() {
       {/* Edit Mode Header */}
       <div className="sticky top-0 z-50 bg-background border-b border-border-color px-4 py-3 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-text-primary truncate flex-1 min-w-0 mr-4">
-          Create Idea
+          {t('form.create_idea')}
         </h2>
         <button
           type="button"
@@ -641,7 +647,7 @@ export function IdeaForm() {
           className="flex items-center gap-2 px-3 md:px-4 py-2 bg-accent text-text-primary rounded-lg hover:bg-accent/90 transition-colors flex-shrink-0"
         >
           <Eye className="w-4 h-4" />
-          <span className="hidden sm:inline">Preview</span>
+          <span className="hidden sm:inline">{t('actions.preview')}</span>
         </button>
       </div>
 
@@ -695,7 +701,7 @@ export function IdeaForm() {
                 <div className="space-y-4">
                   <label className="flex flex-col items-center gap-2 px-6 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg text-white transition-colors cursor-pointer">
                     <Upload className="w-8 h-8" />
-                    <span>Upload Image (max 50MB)</span>
+                    <span>{t('form.upload_image')} (max 50MB)</span>
                     <input
                       type="file"
                       accept="image/*"
@@ -723,7 +729,7 @@ export function IdeaForm() {
                       onClick={() => setShowImageUpload(false)}
                       className="text-white/80 hover:text-white text-sm"
                     >
-                      Cancel
+                      {t('actions.cancel')}
                     </button>
                   </div>
                 </div>
@@ -731,7 +737,7 @@ export function IdeaForm() {
                 <div className="space-y-4">
                   <label className="flex flex-col items-center gap-2 px-6 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg text-white transition-colors cursor-pointer">
                     <Upload className="w-8 h-8" />
-                    <span>Upload Video (max 50MB)</span>
+                    <span>{t('form.upload_video')} (max 50MB)</span>
                     <input
                       type="file"
                       accept="video/*"
@@ -759,7 +765,7 @@ export function IdeaForm() {
                       onClick={() => setShowVideoUpload(false)}
                       className="text-white/80 hover:text-white text-sm"
                     >
-                      Cancel
+                      {t('actions.cancel')}
                     </button>
                   </div>
                 </div>
@@ -771,7 +777,7 @@ export function IdeaForm() {
                     className="flex flex-col items-center gap-2 px-6 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg text-white transition-colors"
                   >
                     <ImageIcon className="w-8 h-8" />
-                    <span>Add Image</span>
+                    <span>{t('form.add_image')}</span>
                   </button>
                   <button
                     type="button"
@@ -779,7 +785,7 @@ export function IdeaForm() {
                     className="flex flex-col items-center gap-2 px-6 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg text-white transition-colors"
                   >
                     <Video className="w-8 h-8" />
-                    <span>Add Video</span>
+                    <span>{t('form.add_video')}</span>
                   </button>
                 </div>
               )}
@@ -796,7 +802,7 @@ export function IdeaForm() {
               className="px-4 py-2 bg-black/50 hover:bg-black/70 backdrop-blur-sm rounded-lg text-white transition-colors flex items-center gap-2"
             >
               <Crop className="w-4 h-4" />
-              <span className="text-sm">Crop/Adjust</span>
+              <span className="text-sm">{t('form.crop_adjust')}</span>
             </button>
             <button
               type="button"
@@ -808,7 +814,7 @@ export function IdeaForm() {
               className="px-4 py-2 bg-black/50 hover:bg-black/70 backdrop-blur-sm rounded-lg text-white transition-colors flex items-center gap-2"
             >
               <X className="w-4 h-4" />
-              <span className="text-sm">Remove</span>
+              <span className="text-sm">{t('form.remove')}</span>
             </button>
           </div>
         )}
@@ -818,7 +824,7 @@ export function IdeaForm() {
           <div className="absolute top-20 right-4 bg-background border border-border-color rounded-lg p-4 shadow-lg z-20 max-w-md">
             <div className="flex items-center justify-between mb-4">
               <h4 className="text-sm font-semibold text-text-primary">
-                Crop & Adjust Hero Media
+                {t('form.crop_adjust_media')}
               </h4>
               <button
                 type="button"
@@ -837,6 +843,7 @@ export function IdeaForm() {
                 setShowHeroCrop(false)
               }}
               onCancel={() => setShowHeroCrop(false)}
+              t={t}
             />
           </div>
         )}
@@ -862,7 +869,7 @@ export function IdeaForm() {
               {...register('title')}
               type="text"
               className="w-full bg-transparent border-none outline-none text-2xl md:text-3xl lg:text-5xl font-bold text-white mb-3 md:mb-4 drop-shadow-lg placeholder:text-white/50"
-              placeholder="Enter your idea title..."
+              placeholder={t('form.enter_title')}
               onKeyDown={e => {
                 if (e.key === 'Enter') {
                   e.preventDefault()
@@ -877,7 +884,7 @@ export function IdeaForm() {
             {/* Tags Input Placeholder */}
             {selectedTags.length === 0 && (
               <div className="text-white/60 text-xs md:text-sm">
-                Add tags below to categorize your idea
+                {t('form.add_tags_hint')}
               </div>
             )}
           </div>
@@ -917,14 +924,14 @@ export function IdeaForm() {
               htmlFor="space_id"
               className="text-sm font-medium text-text-secondary mb-2 block"
             >
-              Space <span className="text-red-500">*</span>
+              {t('form.space_label')} <span className="text-red-500">*</span>
             </label>
             <select
               {...register('space_id')}
               id="space_id"
               className="w-full px-4 py-2 bg-background border border-border-color rounded-lg text-text-primary"
             >
-              <option value="">Select a space</option>
+              <option value="">{t('form.select_space')}</option>
               {spaces.map(space => (
                 <option key={space.id} value={space.id}>
                   {space.name}
@@ -946,7 +953,7 @@ export function IdeaForm() {
               className="flex items-center justify-between w-full mb-3"
             >
               <label className="text-sm font-medium text-text-secondary cursor-pointer">
-                Tags
+                {t('form.tags')}
               </label>
               {isTagsExpanded ? (
                 <ChevronUp className="w-4 h-4 text-text-secondary" />
@@ -967,7 +974,7 @@ export function IdeaForm() {
                         addTag()
                       }
                     }}
-                    placeholder="Type a tag and press Enter"
+                    placeholder={t('form.type_tag_placeholder')}
                     className="flex-1 px-3 py-2 bg-background border border-border-color rounded-lg text-text-primary text-sm"
                   />
                   <Button
@@ -976,7 +983,7 @@ export function IdeaForm() {
                     variant="outline"
                     size="sm"
                   >
-                    Add
+                    {t('actions.add')}
                   </Button>
                 </div>
                 {selectedTags.length > 0 && (
@@ -1016,10 +1023,10 @@ export function IdeaForm() {
               {isSubmitting ? (
                 <div className="flex items-center gap-2">
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>{submitProgress || 'Creating idea...'}</span>
+                  <span>{submitProgress || t('form.creating_idea')}</span>
                 </div>
               ) : (
-                UI_LABELS.SUBMIT_IDEA
+                t('actions.submit_idea')
               )}
             </Button>
             <Button
@@ -1055,7 +1062,7 @@ export function IdeaForm() {
               onClick={() => router.back()}
               disabled={isSubmitting}
             >
-              Cancel
+              {t('actions.cancel')}
             </Button>
           </div>
         </motion.form>
@@ -1070,6 +1077,7 @@ function HeroCropEditor({
   crop,
   onSave,
   onCancel,
+  t,
 }: {
   src: string | null
   isVideo?: boolean
@@ -1088,6 +1096,7 @@ function HeroCropEditor({
     scale?: number
   }) => void
   onCancel: () => void
+  t: (key: string) => string
 }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const imageRef = useRef<HTMLImageElement>(null)
@@ -1182,7 +1191,7 @@ function HeroCropEditor({
         )}
       </div>
       <div className="flex items-center justify-between text-xs text-text-secondary">
-        <span>Drag to position</span>
+        <span>{t('form.drag_position')}</span>
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -1192,7 +1201,9 @@ function HeroCropEditor({
           >
             <ZoomOut className="w-4 h-4" />
           </button>
-          <span>Zoom: {Math.round(cropState.scale * 100)}%</span>
+          <span>
+            {t('form.zoom')}: {Math.round(cropState.scale * 100)}%
+          </span>
           <button
             type="button"
             onClick={handleZoomIn}
@@ -1209,14 +1220,14 @@ function HeroCropEditor({
           onClick={onCancel}
           className="px-3 py-1 text-xs border border-border-color rounded hover:bg-gray-50"
         >
-          Cancel
+          {t('actions.cancel')}
         </button>
         <button
           type="button"
           onClick={() => onSave({ ...cropState, width: 100, height: 100 })}
           className="px-3 py-1 text-xs bg-accent text-white rounded hover:bg-accent/90"
         >
-          Save
+          {t('actions.save')}
         </button>
       </div>
     </div>

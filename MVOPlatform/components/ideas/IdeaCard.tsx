@@ -5,11 +5,11 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { ArrowUp, MessageSquare } from 'lucide-react'
 import { formatDate } from '@/lib/utils/date'
-import { UI_LABELS } from '@/lib/constants/ui'
 import { Idea } from '@/lib/types/idea'
 import { useVideoPlayer } from '@/hooks/useVideoPlayer'
 import { useAppSelector } from '@/lib/hooks'
 import { ideaService } from '@/lib/services/ideaService'
+import { useTranslations, useLocale } from '@/components/providers/I18nProvider'
 import { getCardMedia } from '@/lib/utils/media'
 
 interface IdeaCardProps {
@@ -17,6 +17,8 @@ interface IdeaCardProps {
 }
 
 export function IdeaCard({ idea }: IdeaCardProps) {
+  const t = useTranslations()
+  const { locale } = useLocale()
   const [currentIdea, setCurrentIdea] = useState(idea)
   const [isVoting, setIsVoting] = useState(false)
   const [isVideoPlaying, setIsVideoPlaying] = useState(false)
@@ -38,7 +40,7 @@ export function IdeaCard({ idea }: IdeaCardProps) {
   const handleVote = async (e: React.MouseEvent) => {
     e.preventDefault()
     if (!isAuthenticated) {
-      alert('Please sign in to vote')
+      alert(t('auth.sign_in_to_vote'))
       return
     }
     if (isVoting) return
@@ -75,7 +77,7 @@ export function IdeaCard({ idea }: IdeaCardProps) {
 
   return (
     <div ref={cardRef} className="card-hover overflow-hidden">
-      <Link href={`/ideas/${currentIdea.id}`} onClick={handleClick}>
+      <Link href={`/${locale}/ideas/${currentIdea.id}`} onClick={handleClick}>
         <motion.article whileHover={{ y: -2 }} className="p-4 flex flex-col">
           {/* Media Section */}
           <div className="relative w-full aspect-video mb-3 rounded-md overflow-hidden">
@@ -123,7 +125,7 @@ export function IdeaCard({ idea }: IdeaCardProps) {
                 {currentIdea.score}
               </div>
               <div className="text-xs text-text-secondary whitespace-nowrap">
-                {UI_LABELS.SCORE}
+                {t('common.score')}
               </div>
             </div>
           </div>

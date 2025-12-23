@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { useAppDispatch, useAppSelector } from '@/lib/hooks'
 import { checkAuth } from '@/lib/slices/authSlice'
 import { supabase } from '@/lib/supabase'
+import { useLocale } from '@/components/providers/I18nProvider'
 
 interface AuthProviderProps {
   children: React.ReactNode
@@ -14,6 +15,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const dispatch = useAppDispatch()
   const router = useRouter()
   const pathname = usePathname()
+  const { locale } = useLocale()
   const { isAuthenticated, initialized, profile, error } = useAppSelector(
     state => state.auth
   )
@@ -41,7 +43,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     if (initialized && !isAuthPage && isProtectedPage) {
       if (!isAuthenticated || !profile || error) {
-        router.replace('/auth')
+        router.replace(`/${locale}/auth`)
       }
     }
   }, [initialized, isAuthenticated, profile, error, pathname, router])

@@ -11,7 +11,6 @@ import {
 } from 'lucide-react'
 import Image from 'next/image'
 import { formatDate } from '@/lib/utils/date'
-import { UI_LABELS } from '@/lib/constants/ui'
 import { Idea } from '@/lib/types/idea'
 import { useVideoPlayer } from '@/hooks/useVideoPlayer'
 import { TikTokComments } from './TikTokComments'
@@ -19,6 +18,7 @@ import { commentService } from '@/lib/services/commentService'
 import { VoteDistributionBar } from '@/components/ui/VoteDistributionBar'
 import { useAppSelector } from '@/lib/hooks'
 import { ideaService } from '@/lib/services/ideaService'
+import { useTranslations } from '@/components/providers/I18nProvider'
 import { getCardMedia } from '@/lib/utils/media'
 
 interface ForYouIdeaCardProps {
@@ -36,6 +36,7 @@ export function ForYouIdeaCard({
   isActive,
   initialUserVotes,
 }: ForYouIdeaCardProps) {
+  const t = useTranslations()
   const [currentIdea, setCurrentIdea] = useState(idea)
   const [isVoting, setIsVoting] = useState(false)
   const [userVote, setUserVote] = useState<{
@@ -88,7 +89,7 @@ export function ForYouIdeaCard({
   const handleVote = async (e: React.MouseEvent) => {
     e.stopPropagation()
     if (!isAuthenticated) {
-      alert('Please sign in to vote')
+      alert(t('auth.sign_in_to_vote'))
       return
     }
     if (isVoting) return
@@ -114,7 +115,7 @@ export function ForYouIdeaCard({
   const handleWouldPay = async (e: React.MouseEvent) => {
     e.stopPropagation()
     if (!isAuthenticated) {
-      alert('Please sign in to vote')
+      alert(t('auth.sign_in_to_vote'))
       return
     }
     if (isVoting) return
@@ -138,7 +139,7 @@ export function ForYouIdeaCard({
   const handleDownVote = async (e: React.MouseEvent) => {
     e.stopPropagation()
     if (!isAuthenticated) {
-      alert('Please sign in to vote')
+      alert(t('auth.sign_in_to_vote'))
       return
     }
     if (isVoting) return
@@ -244,7 +245,7 @@ export function ForYouIdeaCard({
             {currentIdea.score}
           </div>
           <div className="text-xs text-white/80 drop-shadow-md">
-            {UI_LABELS.SCORE}
+            {t('common.score')}
           </div>
         </div>
       </div>

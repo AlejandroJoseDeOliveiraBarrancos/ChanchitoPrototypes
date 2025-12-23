@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { ContentBlock } from '@/lib/types/content'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useTranslations } from '@/components/providers/I18nProvider'
 import {
   Type,
   Heading1,
@@ -38,6 +39,7 @@ interface RichContentEditorProps {
 }
 
 export function RichContentEditor({ value, onChange }: RichContentEditorProps) {
+  const t = useTranslations()
   const [selectedBlockIndex, setSelectedBlockIndex] = useState<number | null>(
     null
   )
@@ -395,6 +397,7 @@ function BlockEditor({
   onToggleInsertMenu,
   onChangeBlockType,
 }: BlockEditorProps) {
+  const t = useTranslations()
   const [localValue, setLocalValue] = useState<string>('')
   const [showChangeTypeMenu, setShowChangeTypeMenu] = useState(false)
   const [showCropEditor, setShowCropEditor] = useState(false)
@@ -469,7 +472,6 @@ function BlockEditor({
       onUpdate({ text })
     }
   }
-
   const uploadFile = async (
     file: File,
     folder: string = 'content'
@@ -626,7 +628,7 @@ function BlockEditor({
           >
             <InsertButton
               icon={<Heading1 className="w-4 h-4" />}
-              label="Heading 1"
+              label={t('editor.block_types.heading_1')}
               onClick={() => {
                 onChangeBlockType('heading', { level: 1 })
                 setShowChangeTypeMenu(false)
@@ -634,7 +636,7 @@ function BlockEditor({
             />
             <InsertButton
               icon={<Heading2 className="w-4 h-4" />}
-              label="Heading 2"
+              label={t('editor.block_types.heading_2')}
               onClick={() => {
                 onChangeBlockType('heading', { level: 2 })
                 setShowChangeTypeMenu(false)
@@ -642,7 +644,7 @@ function BlockEditor({
             />
             <InsertButton
               icon={<Heading3 className="w-4 h-4" />}
-              label="Heading 3"
+              label={t('editor.block_types.heading_3')}
               onClick={() => {
                 onChangeBlockType('heading', { level: 3 })
                 setShowChangeTypeMenu(false)
@@ -650,7 +652,7 @@ function BlockEditor({
             />
             <InsertButton
               icon={<Type className="w-4 h-4" />}
-              label="Text"
+              label={t('editor.block_types.text')}
               onClick={() => {
                 onChangeBlockType('text')
                 setShowChangeTypeMenu(false)
@@ -658,7 +660,7 @@ function BlockEditor({
             />
             <InsertButton
               icon={<ImageIcon className="w-4 h-4" />}
-              label="Image"
+              label={t('editor.block_types.image')}
               onClick={() => {
                 onChangeBlockType('image')
                 setShowChangeTypeMenu(false)
@@ -666,7 +668,7 @@ function BlockEditor({
             />
             <InsertButton
               icon={<Video className="w-4 h-4" />}
-              label="Video"
+              label={t('editor.block_types.video')}
               onClick={() => {
                 onChangeBlockType('video')
                 setShowChangeTypeMenu(false)
@@ -674,7 +676,7 @@ function BlockEditor({
             />
             <InsertButton
               icon={<Layout className="w-4 h-4" />}
-              label="Carousel"
+              label={t('editor.block_types.carousel')}
               onClick={() => {
                 onChangeBlockType('carousel')
                 setShowChangeTypeMenu(false)
@@ -682,7 +684,7 @@ function BlockEditor({
             />
             <InsertButton
               icon={<Code className="w-4 h-4" />}
-              label="HTML"
+              label={t('editor.block_types.html')}
               onClick={() => {
                 onChangeBlockType('html')
                 setShowChangeTypeMenu(false)
@@ -704,42 +706,42 @@ function BlockEditor({
           >
             <InsertButton
               icon={<Heading1 className="w-4 h-4" />}
-              label="Heading 1"
+              label={t('editor.block_types.heading_1')}
               onClick={() => onAddBlock('heading', { level: 1 })}
             />
             <InsertButton
               icon={<Heading2 className="w-4 h-4" />}
-              label="Heading 2"
+              label={t('editor.block_types.heading_2')}
               onClick={() => onAddBlock('heading', { level: 2 })}
             />
             <InsertButton
               icon={<Heading3 className="w-4 h-4" />}
-              label="Heading 3"
+              label={t('editor.block_types.heading_3')}
               onClick={() => onAddBlock('heading', { level: 3 })}
             />
             <InsertButton
               icon={<Type className="w-4 h-4" />}
-              label="Text"
+              label={t('editor.block_types.text')}
               onClick={() => onAddBlock('text')}
             />
             <InsertButton
               icon={<ImageIcon className="w-4 h-4" />}
-              label="Image"
+              label={t('editor.block_types.image')}
               onClick={() => onAddBlock('image')}
             />
             <InsertButton
               icon={<Video className="w-4 h-4" />}
-              label="Video"
+              label={t('editor.block_types.video')}
               onClick={() => onAddBlock('video')}
             />
             <InsertButton
               icon={<Layout className="w-4 h-4" />}
-              label="Carousel"
+              label={t('editor.block_types.carousel')}
               onClick={() => onAddBlock('carousel')}
             />
             <InsertButton
               icon={<Code className="w-4 h-4" />}
-              label="HTML"
+              label={t('editor.block_types.html')}
               onClick={() => onAddBlock('html')}
             />
           </motion.div>
@@ -758,7 +760,9 @@ function BlockEditor({
           />
           <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-background border border-border-color rounded-lg p-6 shadow-2xl z-[70] min-w-[400px]">
             <h3 className="text-lg font-semibold text-text-primary mb-4">
-              {showUrlModal === 'image' ? 'Enter Image URL' : 'Enter Video URL'}
+              {showUrlModal === 'image'
+                ? t('editor.headers.enter_image_url')
+                : t('editor.headers.enter_video_url')}
             </h3>
             <input
               type="text"
@@ -832,7 +836,9 @@ function BlockEditor({
               }
             }}
             placeholder={
-              isPlaceholder ? 'Add a heading...' : `Heading ${block.level}`
+              isPlaceholder
+                ? t('editor.placeholders.add_heading')
+                : t(`editor.placeholders.heading_${block.level}`)
             }
             className={`w-full bg-transparent border-none outline-none resize-none overflow-hidden leading-tight ${
               block.level === 1
@@ -866,9 +872,9 @@ function BlockEditor({
                 }
                 className="text-xs border border-border-color rounded px-2 py-1 bg-background"
               >
-                <option value="small">Small</option>
-                <option value="medium">Medium</option>
-                <option value="large">Large</option>
+                <option value="small">{t('editor.sizes.small')}</option>
+                <option value="medium">{t('editor.sizes.medium')}</option>
+                <option value="large">{t('editor.sizes.large')}</option>
               </select>
             </div>
             <textarea
@@ -883,7 +889,9 @@ function BlockEditor({
                 }
               }}
               placeholder={
-                isPlaceholder ? 'Start typing...' : 'Write your text here...'
+                isPlaceholder
+                  ? t('editor.placeholders.start_typing')
+                  : t('editor.placeholders.write_text')
               }
               className="w-full bg-transparent border-none outline-none resize-none overflow-hidden"
               style={{
@@ -910,12 +918,15 @@ function BlockEditor({
             {!block.src ? (
               <div className="border-2 border-dashed border-border-color rounded-lg p-6">
                 <div className="flex flex-col items-center gap-4">
-                  <p className="text-sm text-text-secondary">Add an image</p>
+                  <p className="text-sm text-text-secondary">
+                    {t('editor.messages.add_image')}
+                  </p>
                   <div className="flex gap-3">
                     <label className="flex flex-col items-center gap-2 px-4 py-2 bg-background border border-border-color rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
                       <Upload className="w-5 h-5 text-text-secondary" />
                       <span className="text-xs text-text-secondary">
-                        Upload (max 50MB)
+                        {t('editor.actions.upload')}
+                        (max 50MB)
                       </span>
                       <input
                         type="file"
@@ -952,7 +963,7 @@ function BlockEditor({
                     >
                       <LinkIcon className="w-5 h-5 text-text-secondary" />
                       <span className="text-xs text-text-secondary">
-                        Paste URL
+                        {t('editor.actions.paste_url')}
                       </span>
                     </button>
                   </div>
@@ -1024,7 +1035,7 @@ function BlockEditor({
                     className="text-xs px-3 py-1 bg-background border border-border-color rounded hover:bg-gray-50 text-text-secondary flex items-center gap-1"
                   >
                     <Crop className="w-3 h-3" />
-                    Crop/Adjust
+                    {t('form.crop_adjust')}
                   </button>
                 </div>
                 {showCropEditor && (
@@ -1037,13 +1048,14 @@ function BlockEditor({
                       setShowCropEditor(false)
                     }}
                     onCancel={() => setShowCropEditor(false)}
+                    t={t}
                   />
                 )}
                 <input
                   type="text"
                   value={block.caption || ''}
                   onChange={e => onUpdate({ caption: e.target.value })}
-                  placeholder="Caption (optional)"
+                  placeholder={t('editor.placeholders.caption_optional')}
                   className="w-full px-3 py-2 border border-border-color rounded bg-background text-text-primary text-sm"
                 />
               </>
@@ -1056,7 +1068,9 @@ function BlockEditor({
             {!block.src ? (
               <div className="border-2 border-dashed border-border-color rounded-lg p-6">
                 <div className="flex flex-col items-center gap-4">
-                  <p className="text-sm text-text-secondary">Add a video</p>
+                  <p className="text-sm text-text-secondary">
+                    {t('editor.messages.add_video')}
+                  </p>
                   <div className="flex gap-3">
                     <label className="flex flex-col items-center gap-2 px-4 py-2 bg-background border border-border-color rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
                       <Upload className="w-5 h-5 text-text-secondary" />
@@ -1183,7 +1197,7 @@ function BlockEditor({
                         className="text-xs px-3 py-1 bg-background border border-border-color rounded hover:bg-gray-50 text-text-secondary flex items-center gap-1"
                       >
                         <Crop className="w-3 h-3" />
-                        Crop/Adjust
+                        {t('form.crop_adjust')}
                       </button>
                     )}
                 </div>
@@ -1199,19 +1213,20 @@ function BlockEditor({
                         setShowCropEditor(false)
                       }}
                       onCancel={() => setShowCropEditor(false)}
+                      t={t}
                     />
                   )}
                 <input
                   type="text"
                   value={block.title || ''}
                   onChange={e => onUpdate({ title: e.target.value })}
-                  placeholder="Video title (optional)"
+                  placeholder={t('editor.placeholders.video_title_optional')}
                   className="w-full px-3 py-2 border border-border-color rounded bg-background text-text-primary text-sm"
                 />
                 <textarea
                   value={block.description || ''}
                   onChange={e => onUpdate({ description: e.target.value })}
-                  placeholder="Description (optional)"
+                  placeholder={t('editor.placeholders.description_optional')}
                   className="w-full px-3 py-2 border border-border-color rounded bg-background text-text-primary min-h-[60px] text-sm"
                 />
               </>
@@ -1234,11 +1249,11 @@ function BlockEditor({
             <textarea
               value={block.content}
               onChange={e => onUpdate({ content: e.target.value })}
-              placeholder="Custom HTML code"
+              placeholder={t('editor.placeholders.custom_html')}
               className="w-full min-h-[200px] px-3 py-2 border border-border-color rounded bg-background text-text-primary font-mono text-sm"
             />
             <div className="text-xs text-text-secondary">
-              Preview (may not be exact):
+              {t('editor.messages.preview_may_not_exact')}:
             </div>
             <div
               className="border border-border-color rounded p-4 bg-gray-50 max-w-full html-embed-container"
@@ -1509,6 +1524,7 @@ function CropEditor({
   isVideo,
   onSave,
   onCancel,
+  t,
 }: {
   src: string
   crop?: { x: number; y: number; width: number; height: number; scale?: number }
@@ -1521,6 +1537,7 @@ function CropEditor({
     scale?: number
   }) => void
   onCancel: () => void
+  t: (key: string) => string
 }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const imageRef = useRef<HTMLImageElement>(null)
@@ -1570,7 +1587,7 @@ function CropEditor({
     <div className="mt-4 p-4 border border-border-color rounded-lg bg-background">
       <div className="flex items-center justify-between mb-4">
         <h4 className="text-sm font-semibold text-text-primary">
-          Crop & Adjust
+          {t('editor.headers.crop_adjust')}
         </h4>
         <button
           type="button"
@@ -1626,7 +1643,7 @@ function CropEditor({
           )}
         </div>
         <div className="flex items-center justify-between text-xs text-text-secondary">
-          <span>Drag to position</span>
+          <span>{t('form.drag_position')}</span>
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -1636,7 +1653,9 @@ function CropEditor({
             >
               <ZoomOut className="w-4 h-4" />
             </button>
-            <span>Zoom: {Math.round(cropState.scale * 100)}%</span>
+            <span>
+              {t('form.zoom')}: {Math.round(cropState.scale * 100)}%
+            </span>
             <button
               type="button"
               onClick={handleZoomIn}
@@ -1653,14 +1672,14 @@ function CropEditor({
             onClick={onCancel}
             className="px-3 py-1 text-xs border border-border-color rounded hover:bg-gray-50"
           >
-            Cancel
+            {t('actions.cancel')}
           </button>
           <button
             type="button"
             onClick={() => onSave({ ...cropState, width: 100, height: 100 })}
             className="px-3 py-1 text-xs bg-accent text-white rounded hover:bg-accent/90"
           >
-            Save
+            {t('actions.save')}
           </button>
         </div>
       </div>
@@ -1681,6 +1700,7 @@ function CarouselEditor({
   isUploading: boolean
   setIsUploading: React.Dispatch<React.SetStateAction<boolean>>
 }) {
+  const t = useTranslations()
   if (block.type !== 'carousel') return null
 
   const addSlide = () => {
@@ -1706,7 +1726,10 @@ function CarouselEditor({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h4 className="font-semibold text-text-primary">
-          Carousel ({block.slides.length} slides)
+          {t('editor.carousel.title').replace(
+            '{count}',
+            block.slides.length.toString()
+          )}
         </h4>
         <Button
           type="button"
@@ -1716,7 +1739,7 @@ function CarouselEditor({
           className="hover:text-black"
         >
           <Plus className="w-4 h-4 mr-1" />
-          Add slide
+          {t('editor.carousel.add_slide')}
         </Button>
       </div>
       {block.slides.map((slide, index) => (
@@ -1726,7 +1749,10 @@ function CarouselEditor({
         >
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-text-secondary">
-              Slide {index + 1}
+              {t('editor.carousel.slide_number').replace(
+                '{number}',
+                (index + 1).toString()
+              )}
             </span>
             {block.slides.length > 1 && (
               <button
@@ -1748,7 +1774,7 @@ function CarouselEditor({
             <div className="border-2 border-dashed border-border-color rounded-lg p-4">
               <div className="flex flex-col items-center gap-3">
                 <p className="text-xs text-text-secondary">
-                  Add image or video
+                  {t('editor.carousel.add_image_or_video')}
                 </p>
                 <div className="flex gap-2">
                   <label className="flex flex-col items-center gap-1 px-3 py-2 bg-background border border-border-color rounded cursor-pointer hover:bg-gray-50 transition-colors">
@@ -1816,7 +1842,7 @@ function CarouselEditor({
                   <button
                     type="button"
                     onClick={() => {
-                      const url = prompt('Enter image URL:')
+                      const url = prompt(t('prompts.enter_image_url'))
                       if (url)
                         updateSlide(index, { image: url, video: undefined })
                     }}
@@ -1831,7 +1857,7 @@ function CarouselEditor({
           ) : (
             <div className="flex gap-2">
               <label className="text-xs px-2 py-1 bg-background border border-border-color rounded hover:bg-gray-50 text-text-secondary cursor-pointer">
-                Change Image
+                {t('editor.buttons.change_image')}
                 <input
                   type="file"
                   accept="image/*"
@@ -1861,7 +1887,7 @@ function CarouselEditor({
                 />
               </label>
               <label className="text-xs px-2 py-1 bg-background border border-border-color rounded hover:bg-gray-50 text-text-secondary cursor-pointer">
-                Change Video
+                {t('editor.buttons.change_video')}
                 <input
                   type="file"
                   accept="video/*"
@@ -1893,7 +1919,10 @@ function CarouselEditor({
               <button
                 type="button"
                 onClick={() => {
-                  const url = prompt('Enter URL:', slide.image || slide.video)
+                  const url = prompt(
+                    t('prompts.enter_url'),
+                    slide.image || slide.video
+                  )
                   if (url) {
                     if (url.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
                       updateSlide(index, { image: url, video: undefined })
@@ -1904,14 +1933,14 @@ function CarouselEditor({
                 }}
                 className="text-xs px-2 py-1 bg-background border border-border-color rounded hover:bg-gray-50 text-text-secondary"
               >
-                Change URL
+                {t('editor.buttons.change_url')}
               </button>
             </div>
           )}
           <textarea
             value={slide.description}
             onChange={e => updateSlide(index, { description: e.target.value })}
-            placeholder="Description"
+            placeholder={t('editor.placeholders.description')}
             className="w-full px-3 py-2 border border-border-color rounded bg-background text-text-primary min-h-[60px]"
           />
           {(slide.image || slide.video) && (
