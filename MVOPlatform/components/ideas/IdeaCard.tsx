@@ -177,7 +177,11 @@ export function IdeaCard({ idea }: IdeaCardProps) {
 
           {/* Author and Date */}
           <div className="flex items-center justify-between text-xs text-text-secondary pt-2 border-t border-background">
-            <span>By {currentIdea.author}</span>
+            <span>
+              {currentIdea.anonymous
+                ? t('common.anonymous')
+                : `${t('common.by')} ${currentIdea.author}`}
+            </span>
             <span>{formatDate(currentIdea.createdAt)}</span>
           </div>
         </motion.article>

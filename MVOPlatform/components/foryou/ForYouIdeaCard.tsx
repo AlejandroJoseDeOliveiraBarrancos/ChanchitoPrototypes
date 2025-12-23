@@ -274,7 +274,9 @@ export function ForYouIdeaCard({
                 {currentIdea.description}
               </p>
               <div className="flex items-center gap-2 text-xs text-white/80">
-                <span>@{currentIdea.author}</span>
+                <span>
+                  @{currentIdea.anonymous ? t('common.anonymous') : currentIdea.author}
+                </span>
                 <span>•</span>
                 <span>{formatDate(currentIdea.createdAt)}</span>
               </div>
@@ -398,7 +400,9 @@ export function ForYouIdeaCard({
                 {currentIdea.description}
               </p>
               <div className="flex items-center gap-3 text-sm text-white/80">
-                <span>@{currentIdea.author}</span>
+                <span>
+                  @{currentIdea.anonymous ? t('common.anonymous') : currentIdea.author}
+                </span>
                 <span>•</span>
                 <span>{formatDate(currentIdea.createdAt)}</span>
               </div>

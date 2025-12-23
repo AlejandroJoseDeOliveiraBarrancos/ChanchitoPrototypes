@@ -45,7 +45,9 @@
     "overall_score": "Puntuación General",
     "overall_validation_score": "Puntuación General de Validación",
     "submitted": "Enviado",
-    "validation_report": "Informe de Validación"
+    "validation_report": "Informe de Validación",
+    "anonymous": "Anónimo",
+    "by": "Por"
   },
   "auth": {
     "sign_in_required": "Inicio de Sesión Requerido",
@@ -155,7 +157,9 @@
     "creating_idea": "Creando idea...",
     "no_content": "No se han agregado bloques de contenido aún.",
     "drag_position": "Arrastrar para posicionar",
-    "zoom": "Zoom"
+    "zoom": "Zoom",
+    "post_anonymously": "Publicar de forma anónima",
+    "post_anonymously_description": "Ocultar tu nombre cuando esta idea se muestre al público"
   },
   "prompts": {
     "enter_image_url": "Ingresa la URL de la imagen:",

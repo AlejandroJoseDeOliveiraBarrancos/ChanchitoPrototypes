@@ -110,6 +110,7 @@ class SupabaseIdeaService implements IIdeaService {
         status_flag,
         content,
         created_at,
+        anonymous,
         users!ideas_creator_id_fkey (
           username,
           full_name
@@ -145,6 +146,7 @@ class SupabaseIdeaService implements IIdeaService {
         status_flag,
         content,
         created_at,
+        anonymous,
         users!ideas_creator_id_fkey (
           username,
           full_name
@@ -184,6 +186,7 @@ class SupabaseIdeaService implements IIdeaService {
         status_flag,
         content,
         created_at,
+        anonymous,
         users!ideas_creator_id_fkey (
           username,
           full_name
@@ -224,6 +227,7 @@ class SupabaseIdeaService implements IIdeaService {
         status_flag,
         content,
         created_at,
+        anonymous,
         users!ideas_creator_id_fkey (
           username,
           full_name
@@ -260,6 +264,7 @@ class SupabaseIdeaService implements IIdeaService {
         status_flag,
         content,
         created_at,
+        anonymous,
         users!ideas_creator_id_fkey (
           username,
           full_name
@@ -296,6 +301,7 @@ class SupabaseIdeaService implements IIdeaService {
         status_flag,
         content,
         created_at,
+        anonymous,
         users!ideas_creator_id_fkey (
           username,
           full_name
@@ -516,6 +522,7 @@ class SupabaseIdeaService implements IIdeaService {
       video,
       content,
       status_flag: dbIdea.status_flag,
+      anonymous: dbIdea.anonymous || false,
     }
   }
 
@@ -533,6 +540,7 @@ class SupabaseIdeaService implements IIdeaService {
         title: ideaData.title,
         content: ideaData.content,
         status_flag: ideaData.status_flag || 'new',
+        anonymous: ideaData.anonymous || false,
       })
       .select()
       .single()
