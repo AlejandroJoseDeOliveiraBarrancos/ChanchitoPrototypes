@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useTranslations } from '@/components/providers/I18nProvider'
+import { useTranslations, useLocale } from '@/components/providers/I18nProvider'
 import { ideaService } from '@/lib/services/ideaService'
 import { Idea } from '@/lib/types/idea'
-import { IdeaCard } from '@/components/ideas/IdeaCard'
+import { MyIdeaCard } from '@/components/ideas/MyIdeaCard'
 import { Button } from '@/components/ui/Button'
 import { Plus, SortAsc, Filter, RefreshCw } from 'lucide-react'
 
@@ -14,6 +14,7 @@ type SortOption = 'recent' | 'popular' | 'most_votes' | 'highest_score'
 export function UserIdeasList() {
   const t = useTranslations()
   const router = useRouter()
+  const { locale } = useLocale()
   const [ideas, setIdeas] = useState<Idea[]>([])
   const [loading, setLoading] = useState(true)
   const [sortBy, setSortBy] = useState<SortOption>('recent')
@@ -61,36 +62,8 @@ export function UserIdeasList() {
     }
   })
 
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-semibold text-text-primary">
-              {t('activity.ideas_list.title')}
-            </h2>
-            <p className="text-text-secondary">
-              {t('activity.ideas_list.subtitle')}
-            </p>
-          </div>
-        </div>
-        <div className="grid gap-6">
-          {[...Array(3)].map((_, i) => (
-            <div
-              key={i}
-              className="bg-gray-100 rounded-lg p-6 shadow-sm border"
-            >
-              <div className="animate-pulse space-y-4">
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                <div className="h-20 bg-gray-200 rounded"></div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    )
-  }
+  const isInitialLoading = loading && ideas.length === 0
+  const hasLoadedOnce = ideas.length > 0 || error !== null
 
   if (error) {
     return (
@@ -103,7 +76,7 @@ export function UserIdeasList() {
     )
   }
 
-  if (ideas.length === 0) {
+  if (hasLoadedOnce && ideas.length === 0) {
     return (
       <div className="text-center py-12">
         <div className="max-w-md mx-auto">
@@ -131,7 +104,7 @@ export function UserIdeasList() {
               className="inline-flex items-center gap-2"
             >
               <RefreshCw className="w-4 h-4" />
-              Refresh Ideas
+              {t('common.refresh')}
             </Button>
           </div>
         </div>
@@ -147,7 +120,9 @@ export function UserIdeasList() {
             {t('activity.ideas_list.title')}
           </h2>
           <p className="text-text-secondary">
-            {t('activity.ideas_list.subtitle')} ({ideas.length})
+            {isInitialLoading
+              ? t('activity.ideas_list.subtitle')
+              : `${t('activity.ideas_list.subtitle')} (${ideas.length})`}
           </p>
         </div>
 
@@ -158,6 +133,7 @@ export function UserIdeasList() {
               value={sortBy}
               onChange={e => setSortBy(e.target.value as SortOption)}
               className="border border-gray-200 rounded-md px-3 py-1 text-sm bg-gray-100 text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
+              disabled={loading}
             >
               <option value="recent">
                 {t('activity.ideas_list.sort_options.recent')}
@@ -178,24 +154,42 @@ export function UserIdeasList() {
             variant="outline"
             className="inline-flex items-center gap-2"
             size="sm"
+            disabled={loading}
           >
             <RefreshCw className="w-4 h-4" />
-            Refresh
+            {t('common.refresh')}
           </Button>
         </div>
       </div>
 
-      <div className="grid gap-6">
-        {sortedIdeas.map(idea => (
-          <div
-            key={idea.id}
-            className="cursor-pointer"
-            onClick={() => router.push(`/ideas/${idea.id}`)}
-          >
-            <IdeaCard idea={idea} />
-          </div>
-        ))}
-      </div>
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(3)].map((_, i) => (
+            <div
+              key={i}
+              className="bg-gray-100 rounded-lg p-6 shadow-sm border animate-pulse"
+            >
+              <div className="space-y-4">
+                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                <div className="h-20 bg-gray-200 rounded"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {sortedIdeas.map(idea => (
+            <div
+              key={idea.id}
+              className="cursor-pointer"
+              onClick={() => router.push(`/${locale}/ideas/${idea.id}`)}
+            >
+              <MyIdeaCard idea={idea} />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

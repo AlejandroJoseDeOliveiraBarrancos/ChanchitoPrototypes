@@ -123,7 +123,7 @@ export function UserAnalytics() {
           className="inline-flex items-center gap-2"
         >
           <RefreshCw className="w-4 h-4" />
-          Try Again
+          {t('actions.try_again') || 'Try Again'}
         </Button>
       </div>
     )
@@ -163,7 +163,7 @@ export function UserAnalytics() {
           className="inline-flex items-center gap-2"
         >
           <RefreshCw className="w-4 h-4" />
-          Refresh
+          {t('common.refresh')}
         </Button>
       </div>
 
@@ -348,13 +348,13 @@ export function UserAnalytics() {
                 {data.topPerformingIdeas[0].title}
               </h4>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-text-secondary">Score</span>
+                <span className="text-text-secondary">{t('common.score')}</span>
                 <span className="font-medium text-text-primary">
                   {data.topPerformingIdeas[0].score}
                 </span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-text-secondary">Votes</span>
+                <span className="text-text-secondary">{t('common.votes')}</span>
                 <span className="font-medium text-text-primary">
                   {data.topPerformingIdeas[0].votes}
                 </span>
@@ -376,13 +376,17 @@ export function UserAnalytics() {
                 {data.mostDiscussedIdeas[0].title}
               </h4>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-text-secondary">Comments</span>
+                <span className="text-text-secondary">
+                  {t('common.comments')}
+                </span>
                 <span className="font-medium text-text-primary">
                   {data.mostDiscussedIdeas[0].commentCount}
                 </span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-text-secondary">Total Interactions</span>
+                <span className="text-text-secondary">
+                  {t('common.total_interactions')}
+                </span>
                 <span className="font-medium text-text-primary">
                   {data.mostDiscussedIdeas[0].votes +
                     data.mostDiscussedIdeas[0].commentCount}
@@ -405,13 +409,15 @@ export function UserAnalytics() {
                 {data.worstPerformingIdeas[0].title}
               </h4>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-text-secondary">Score</span>
+                <span className="text-text-secondary">{t('common.score')}</span>
                 <span className="font-medium text-text-primary">
                   {data.worstPerformingIdeas[0].score}
                 </span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-text-secondary">Total Interactions</span>
+                <span className="text-text-secondary">
+                  {t('common.total_interactions')}
+                </span>
                 <span className="font-medium text-text-primary">
                   {data.worstPerformingIdeas[0].votes +
                     data.worstPerformingIdeas[0].commentCount}

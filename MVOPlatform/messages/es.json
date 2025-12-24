@@ -37,7 +37,8 @@
     "share": "Compartir",
     "back": "Volver",
     "delete": "Eliminar",
-    "ok": "OK"
+    "ok": "OK",
+    "try_again": "Intentar de Nuevo"
   },
   "status": {
     "loading": "Cargando...",
@@ -51,7 +52,14 @@
     "submitted": "Enviado",
     "validation_report": "Informe de Validación",
     "anonymous": "Anónimo",
-    "by": "Por"
+    "by": "Por",
+    "welcome_back": "Bienvenido de vuelta",
+    "refresh": "Actualizar",
+    "checking_authentication": "Verificando autenticación",
+    "analytics": "Analíticas",
+    "votes": "Votos",
+    "comments": "Comentarios",
+    "total_interactions": "Interacciones Totales"
   },
   "auth": {
     "sign_in_required": "Inicio de Sesión Requerido",
@@ -71,7 +79,6 @@
   "activity": {
     "title": "Actividad",
     "my_ideas": "Mis Ideas",
-    "analytics": "Analíticas",
     "no_ideas": "Aún no has creado ninguna idea",
     "no_ideas_description": "Comienza compartiendo tu primera idea para ver tu actividad aquí",
     "ideas_list": {

@@ -12,8 +12,28 @@ import { ArrowLeft } from 'lucide-react'
 export default function ActivityPage() {
   const t = useTranslations()
   const router = useRouter()
-  const { isAuthenticated, user, profile } = useAppSelector(state => state.auth)
+  const { isAuthenticated, user, profile, initialized } = useAppSelector(
+    state => state.auth
+  )
   const [activeTab, setActiveTab] = useState<'ideas' | 'analytics'>('ideas')
+
+  if (!initialized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center space-y-4 max-w-md mx-auto p-6">
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
+            <div className="w-8 h-8 border-4 border-gray-300 border-t-accent rounded-full animate-spin"></div>
+          </div>
+          <h1 className="text-2xl font-bold text-text-primary">
+            {t('status.loading')}
+          </h1>
+          <p className="text-text-secondary">
+            {t('common.checking_authentication')}...
+          </p>
+        </div>
+      </div>
+    )
+  }
 
   if (!isAuthenticated || !user) {
     return (
@@ -57,7 +77,8 @@ export default function ActivityPage() {
                   {t('activity.title')}
                 </h1>
                 <p className="text-text-secondary mt-1">
-                  Welcome back, {profile?.full_name || user?.email || 'User'}
+                  {t('common.welcome_back')},{' '}
+                  {profile?.full_name || user?.email || 'User'}
                 </p>
               </div>
             </div>
@@ -81,7 +102,7 @@ export default function ActivityPage() {
                     : 'text-text-secondary hover:text-text-primary'
                 }`}
               >
-                Analytics
+                {t('common.analytics')}
               </button>
             </div>
           </div>
