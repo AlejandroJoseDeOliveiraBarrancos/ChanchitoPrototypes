@@ -21,7 +21,7 @@ export function Button({
   const variantStyles = {
     primary: 'bg-accent text-text-primary hover:bg-accent/90 focus:ring-accent',
     secondary: 'bg-accent-alt text-text-primary hover:bg-accent-alt/90 focus:ring-accent-alt',
-    outline: 'border-2 border-text-primary text-text-primary hover:bg-text-primary hover:text-white focus:ring-text-primary',
+    outline: 'border-2 border-text-primary text-text-primary hover:bg-text-primary hover:text-black focus:ring-text-primary',
   }
   
   const sizeStyles = {

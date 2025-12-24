@@ -42,7 +42,13 @@ type IdeaFormData = {
 // LocalStorage key for form persistence
 const FORM_STORAGE_KEY = 'idea_form_draft'
 
-export function IdeaForm() {
+interface IdeaFormProps {
+  defaultSpaceId?: string
+  onSuccess?: () => void
+  onCancel?: () => void
+}
+
+export function IdeaForm({ defaultSpaceId, onSuccess, onCancel }: IdeaFormProps = {}) {
   const router = useRouter()
   const t = useTranslations()
   const { locale } = useLocale()
@@ -69,6 +75,8 @@ export function IdeaForm() {
   const [showHeroCrop, setShowHeroCrop] = useState(false)
   const [isPreviewMode, setIsPreviewMode] = useState(false)
   const [isAnonymous, setIsAnonymous] = useState(false)
+  const [isUploadingHeroImage, setIsUploadingHeroImage] = useState(false)
+  const [isUploadingHeroVideo, setIsUploadingHeroVideo] = useState(false)
   const imageInputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
   const { profile } = useAppSelector(state => state.auth)
@@ -171,10 +179,15 @@ export function IdeaForm() {
           setIsAnonymous(parsed.isAnonymous)
         }
       }
+      
+      // Set default space if provided and no saved space
+      if (defaultSpaceId && !savedData) {
+        setValue('space_id', defaultSpaceId)
+      }
     } catch (error) {
       console.error('Error loading saved form data:', error)
     }
-  }, [setValue])
+  }, [setValue, defaultSpaceId])
 
   // Fetch available spaces from Supabase
   useEffect(() => {
@@ -357,12 +370,15 @@ export function IdeaForm() {
     const file = e.target.files?.[0]
     if (file) {
       try {
+        setIsUploadingHeroImage(true)
         const url = await uploadFile(file, 'images')
         setHeroImage(url)
         setHeroVideo(null)
         setShowImageUpload(false)
       } catch (error) {
         alert(error instanceof Error ? error.message : 'Upload failed')
+      } finally {
+        setIsUploadingHeroImage(false)
       }
     }
   }
@@ -371,12 +387,15 @@ export function IdeaForm() {
     const file = e.target.files?.[0]
     if (file) {
       try {
+        setIsUploadingHeroVideo(true)
         const url = await uploadFile(file, 'videos')
         setHeroVideo(url)
         setHeroImage(null)
         setShowVideoUpload(false)
       } catch (error) {
         alert(error instanceof Error ? error.message : 'Upload failed')
+      } finally {
+        setIsUploadingHeroVideo(false)
       }
     }
   }
@@ -511,8 +530,12 @@ export function IdeaForm() {
         }
       }
 
-      // Redirect to the created idea page
-      router.push(`/${locale}/ideas/${createdIdea.id}`)
+      // Call onSuccess callback if provided, otherwise redirect
+      if (onSuccess) {
+        onSuccess()
+      } else {
+        router.push(`/${locale}/ideas/${createdIdea.id}`)
+      }
     } catch (error) {
       console.error('Error creating idea:', error)
       setSubmitProgress('')
@@ -708,14 +731,19 @@ export function IdeaForm() {
             <div className="text-center px-6 max-w-2xl z-10">
               {showImageUpload ? (
                 <div className="space-y-4">
-                  <label className="flex flex-col items-center gap-2 px-6 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg text-white transition-colors cursor-pointer">
-                    <Upload className="w-8 h-8" />
-                    <span>{t('form.upload_image')} (max 50MB)</span>
+                  <label className={`flex flex-col items-center gap-2 px-6 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg text-white transition-colors ${isUploadingHeroImage ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
+                    {isUploadingHeroImage ? (
+                      <Loader2 className="w-8 h-8 animate-spin" />
+                    ) : (
+                      <Upload className="w-8 h-8" />
+                    )}
+                    <span>{isUploadingHeroImage ? t('status.loading') : `${t('form.upload_image')} (max 50MB)`}</span>
                     <input
                       type="file"
                       accept="image/*"
                       onChange={handleImageUpload}
                       className="hidden"
+                      disabled={isUploadingHeroImage}
                     />
                   </label>
                   <div className="flex gap-2 justify-center">
@@ -744,14 +772,19 @@ export function IdeaForm() {
                 </div>
               ) : showVideoUpload ? (
                 <div className="space-y-4">
-                  <label className="flex flex-col items-center gap-2 px-6 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg text-white transition-colors cursor-pointer">
-                    <Upload className="w-8 h-8" />
-                    <span>{t('form.upload_video')} (max 50MB)</span>
+                  <label className={`flex flex-col items-center gap-2 px-6 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg text-white transition-colors ${isUploadingHeroVideo ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
+                    {isUploadingHeroVideo ? (
+                      <Loader2 className="w-8 h-8 animate-spin" />
+                    ) : (
+                      <Upload className="w-8 h-8" />
+                    )}
+                    <span>{isUploadingHeroVideo ? t('status.loading') : `${t('form.upload_video')} (max 50MB)`}</span>
                     <input
                       type="file"
                       accept="video/*"
                       onChange={handleVideoUpload}
                       className="hidden"
+                      disabled={isUploadingHeroVideo}
                     />
                   </label>
                   <div className="flex gap-2 justify-center">

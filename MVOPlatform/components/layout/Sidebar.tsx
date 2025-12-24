@@ -17,6 +17,7 @@ import {
   MoreHorizontal,
   X,
   LogIn,
+  FolderKanban,
 } from 'lucide-react'
 import { clientEnv } from '@/config/env'
 import { UserMenu } from '@/components/ui/UserMenu'
@@ -196,6 +197,13 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       icon: Heart,
       href: `/${currentLocale}/for-you`,
       active: pathname === `/${currentLocale}/for-you`,
+    },
+    {
+      id: 'spaces',
+      label: t('navigation.spaces'),
+      icon: FolderKanban,
+      href: `/${currentLocale}/spaces`,
+      active: pathname === `/${currentLocale}/spaces` || pathname?.startsWith(`/${currentLocale}/spaces/`),
     },
     {
       id: 'activity',
