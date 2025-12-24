@@ -574,51 +574,153 @@ class SupabaseIdeaService implements IIdeaService {
   }
 
   async getUserIdeas(limit?: number, offset = 0): Promise<Idea[]> {
+    // Get the current session instead of just the user
     const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    if (!user) throw new Error('User not authenticated')
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession()
 
-    const { data, error } = await supabase
-      .from('ideas')
-      .select(
-        `
-        id,
-        title,
-        status_flag,
-        content,
-        created_at,
-        users!ideas_creator_id_fkey (
-          username,
-          full_name
-        ),
-        idea_votes (
-          vote_type
-        ),
-        idea_tags (
-          tags (
-            name
-          )
-        ),
-        comments!left (
-          id
-        )
-      `
+    if (sessionError) {
+      console.error('getUserIdeas - Session error:', sessionError)
+      throw sessionError
+    }
+
+    if (!session?.user) {
+      console.error('getUserIdeas - No active session found')
+      throw new Error('User not authenticated')
+    }
+
+    const user = session.user
+    console.log('getUserIdeas - Supabase user ID:', user.id)
+    console.log('getUserIdeas - Querying ideas for creator_id:', user.id)
+    console.log('getUserIdeas - User object:', JSON.stringify(user, null, 2))
+
+    // Call getUserIdeasAnalytics to get the data, then extract just the ideas
+    try {
+      const analyticsData = await this.getUserIdeasAnalytics()
+      console.log(
+        'getUserIdeas - Analytics data received:',
+        analyticsData.totalIdeas,
+        'ideas'
       )
-      .eq('creator_id', user.id)
-      .order('created_at', { ascending: false })
-      .range(offset, limit ? offset + limit - 1 : undefined)
 
-    if (error) throw error
+      if (analyticsData.totalIdeas === 0) {
+        console.log('getUserIdeas - No ideas found via analytics method')
+        return []
+      }
 
-    return data?.map(this.mapDbIdeaToIdea) || []
+      // Apply sorting based on the requested sort option
+      let sortedIdeas = [
+        ...analyticsData.topPerformingIdeas,
+        ...analyticsData.worstPerformingIdeas,
+        ...analyticsData.mostDiscussedIdeas,
+      ]
+
+      // Remove duplicates and sort by creation date (most recent first)
+      const uniqueIdeas = sortedIdeas.filter(
+        (idea, index, self) => index === self.findIndex(t => t.id === idea.id)
+      )
+
+      uniqueIdeas.sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )
+
+      console.log(
+        'getUserIdeas - Unique sorted ideas:',
+        uniqueIdeas.length,
+        uniqueIdeas
+      )
+
+      // Apply limit if specified
+      const limitedIdeas = limit ? uniqueIdeas.slice(0, limit) : uniqueIdeas
+      console.log(
+        'getUserIdeas - Final result:',
+        limitedIdeas.length,
+        limitedIdeas
+      )
+
+      return limitedIdeas
+    } catch (error) {
+      console.error(
+        'getUserIdeas - Error using analytics method, falling back to direct query:',
+        error
+      )
+
+      // Fallback to direct query if analytics method fails
+      const { data, error: directError } = await supabase
+        .from('ideas')
+        .select(
+          `
+          id,
+          title,
+          status_flag,
+          content,
+          created_at,
+          users!ideas_creator_id_fkey (
+            username,
+            full_name
+          ),
+          idea_votes (
+            vote_type
+          ),
+          idea_tags (
+            tags (
+              name
+            )
+          ),
+          comments!left (
+            id
+          )
+        `
+        )
+        .eq('creator_id', user.id)
+        .order('created_at', { ascending: false })
+        .range(offset, limit ? offset + limit - 1 : undefined)
+
+      if (directError) {
+        console.error('getUserIdeas - Direct query error:', directError)
+        throw directError
+      }
+
+      const mappedIdeas = data?.map(this.mapDbIdeaToIdea) || []
+      console.log(
+        'getUserIdeas - Mapped ideas from direct query:',
+        mappedIdeas.length,
+        mappedIdeas
+      )
+
+      return mappedIdeas
+    }
   }
 
   async getUserIdeasAnalytics() {
+    // Get the current session instead of just the user
     const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    if (!user) throw new Error('User not authenticated')
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession()
+
+    if (sessionError) {
+      console.error('getUserIdeasAnalytics - Session error:', sessionError)
+      throw sessionError
+    }
+
+    if (!session?.user) {
+      console.error('getUserIdeasAnalytics - No active session found')
+      throw new Error('User not authenticated')
+    }
+
+    const user = session.user
+    console.log('getUserIdeasAnalytics - Supabase user ID:', user.id)
+    console.log(
+      'getUserIdeasAnalytics - Querying analytics for creator_id:',
+      user.id
+    )
+    console.log(
+      'getUserIdeasAnalytics - User object:',
+      JSON.stringify(user, null, 2)
+    )
 
     const { data: ideas, error } = await supabase
       .from('ideas')
@@ -649,8 +751,15 @@ class SupabaseIdeaService implements IIdeaService {
       .eq('creator_id', user.id)
       .order('created_at', { ascending: false })
 
+    console.log('getUserIdeasAnalytics - Raw query result:', {
+      ideas,
+      error,
+      count: ideas?.length,
+    })
+
     if (error) throw error
     if (!ideas || ideas.length === 0) {
+      console.log('getUserIdeasAnalytics - No ideas found')
       return {
         totalIdeas: 0,
         totalVotes: 0,
@@ -665,6 +774,11 @@ class SupabaseIdeaService implements IIdeaService {
     }
 
     const mappedIdeas = ideas.map(this.mapDbIdeaToIdea)
+    console.log(
+      'getUserIdeasAnalytics - Mapped ideas:',
+      mappedIdeas.length,
+      mappedIdeas
+    )
 
     const totalVotes = mappedIdeas.reduce((sum, idea) => sum + idea.votes, 0)
     const totalComments = mappedIdeas.reduce(

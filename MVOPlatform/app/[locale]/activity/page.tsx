@@ -87,7 +87,11 @@ export default function ActivityPage() {
           </div>
 
           <div className="mt-8">
-            {activeTab === 'ideas' ? <UserIdeasList /> : <UserAnalytics />}
+            {activeTab === 'ideas' ? (
+              <UserIdeasList key="ideas-list" />
+            ) : (
+              <UserAnalytics key="analytics" />
+            )}
           </div>
         </div>
       </main>

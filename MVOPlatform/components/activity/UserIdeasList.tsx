@@ -7,7 +7,7 @@ import { ideaService } from '@/lib/services/ideaService'
 import { Idea } from '@/lib/types/idea'
 import { IdeaCard } from '@/components/ideas/IdeaCard'
 import { Button } from '@/components/ui/Button'
-import { Plus, SortAsc, Filter } from 'lucide-react'
+import { Plus, SortAsc, Filter, RefreshCw } from 'lucide-react'
 
 type SortOption = 'recent' | 'popular' | 'most_votes' | 'highest_score'
 
@@ -23,15 +23,24 @@ export function UserIdeasList() {
     loadUserIdeas()
   }, [sortBy])
 
+  // Add a refresh function that can be called externally
+  const refreshIdeas = () => {
+    loadUserIdeas()
+  }
+
   const loadUserIdeas = async () => {
     try {
       setLoading(true)
       setError(null)
+
+      console.log('Loading user ideas...')
       const userIdeas = await ideaService.getUserIdeas()
+      console.log('Loaded user ideas:', userIdeas.length, userIdeas)
       setIdeas(userIdeas)
     } catch (err) {
       console.error('Error loading user ideas:', err)
       setError('Failed to load ideas')
+      setIdeas([])
     } finally {
       setLoading(false)
     }
@@ -107,14 +116,24 @@ export function UserIdeasList() {
           <p className="text-text-secondary mb-6">
             {t('activity.no_ideas_description')}
           </p>
-          <Button
-            onClick={() => router.push('/upload')}
-            variant="primary"
-            className="inline-flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            {t('actions.submit_idea')}
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button
+              onClick={() => router.push('/upload')}
+              variant="primary"
+              className="inline-flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              {t('actions.submit_idea')}
+            </Button>
+            <Button
+              onClick={refreshIdeas}
+              variant="outline"
+              className="inline-flex items-center gap-2"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Refresh Ideas
+            </Button>
+          </div>
         </div>
       </div>
     )
@@ -154,6 +173,15 @@ export function UserIdeasList() {
               </option>
             </select>
           </div>
+          <Button
+            onClick={refreshIdeas}
+            variant="outline"
+            className="inline-flex items-center gap-2"
+            size="sm"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Refresh
+          </Button>
         </div>
       </div>
 
