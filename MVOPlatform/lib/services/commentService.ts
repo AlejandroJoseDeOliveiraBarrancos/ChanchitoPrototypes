@@ -64,9 +64,10 @@ class SupabaseCommentService implements ICommentService {
         parent_comment_id,
         content,
         created_at,
-        users!comments_user_id_fkey (
+        public_user_profiles!comments_user_id_fkey (
           username,
-          full_name
+          full_name,
+          profile_image_url
         ),
         comment_votes (
           reaction_type
@@ -124,9 +125,10 @@ class SupabaseCommentService implements ICommentService {
         parent_comment_id,
         content,
         created_at,
-        users!comments_user_id_fkey (
+        public_user_profiles!comments_user_id_fkey (
           username,
-          full_name
+          full_name,
+          profile_image_url
         )
       `
       )
@@ -280,9 +282,10 @@ class SupabaseCommentService implements ICommentService {
         parent_comment_id,
         content,
         created_at,
-        users!comments_user_id_fkey (
+        public_user_profiles!comments_user_id_fkey (
           username,
-          full_name
+          full_name,
+          profile_image_url
         ),
         comment_votes (
           reaction_type
@@ -336,8 +339,10 @@ class SupabaseCommentService implements ICommentService {
       id: dbComment.id,
       ideaId: dbComment.idea_id,
       author:
-        dbComment.users?.username || dbComment.users?.full_name || 'Anonymous',
-      authorImage: undefined, // TODO: Implement profile image fetching
+        dbComment.public_user_profiles?.username ||
+        dbComment.public_user_profiles?.full_name ||
+        'Anonymous',
+      authorImage: dbComment.public_user_profiles?.profile_image_url,
       content: dbComment.content,
       createdAt: dbComment.created_at,
       upvotes,

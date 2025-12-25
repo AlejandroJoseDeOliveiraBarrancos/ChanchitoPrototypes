@@ -59,7 +59,11 @@ export interface IIdeaService {
   /**
    * Get ideas for a specific space
    */
-  getIdeasBySpace(spaceId: string, limit?: number, offset?: number): Promise<Idea[]>
+  getIdeasBySpace(
+    spaceId: string,
+    limit?: number,
+    offset?: number
+  ): Promise<Idea[]>
 
   /**
    * Create a new idea
@@ -109,6 +113,38 @@ export interface IIdeaService {
   getUserVotesForIdeas(
     ideaIds: string[]
   ): Promise<Record<string, { use: boolean; dislike: boolean; pay: boolean }>>
+
+  /**
+   * Get ideas created by the current user
+   * @param limit Optional limit for number of ideas to return
+   * @param offset Optional offset for pagination
+   */
+  getUserIdeas(limit?: number, offset?: number): Promise<Idea[]>
+
+  /**
+   * Get analytics data for user's ideas
+   */
+  getUserIdeasAnalytics(): Promise<{
+    totalIdeas: number
+    totalVotes: number
+    totalComments: number
+    averageScore: number
+    engagementRate: number
+    impactScore: number
+    feasibilityScore: number
+    ideasWithStats: Array<{
+      idea: Idea
+      engagementRate: number
+      voteDistribution: { use: number; dislike: number; pay: number }
+      categoryDistribution: Record<string, number>
+    }>
+    topPerformingIdeas: Idea[]
+    worstPerformingIdeas: Idea[]
+    mostDiscussedIdeas: Idea[]
+    voteTypeBreakdown: { use: number; dislike: number; pay: number }
+    categoryBreakdown: Record<string, number>
+    sentimentAnalysis: { positive: number; neutral: number; negative: number }
+  }>
 }
 
 /**
@@ -128,7 +164,8 @@ class SupabaseIdeaService implements IIdeaService {
         anonymous,
         users!ideas_creator_id_fkey (
           username,
-          full_name
+          full_name,
+          email
         ),
         idea_votes (
           vote_type
@@ -164,7 +201,8 @@ class SupabaseIdeaService implements IIdeaService {
         anonymous,
         users!ideas_creator_id_fkey (
           username,
-          full_name
+          full_name,
+          email
         ),
         idea_votes (
           vote_type
@@ -204,7 +242,8 @@ class SupabaseIdeaService implements IIdeaService {
         anonymous,
         users!ideas_creator_id_fkey (
           username,
-          full_name
+          full_name,
+          email
         ),
         idea_votes (
           vote_type
@@ -229,7 +268,50 @@ class SupabaseIdeaService implements IIdeaService {
   }
 
   async getTrendingIdeas(limit = 5): Promise<Idea[]> {
-    return this.getFeaturedIdeas(limit)
+    const { data, error } = await supabase
+      .from('ideas')
+      .select(
+        `
+        id,
+        title,
+        status_flag,
+        content,
+        created_at,
+        anonymous,
+        users!ideas_creator_id_fkey (
+          username,
+          full_name,
+          email
+        ),
+        idea_votes (
+          vote_type
+        ),
+        idea_tags (
+          tags (
+            name
+          )
+        ),
+        comments!left (
+          id
+        )
+      `
+      )
+      .neq('status_flag', 'validated')
+      .order('created_at', { ascending: false })
+      .limit(limit * 10) // Fetch more to filter later
+
+    if (error) throw error
+
+    const ideas = data?.map(this.mapDbIdeaToIdea) || []
+
+    // Filter ideas with at least one video or image
+    const ideasWithMedia = ideas.filter(idea => idea.video || idea.image)
+
+    // Sort by total votes (descending)
+    const sortedIdeas = ideasWithMedia.sort((a, b) => b.votes - a.votes)
+
+    // Return top ideas up to the limit
+    return sortedIdeas.slice(0, limit)
   }
 
   async getNewIdeas(limit = 2): Promise<Idea[]> {
@@ -245,7 +327,8 @@ class SupabaseIdeaService implements IIdeaService {
         anonymous,
         users!ideas_creator_id_fkey (
           username,
-          full_name
+          full_name,
+          email
         ),
         idea_votes (
           vote_type
@@ -282,7 +365,8 @@ class SupabaseIdeaService implements IIdeaService {
         anonymous,
         users!ideas_creator_id_fkey (
           username,
-          full_name
+          full_name,
+          email
         ),
         idea_votes (
           vote_type
@@ -319,7 +403,8 @@ class SupabaseIdeaService implements IIdeaService {
         anonymous,
         users!ideas_creator_id_fkey (
           username,
-          full_name
+          full_name,
+          email
         ),
         idea_votes (
           vote_type
@@ -547,6 +632,345 @@ class SupabaseIdeaService implements IIdeaService {
     return result
   }
 
+  async getUserIdeas(limit?: number, offset = 0): Promise<Idea[]> {
+    // Get the current session instead of just the user
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession()
+
+    if (sessionError) {
+      console.error('getUserIdeas - Session error:', sessionError)
+      throw sessionError
+    }
+
+    if (!session?.user) {
+      console.error('getUserIdeas - No active session found')
+      throw new Error('User not authenticated')
+    }
+
+    const user = session.user
+    console.log('getUserIdeas - Supabase user ID:', user.id)
+    console.log('getUserIdeas - Querying ideas for creator_id:', user.id)
+    console.log('getUserIdeas - User object:', JSON.stringify(user, null, 2))
+
+    // Call getUserIdeasAnalytics to get the data, then extract just the ideas
+    try {
+      const analyticsData = await this.getUserIdeasAnalytics()
+      console.log(
+        'getUserIdeas - Analytics data received:',
+        analyticsData.totalIdeas,
+        'ideas'
+      )
+
+      if (analyticsData.totalIdeas === 0) {
+        console.log('getUserIdeas - No ideas found via analytics method')
+        return []
+      }
+
+      // Apply sorting based on the requested sort option
+      let sortedIdeas = [
+        ...analyticsData.topPerformingIdeas,
+        ...analyticsData.worstPerformingIdeas,
+        ...analyticsData.mostDiscussedIdeas,
+      ]
+
+      // Remove duplicates and sort by creation date (most recent first)
+      const uniqueIdeas = sortedIdeas.filter(
+        (idea, index, self) => index === self.findIndex(t => t.id === idea.id)
+      )
+
+      uniqueIdeas.sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )
+
+      console.log(
+        'getUserIdeas - Unique sorted ideas:',
+        uniqueIdeas.length,
+        uniqueIdeas
+      )
+
+      // Apply limit if specified
+      const limitedIdeas = limit ? uniqueIdeas.slice(0, limit) : uniqueIdeas
+      console.log(
+        'getUserIdeas - Final result:',
+        limitedIdeas.length,
+        limitedIdeas
+      )
+
+      return limitedIdeas
+    } catch (error) {
+      console.error(
+        'getUserIdeas - Error using analytics method, falling back to direct query:',
+        error
+      )
+
+      // Fallback to direct query if analytics method fails
+      const { data, error: directError } = await supabase
+        .from('ideas')
+        .select(
+          `
+          id,
+          title,
+          status_flag,
+          content,
+          created_at,
+          users!ideas_creator_id_fkey (
+            username,
+            full_name,
+            email
+          ),
+          idea_votes (
+            vote_type
+          ),
+          idea_tags (
+            tags (
+              name
+            )
+          ),
+          comments!left (
+            id
+          )
+        `
+        )
+        .eq('creator_id', user.id)
+        .order('created_at', { ascending: false })
+        .range(offset, limit ? offset + limit - 1 : undefined)
+
+      if (directError) {
+        console.error('getUserIdeas - Direct query error:', directError)
+        throw directError
+      }
+
+      const mappedIdeas = data?.map(this.mapDbIdeaToIdea) || []
+      console.log(
+        'getUserIdeas - Mapped ideas from direct query:',
+        mappedIdeas.length,
+        mappedIdeas
+      )
+
+      return mappedIdeas
+    }
+  }
+
+  async getUserIdeasAnalytics() {
+    // Get the current session instead of just the user
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession()
+
+    if (sessionError) {
+      console.error('getUserIdeasAnalytics - Session error:', sessionError)
+      throw sessionError
+    }
+
+    if (!session?.user) {
+      console.error('getUserIdeasAnalytics - No active session found')
+      throw new Error('User not authenticated')
+    }
+
+    const user = session.user
+    console.log('getUserIdeasAnalytics - Supabase user ID:', user.id)
+    console.log(
+      'getUserIdeasAnalytics - Querying analytics for creator_id:',
+      user.id
+    )
+    console.log(
+      'getUserIdeasAnalytics - User object:',
+      JSON.stringify(user, null, 2)
+    )
+
+    const { data: ideas, error } = await supabase
+      .from('ideas')
+      .select(
+        `
+        id,
+        title,
+        status_flag,
+        content,
+        created_at,
+        users!ideas_creator_id_fkey (
+          username,
+          full_name,
+          email
+        ),
+        idea_votes (
+          vote_type
+        ),
+        idea_tags (
+          tags (
+            name
+          )
+        ),
+        comments!left (
+          id
+        )
+      `
+      )
+      .eq('creator_id', user.id)
+      .order('created_at', { ascending: false })
+
+    console.log('getUserIdeasAnalytics - Raw query result:', {
+      ideas,
+      error,
+      count: ideas?.length,
+    })
+
+    if (error) throw error
+    if (!ideas || ideas.length === 0) {
+      console.log('getUserIdeasAnalytics - No ideas found')
+      return {
+        totalIdeas: 0,
+        totalVotes: 0,
+        totalComments: 0,
+        averageScore: 0,
+        engagementRate: 0,
+        impactScore: 0,
+        feasibilityScore: 0,
+        ideasWithStats: [],
+        topPerformingIdeas: [],
+        worstPerformingIdeas: [],
+        mostDiscussedIdeas: [],
+        voteTypeBreakdown: { use: 0, dislike: 0, pay: 0 },
+        categoryBreakdown: {},
+        sentimentAnalysis: { positive: 0, neutral: 0, negative: 0 },
+      }
+    }
+
+    const mappedIdeas = ideas.map(this.mapDbIdeaToIdea)
+    console.log(
+      'getUserIdeasAnalytics - Mapped ideas:',
+      mappedIdeas.length,
+      mappedIdeas
+    )
+
+    const totalIdeasCount = mappedIdeas.length
+    const totalVotes = mappedIdeas.reduce((sum, idea) => sum + idea.votes, 0)
+    const totalComments = mappedIdeas.reduce(
+      (sum, idea) => sum + idea.commentCount,
+      0
+    )
+    const averageScore =
+      totalIdeasCount > 0
+        ? mappedIdeas.reduce((sum, idea) => sum + idea.score, 0) /
+          totalIdeasCount
+        : 0
+
+    // Calculate engagement rate (0-100%)
+    const totalInteractions = totalVotes + totalComments
+    const engagementRate =
+      totalIdeasCount > 0
+        ? Math.min(100, (totalInteractions / totalIdeasCount) * 10)
+        : 0
+
+    // Calculate impact score (based on pay votes and comments)
+    const totalPayVotes = mappedIdeas.reduce(
+      (sum, idea) => sum + idea.votesByType.pay,
+      0
+    )
+    const impactScore =
+      totalIdeasCount > 0
+        ? Math.min(
+            100,
+            ((totalPayVotes * 3 + totalComments) / totalIdeasCount) * 5
+          )
+        : 0
+
+    // Calculate feasibility score (based on use votes vs dislike votes)
+    const totalUseVotes = mappedIdeas.reduce(
+      (sum, idea) => sum + idea.votesByType.use,
+      0
+    )
+    const totalDislikeVotes = mappedIdeas.reduce(
+      (sum, idea) => sum + idea.votesByType.dislike,
+      0
+    )
+    const feasibilityScore =
+      totalVotes > 0
+        ? Math.min(
+            100,
+            ((totalUseVotes - totalDislikeVotes) / (totalVotes + 1)) * 50 + 50
+          )
+        : 0
+
+    const voteTypeBreakdown = mappedIdeas.reduce(
+      (acc, idea) => ({
+        use: acc.use + idea.votesByType.use,
+        dislike: acc.dislike + idea.votesByType.dislike,
+        pay: acc.pay + idea.votesByType.pay,
+      }),
+      { use: 0, dislike: 0, pay: 0 }
+    )
+
+    // Calculate category breakdown
+    const categoryBreakdown: Record<string, number> = {}
+    mappedIdeas.forEach(idea => {
+      idea.tags.forEach(tag => {
+        categoryBreakdown[tag] = (categoryBreakdown[tag] || 0) + 1
+      })
+    })
+
+    // Simple sentiment analysis based on score distribution
+    const positiveIdeas = mappedIdeas.filter(idea => idea.score > 50).length
+    const neutralIdeas = mappedIdeas.filter(
+      idea => idea.score >= 20 && idea.score <= 50
+    ).length
+    const negativeIdeas = mappedIdeas.filter(idea => idea.score < 20).length
+
+    const sentimentAnalysis = {
+      positive:
+        totalIdeasCount > 0 ? (positiveIdeas / totalIdeasCount) * 100 : 0,
+      neutral: totalIdeasCount > 0 ? (neutralIdeas / totalIdeasCount) * 100 : 0,
+      negative:
+        totalIdeasCount > 0 ? (negativeIdeas / totalIdeasCount) * 100 : 0,
+    }
+
+    const ideasWithStats = mappedIdeas.map(idea => {
+      const ideaInteractions = idea.votes + idea.commentCount
+      const ideaEngagementRate =
+        ideaInteractions > 0
+          ? Math.min(100, (ideaInteractions / (totalInteractions + 1)) * 100)
+          : 0
+
+      // Calculate category distribution for this idea
+      const ideaCategoryDistribution: Record<string, number> = {}
+      idea.tags.forEach(tag => {
+        ideaCategoryDistribution[tag] = 1
+      })
+
+      return {
+        idea,
+        engagementRate: ideaEngagementRate,
+        voteDistribution: idea.votesByType,
+        categoryDistribution: ideaCategoryDistribution,
+      }
+    })
+
+    const sortedByScore = [...mappedIdeas].sort((a, b) => b.score - a.score)
+    const sortedByComments = [...mappedIdeas].sort(
+      (a, b) => b.commentCount - a.commentCount
+    )
+
+    return {
+      totalIdeas: totalIdeasCount,
+      totalVotes,
+      totalComments,
+      averageScore,
+      engagementRate,
+      impactScore,
+      feasibilityScore,
+      ideasWithStats,
+      topPerformingIdeas: sortedByScore.slice(0, 5),
+      worstPerformingIdeas: sortedByScore.slice(-3).reverse(),
+      mostDiscussedIdeas: sortedByComments.slice(0, 3),
+      voteTypeBreakdown,
+      categoryBreakdown,
+      sentimentAnalysis,
+    }
+  }
+
   private mapDbIdeaToIdea(dbIdea: any): Idea {
     const votes = dbIdea.idea_votes || []
     const voteCounts = {
@@ -596,6 +1020,11 @@ class SupabaseIdeaService implements IIdeaService {
     }
 
     // Backward compatibility: check other blocks for media (for old data)
+    // Include creator email for ownership verification
+    const creatorEmail = dbIdea.users?.email || null
+
+    const content = dbIdea.content as ContentBlock[] | undefined
+
     const video =
       heroVideo ||
       contentBlocks?.find(block => block.type === 'video')?.src ||
@@ -606,7 +1035,7 @@ class SupabaseIdeaService implements IIdeaService {
     const commentCount = dbIdea.comments?.length || 0
 
     // Backward compatibility: extract image from blocks (for old data)
-    const image = 
+    const image =
       heroImage ||
       contentBlocks?.find(block => block.type === 'image')?.src ||
       contentBlocks
@@ -629,6 +1058,7 @@ class SupabaseIdeaService implements IIdeaService {
       content: contentBlocks, // Only content blocks, hero media is stored separately
       status_flag: dbIdea.status_flag,
       anonymous: dbIdea.anonymous || false,
+      creatorEmail, // Add creator email for ownership verification
     }
   }
 
@@ -640,7 +1070,7 @@ class SupabaseIdeaService implements IIdeaService {
 
     // Prepare content with hero media metadata
     const contentWithMetadata = ideaData.content || []
-    
+
     // Store hero media in content metadata (first element if it's image/video, or add metadata)
     let finalContent = contentWithMetadata
     if (ideaData.image || ideaData.video) {
@@ -711,20 +1141,32 @@ class SupabaseIdeaService implements IIdeaService {
     // Build update object
     const updateData: any = {}
     if (updates.title !== undefined) updateData.title = updates.title
-    if (updates.status_flag !== undefined) updateData.status_flag = updates.status_flag
-    if (updates.anonymous !== undefined) updateData.anonymous = updates.anonymous
-    
+    if (updates.status_flag !== undefined)
+      updateData.status_flag = updates.status_flag
+    if (updates.anonymous !== undefined)
+      updateData.anonymous = updates.anonymous
+
     // Handle content update with hero media
-    if (updates.content !== undefined || updates.image !== undefined || updates.video !== undefined || updates.description !== undefined) {
+    if (
+      updates.content !== undefined ||
+      updates.image !== undefined ||
+      updates.video !== undefined ||
+      updates.description !== undefined
+    ) {
       // Get current idea to merge content
       const currentIdea = await this.getIdeaById(ideaId)
       const currentContent = currentIdea?.content || []
-      
+
       updateData.content = {
         blocks: updates.content || currentContent,
-        hero_image: updates.image !== undefined ? updates.image : currentIdea?.image,
-        hero_video: updates.video !== undefined ? updates.video : currentIdea?.video,
-        description: updates.description !== undefined ? updates.description : currentIdea?.description,
+        hero_image:
+          updates.image !== undefined ? updates.image : currentIdea?.image,
+        hero_video:
+          updates.video !== undefined ? updates.video : currentIdea?.video,
+        description:
+          updates.description !== undefined
+            ? updates.description
+            : currentIdea?.description,
       }
     }
 
@@ -798,18 +1240,18 @@ class SupabaseIdeaService implements IIdeaService {
 
     if (!user) {
       // If not authenticated, return only public spaces
-    const { data, error } = await supabase
-      .from('enterprise_spaces')
-      .select('id, name, team_id')
+      const { data, error } = await supabase
+        .from('enterprise_spaces')
+        .select('id, name, team_id')
         .eq('visibility', 'public')
-      .order('name')
+        .order('name')
 
-    if (error) {
-      console.error('Error fetching spaces:', error)
-      throw error
-    }
+      if (error) {
+        console.error('Error fetching spaces:', error)
+        throw error
+      }
 
-    return data || []
+      return data || []
     }
 
     // Get public spaces

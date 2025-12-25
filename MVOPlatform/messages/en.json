@@ -36,7 +36,8 @@
     "share": "Share",
     "back": "Back",
     "delete": "Delete",
-    "ok": "OK"
+    "ok": "OK",
+    "try_again": "Try Again"
   },
   "status": {
     "loading": "Loading...",
@@ -50,7 +51,26 @@
     "submitted": "Submitted",
     "validation_report": "Validation Report",
     "anonymous": "Anonymous",
-    "by": "By"
+    "by": "By",
+    "welcome_back": "Welcome back",
+    "refresh": "Refresh",
+    "checking_authentication": "Checking authentication",
+    "analytics": "Analytics",
+    "votes": "Votes",
+    "comments": "Comments",
+    "total_interactions": "Total Interactions",
+    "neutral": "Neutral",
+    "market_potential": "Market Potential",
+    "feasibility_score": "Feasibility Score",
+    "impact_score": "Impact Score",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low",
+    "percentage": "Percentage",
+    "idea_score": "Idea Score",
+    "total_votes": "Total Votes",
+    "total_comments": "Total Comments",
+    "vote": "vote"
   },
   "auth": {
     "sign_in_required": "Sign In Required",
@@ -66,6 +86,87 @@
     "for_you_title": "For You",
     "for_you_subtitle": "Ideas curated just for you",
     "new_ideas": "New Ideas"
+  },
+  "activity": {
+    "title": "Activity",
+    "my_ideas": "My Ideas",
+    "no_ideas": "You haven't created any ideas yet",
+    "no_ideas_description": "Start by sharing your first idea to see your activity here",
+    "ideas_list": {
+      "title": "Your Ideas",
+      "subtitle": "Ideas you've created",
+      "sort_by": "Sort by",
+      "sort_options": {
+        "recent": "Most Recent",
+        "popular": "Most Popular",
+        "most_votes": "Most Votes",
+        "highest_score": "Highest Score"
+      }
+    },
+    "analytics": {
+      "title": "Analytics Dashboard",
+      "subtitle": "Insights about your ideas performance",
+      "overview": {
+        "total_ideas": "Total Ideas",
+        "total_votes": "Total Votes",
+        "total_comments": "Total Comments",
+        "avg_score": "Average Score",
+        "engagement_rate": "Engagement Rate",
+        "impact_score": "Impact Score",
+        "feasibility_score": "Feasibility Score"
+      },
+      "charts": {
+        "votes_distribution": "Votes Distribution",
+        "ideas_performance": "Idea Performance",
+        "interaction_timeline": "Interaction Timeline",
+        "top_performing_ideas": "Top Performing Ideas",
+        "vote_types_breakdown": "Vote Types Breakdown",
+        "category_distribution": "Category Distribution",
+        "sentiment_analysis": "Sentiment Analysis"
+      },
+      "best_idea": "Best Performing Idea",
+      "worst_idea": "Needs Improvement",
+      "most_interacted": "Most Discussed",
+      "no_data": "No data available yet",
+      "idea_analytics": {
+        "title": "Idea Analytics",
+        "subtitle": "Detailed insights about this idea",
+        "score_explanation": "Score Explanation",
+        "score_description": "This score reflects the overall market validation of your idea. Higher scores indicate stronger market potential.",
+        "vote_meaning": "What Votes Mean",
+        "vote_meaning_description": "Votes help determine the feasibility and impact of your idea:",
+        "up_vote": "I would use this - Indicates market demand",
+        "down_vote": "I wouldn't use this - Indicates potential issues",
+        "pay_vote": "I would pay for this - Strongest validation signal",
+        "most_voted_comments": "Most Voted Comments",
+        "top_categories": "Top Categories",
+        "feasibility_assessment": "Feasibility Assessment",
+        "impact_assessment": "Impact Assessment",
+        "market_potential": "Market Potential",
+        "suggestions": "Suggestions for Improvement",
+        "no_comments": "No comments yet for this idea",
+        "sentiment_description": "This chart shows the overall sentiment of your idea based on user votes. \"Use\" votes indicate positive interest, \"Pay\" votes show strong validation, and \"Dislike\" votes suggest concerns.",
+        "overall_sentiment": "Overall Sentiment",
+        "suggestion_1": "Consider addressing concerns from users who wouldn't use this product",
+        "suggestion_2": "Explore ways to increase perceived value to encourage more \"I would pay\" votes",
+        "suggestion_3": "Encourage more user feedback and discussion to validate your idea further",
+        "suggestion_4": "Add relevant tags to help users discover your idea",
+        "all_good": "Your idea is performing well! Keep up the great work and continue engaging with your audience."
+      }
+    },
+    "example": {
+      "message": "Sign in to unlock your personal activity dashboard and analytics. Here's a preview of what you can access:",
+      "feature_1": "Track all your submitted ideas in one place",
+      "feature_2": "View detailed analytics and performance metrics",
+      "feature_3": "Get insights on market validation and user feedback",
+      "preview": "Dashboard Preview",
+      "idea_title_1": "Innovative SaaS Solution",
+      "idea_description": "A revolutionary software-as-a-service platform that streamlines business operations and increases productivity.",
+      "idea_title_2": "Eco-Friendly Product",
+      "idea_description_2": "Sustainable and biodegradable packaging solution for the food industry.",
+      "idea_title_3": "Mobile App Concept",
+      "idea_description_3": "A social networking app focused on professional development and mentorship."
+    }
   },
   "brand": {
     "name": "MVO",
@@ -282,13 +383,10 @@
     "visibility": "Visibility",
     "select_visibility": "Select visibility",
     "share_space": "Share Space",
-    "invite_members": "Invite Members",
     "confirm_delete_idea": "Are you sure you want to delete this idea? This action cannot be undone.",
     "error_deleting_idea": "Error deleting idea. Please try again.",
     "delete_idea": "Delete Idea",
     "error": "Error",
-    "link_copied": "Link copied to clipboard!",
-    "copy_link": "Copy this link to share the space:",
     "tags": "Tags",
     "topics": "Topics",
     "select_tags": "Select tags",

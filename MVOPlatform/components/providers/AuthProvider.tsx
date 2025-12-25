@@ -39,7 +39,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const isAuthPage = pathname.startsWith('/auth')
     const isProtectedPage =
-      pathname.startsWith('/upload') || pathname.startsWith('/admin')
+      pathname.startsWith('/upload') ||
+      pathname.startsWith('/admin') ||
+      pathname.startsWith('/activity')
 
     if (initialized && !isAuthPage && isProtectedPage) {
       if (!isAuthenticated || !profile || error) {

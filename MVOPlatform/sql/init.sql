@@ -48,6 +48,20 @@ CREATE TABLE media_assets (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Add foreign key constraint after both tables are created
+ALTER TABLE users ADD CONSTRAINT fk_users_profile_media_id FOREIGN KEY (profile_media_id) REFERENCES media_assets(id);
+
+-- Public user profiles view (safe fields only) - moved after media_assets table creation
+CREATE VIEW public_user_profiles AS
+  SELECT
+    u.id,
+    u.username,
+    u.full_name,
+    u.profile_media_id,
+    m.url as profile_image_url
+  FROM users u
+  LEFT JOIN media_assets m ON u.profile_media_id = m.id;
+
 -- Teams
 CREATE TABLE teams (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -159,6 +173,7 @@ CREATE TABLE ideas (
   title VARCHAR(255) NOT NULL,
   status_flag idea_status_flag NOT NULL DEFAULT 'new',
   pivot_state pivot_state NOT NULL DEFAULT 'stable',
+  anonymous BOOLEAN NOT NULL DEFAULT FALSE,
   content JSONB,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -371,8 +386,22 @@ CREATE INDEX idx_content_refs_collection ON content_refs(collection);
 -- Updated function for new user
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER AS $$
+DECLARE
+  avatar_url TEXT;
+  media_id UUID;
 BEGIN
-  INSERT INTO public.users (id, email, full_name, role, wishlist, favorite_categories, username)
+  -- Check if user has an avatar from OAuth
+  avatar_url := NEW.raw_user_meta_data->>'avatar_url';
+
+  -- If avatar exists, create media asset
+  IF avatar_url IS NOT NULL THEN
+    INSERT INTO public.media_assets (type, url)
+    VALUES ('image', avatar_url)
+    RETURNING id INTO media_id;
+  END IF;
+
+  -- Insert user with profile_media_id if available
+  INSERT INTO public.users (id, email, full_name, role, wishlist, favorite_categories, username, profile_media_id)
   VALUES (
     NEW.id,
     NEW.email,
@@ -380,7 +409,8 @@ BEGIN
     'user',
     '{}',
     '{}',
-    COALESCE(NEW.raw_user_meta_data->>'username', split_part(NEW.email, '@', 1))
+    COALESCE(NEW.raw_user_meta_data->>'username', split_part(NEW.email, '@', 1)),
+    media_id
   );
   RETURN NEW;
 END;
@@ -429,6 +459,16 @@ ALTER TABLE follow_topics ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users can view their own profile" ON users;
 CREATE POLICY "Users can view their own profile" ON users
   FOR SELECT USING (auth.uid() = id);
+
+-- Allow viewing user profiles for non-anonymous idea creators
+CREATE POLICY "Public read user profiles for idea creators" ON users
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM ideas
+      WHERE ideas.creator_id = users.id
+      AND ideas.anonymous = false
+    )
+  );
 
 DROP POLICY IF EXISTS "Users can update their own profile" ON users;
 CREATE POLICY "Users can update their own profile" ON users
@@ -493,6 +533,18 @@ CREATE POLICY "Authenticated create teams" ON teams FOR INSERT WITH CHECK (auth.
 
 CREATE POLICY "Public read spaces" ON enterprise_spaces FOR SELECT USING (true);
 CREATE POLICY "Authenticated create spaces" ON enterprise_spaces FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+
+-- Add RLS policy to allow users to add themselves to teams
+CREATE POLICY "Users can add themselves to teams" 
+ON team_memberships 
+FOR INSERT 
+WITH CHECK (auth.uid() = user_id);
+
+-- Also allow users to add themselves to spaces
+CREATE POLICY "Users can add themselves to spaces" 
+ON space_memberships 
+FOR INSERT 
+WITH CHECK (auth.uid() = user_id);
 
 -- Memberships: users view their own, admins view all
 CREATE POLICY "Users view own team_memberships" ON team_memberships FOR SELECT USING (auth.uid() = user_id);

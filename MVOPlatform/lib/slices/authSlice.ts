@@ -18,7 +18,14 @@ const waitForProfile = async (
   for (let i = 0; i < maxAttempts; i++) {
     const { data, error } = await supabase
       .from('users')
-      .select('*')
+      .select(
+        `
+        *,
+        media_assets (
+          url
+        )
+      `
+      )
       .eq('id', userId)
       .maybeSingle()
 
@@ -41,10 +48,15 @@ export const signInWithGoogle = createAsyncThunk(
   'auth/signInWithGoogle',
   async (_, { rejectWithValue }) => {
     try {
+      // Get the current locale from the URL using regex to match any locale
+      const pathname = window.location.pathname
+      const localeMatch = pathname.match(/^\/([a-z]{2})/)
+      const locale = localeMatch ? localeMatch[1] : 'en'
+
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `${window.location.origin}/${locale}/auth/callback`,
         },
       })
 
