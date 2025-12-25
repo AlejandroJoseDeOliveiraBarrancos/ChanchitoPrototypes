@@ -145,7 +145,7 @@ export default function Home() {
     <div className="h-screen w-full overflow-hidden bg-background flex">
       <Sidebar />
 
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto ml-16 md:ml-64 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         {/* Hero Carousel at the top */}
         <HeroCarousel />
         {/* Home Feed below - loaded directly, not lazy */}

@@ -170,7 +170,7 @@ export function SpaceDetailPage({ spaceId }: SpaceDetailPageProps) {
     return (
       <div className="h-screen w-full overflow-hidden bg-background flex">
         <Sidebar />
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex-1 flex items-center justify-center ml-16 md:ml-64">
           <Loader2 className="w-8 h-8 animate-spin text-accent" />
         </div>
       </div>
@@ -197,7 +197,7 @@ export function SpaceDetailPage({ spaceId }: SpaceDetailPageProps) {
     return (
       <div className="h-screen w-full overflow-hidden bg-background flex">
         <Sidebar />
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden ml-16 md:ml-64">
           <main className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             <div className="max-w-4xl mx-auto px-4 md:px-6 py-8">
               <Button
@@ -241,7 +241,7 @@ export function SpaceDetailPage({ spaceId }: SpaceDetailPageProps) {
           {t('actions.back')}
         </Button>
       </div>
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden ml-16 md:ml-64">
         <main className="flex-1 overflow-hidden">
           {/* Grid Layout: 2 columns for ideas (scrollable) + 1 column for space media (static) */}
           <div className="h-full grid grid-cols-1 lg:grid-cols-3 gap-6 px-4 md:px-6 py-8">

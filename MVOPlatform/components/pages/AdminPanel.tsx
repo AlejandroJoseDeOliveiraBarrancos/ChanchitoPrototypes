@@ -33,7 +33,7 @@ export function AdminPanel() {
   return (
     <div className="min-h-screen flex bg-background">
       <Sidebar />
-      <div className="flex-1 flex flex-col ml-16 md:ml-0">
+      <div className="flex-1 flex flex-col ml-16 md:ml-64">
         <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

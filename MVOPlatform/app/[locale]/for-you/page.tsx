@@ -15,7 +15,7 @@ export default function ForYouPage({ searchParams }: ForYouPageProps) {
     <div className="h-screen w-full overflow-hidden bg-background flex">
       <Sidebar />
 
-      <main className="flex-1 overflow-hidden">
+      <main className="flex-1 overflow-hidden ml-16 md:ml-64">
         <div className="h-full overflow-hidden">
           {/* Desktop: Center and respect aspect ratio like TikTok */}
           <div className="hidden md:flex h-full items-center justify-center bg-black">
