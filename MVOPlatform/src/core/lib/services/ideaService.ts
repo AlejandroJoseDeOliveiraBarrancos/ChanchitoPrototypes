@@ -8,7 +8,6 @@ import { ContentBlock } from '@/core/types/content'
 import { supabase } from '@/core/lib/supabase'
 import { IIdeaService } from '@/core/abstractions/IIdeaService'
 
-
 /**
  * Supabase Idea Service Implementation
  */
@@ -253,6 +252,9 @@ class SupabaseIdeaService implements IIdeaService {
   }
 
   async getExploreIdeas(limit?: number, offset = 0): Promise<Idea[]> {
+    // Fetch more ideas to sort by popularity (score)
+    const fetchLimit = limit ? Math.max(limit * 5, 50) : 100
+
     const { data, error } = await supabase
       .from('ideas')
       .select(
@@ -283,11 +285,20 @@ class SupabaseIdeaService implements IIdeaService {
       )
       .neq('status_flag', 'validated')
       .order('created_at', { ascending: false })
-      .range(offset, limit ? offset + limit - 1 : undefined)
+      .limit(fetchLimit)
 
     if (error) throw error
 
-    return data?.map(this.mapDbIdeaToIdea) || []
+    const ideas = data?.map(this.mapDbIdeaToIdea) || []
+
+    // Sort by score (popularity) descending
+    const sortedIdeas = ideas.sort((a, b) => b.score - a.score)
+
+    // Apply offset and limit after sorting
+    const startIndex = offset
+    const endIndex = limit ? startIndex + limit : undefined
+
+    return sortedIdeas.slice(startIndex, endIndex)
   }
 
   async getIdeasBySpace(
@@ -339,7 +350,11 @@ class SupabaseIdeaService implements IIdeaService {
     return data?.map(this.mapDbIdeaToIdea) || []
   }
 
-  async getAllIdeasForAdmin(search?: string, limit = 20, offset = 0): Promise<{ ideas: Idea[], total: number }> {
+  async getAllIdeasForAdmin(
+    search?: string,
+    limit = 20,
+    offset = 0
+  ): Promise<{ ideas: Idea[]; total: number }> {
     // First, get the total count
     let countQuery = supabase
       .from('ideas')
@@ -352,7 +367,7 @@ class SupabaseIdeaService implements IIdeaService {
       // Search in title and content fields
       countQuery = countQuery.or(
         `title.ilike.${searchTerm},` +
-        `content->>description.ilike.${searchTerm}`
+          `content->>description.ilike.${searchTerm}`
       )
     }
 
@@ -411,7 +426,7 @@ class SupabaseIdeaService implements IIdeaService {
       // Search in title and content fields
       query = query.or(
         `title.ilike.${searchTerm},` +
-        `content->>description.ilike.${searchTerm}`
+          `content->>description.ilike.${searchTerm}`
       )
     }
 
@@ -479,8 +494,72 @@ class SupabaseIdeaService implements IIdeaService {
 
     return {
       ideas: paginatedIdeas.map(this.mapDbIdeaToIdea),
-      total: totalCount
+      total: totalCount,
     }
+  }
+
+  async getAllTags(): Promise<string[]> {
+    const { data, error } = await supabase.from('tags').select('name')
+    if (error) throw error
+    return data?.map(t => t.name) || []
+  }
+
+  async getIdeasWithFilters(
+    options: {
+      limit?: number
+      offset?: number
+      sortBy?: 'date' | 'popularity' | 'comments'
+      tags?: string[]
+    } = {}
+  ): Promise<Idea[]> {
+    const { limit, offset = 0, sortBy = 'date', tags } = options
+    // Fetch more if sorting by popularity or comments or filtering
+    const fetchLimit =
+      sortBy === 'date' && !tags ? limit || 20 : limit ? limit * 5 : 100
+    const { data, error } = await supabase
+      .from('ideas')
+      .select(
+        `
+        id,
+        title,
+        status_flag,
+        content,
+        created_at,
+        anonymous,
+        users!ideas_creator_id_fkey (
+          username,
+          full_name,
+          email
+        ),
+        idea_votes (
+          vote_type
+        ),
+        idea_tags (
+          tags (
+            name
+          )
+        ),
+        comments!left (
+          id
+        )
+      `
+      )
+      .order('created_at', { ascending: false })
+      .limit(fetchLimit)
+    if (error) throw error
+    let ideas = data?.map(this.mapDbIdeaToIdea) || []
+    // Filter by tags if provided
+    if (tags && tags.length > 0) {
+      ideas = ideas.filter(idea => idea.tags.some(tag => tags.includes(tag)))
+    }
+    // Sort
+    if (sortBy === 'popularity') {
+      ideas = ideas.sort((a, b) => b.score - a.score)
+    } else if (sortBy === 'comments') {
+      ideas = ideas.sort((a, b) => b.commentCount - a.commentCount)
+    }
+    // Apply offset and limit
+    return ideas.slice(offset, limit ? offset + limit : undefined)
   }
 
   async toggleVote(

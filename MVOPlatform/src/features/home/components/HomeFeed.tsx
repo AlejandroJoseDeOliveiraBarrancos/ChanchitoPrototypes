@@ -9,21 +9,15 @@ import { IdeaCardSkeleton } from '@/shared/components/ui/Skeleton'
 import { useAppSelector } from '@/core/lib/hooks'
 import { useTranslations } from '@/shared/components/providers/I18nProvider'
 
-interface HomeFeedProps {
-  showHeader?: boolean
-  showFooter?: boolean
-}
-
-export function HomeFeed({
-  showHeader = true,
-  showFooter = true,
-}: HomeFeedProps) {
+export function HomeFeed() {
   const t = useTranslations()
   const [ideas, setIdeas] = useState<Idea[]>([])
   const [newIdeas, setNewIdeas] = useState<Idea[]>([])
   const [loading, setLoading] = useState(false)
   const [initialized, setInitialized] = useState(false)
   const [hasMore, setHasMore] = useState(true)
+  const [search, setSearch] = useState('')
+  const [trendingIdeas, setTrendingIdeas] = useState<Idea[]>([])
   const [isVoting, setIsVoting] = useState(false)
   const [hoveredIdeaId, setHoveredIdeaId] = useState<string | null>(null)
   const loadMoreRef = useRef<HTMLDivElement>(null)
@@ -87,10 +81,9 @@ export function HomeFeed({
         }
       }
     },
-    [initialized, hoveredIdeaId, isVoting, isAuthenticated, ideas, newIdeas]
+    [initialized, hoveredIdeaId, isVoting, isAuthenticated, ideas, newIdeas, t]
   )
 
-  // Add keyboard event listeners
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown)
     return () => {
@@ -98,63 +91,57 @@ export function HomeFeed({
     }
   }, [handleKeyDown])
 
-  // Load initial ideas - Load more content upfront, not lazy
   useEffect(() => {
     if (!initialized) {
       setLoading(true)
-      // Load 12 items initially for better UX (not waiting for demand)
-      Promise.all([ideaService.getIdeas(12), ideaService.getNewIdeas(2)]).then(
-        async ([loadedIdeas, loadedNewIdeas]) => {
-          // Filter out ideas that are already in newIdeas from the main ideas list
-          const newIdeaIds = new Set(loadedNewIdeas.map(idea => idea.id))
-          const filteredIdeas = loadedIdeas.filter(
-            idea => !newIdeaIds.has(idea.id)
+      Promise.all([
+        ideaService.getIdeas(12),
+        ideaService.getNewIdeas(2),
+        ideaService.getTrendingIdeas(10),
+      ]).then(async ([loadedIdeas, loadedNewIdeas, loadedTrending]) => {
+        const newIdeaIds = new Set(loadedNewIdeas.map(idea => idea.id))
+        const filteredIdeas = loadedIdeas.filter(
+          idea => !newIdeaIds.has(idea.id)
+        )
+
+        setIdeas(filteredIdeas)
+        setNewIdeas(loadedNewIdeas)
+        setTrendingIdeas(loadedTrending)
+
+        if (isAuthenticated && [...loadedIdeas, ...loadedNewIdeas].length > 0) {
+          const allIdeaIds = [...loadedIdeas, ...loadedNewIdeas].map(
+            idea => idea.id
           )
-
-          setIdeas(filteredIdeas)
-          setNewIdeas(loadedNewIdeas)
-
-          // Batch fetch user votes for all loaded ideas
-          if (
-            isAuthenticated &&
-            [...loadedIdeas, ...loadedNewIdeas].length > 0
-          ) {
-            const allIdeaIds = [...loadedIdeas, ...loadedNewIdeas].map(
-              idea => idea.id
+          try {
+            const votesMap = await ideaService.getUserVotesForIdeas(allIdeaIds)
+            setIdeas(prev =>
+              prev.map(idea => ({
+                ...idea,
+                userVotes: votesMap[idea.id] || {
+                  use: false,
+                  dislike: false,
+                  pay: false,
+                },
+              }))
             )
-            try {
-              const votesMap =
-                await ideaService.getUserVotesForIdeas(allIdeaIds)
-              // Update ideas with user vote information
-              setIdeas(prev =>
-                prev.map(idea => ({
-                  ...idea,
-                  userVotes: votesMap[idea.id] || {
-                    use: false,
-                    dislike: false,
-                    pay: false,
-                  },
-                }))
-              )
-              setNewIdeas(prev =>
-                prev.map(idea => ({
-                  ...idea,
-                  userVotes: votesMap[idea.id] || {
-                    use: false,
-                    dislike: false,
-                    pay: false,
-                  },
-                }))
-              )
-            } catch (error) {
-              console.error('Error fetching user votes:', error)
-            }
+            setNewIdeas(prev =>
+              prev.map(idea => ({
+                ...idea,
+                userVotes: votesMap[idea.id] || {
+                  use: false,
+                  dislike: false,
+                  pay: false,
+                },
+              }))
+            )
+          } catch (error) {
+            console.error('Error fetching user votes:', error)
           }
-
-          setLoading(false)
-          setInitialized(true)
         }
-      )
+
+        setLoading(false)
+        setInitialized(true)
+      })
     }
   }, [initialized, isAuthenticated])
 
@@ -162,12 +149,10 @@ export function HomeFeed({
     if (loading || !hasMore) return
     setLoading(true)
     try {
-      // Load more ideas with offset
       const loadedMoreIdeas = await ideaService.loadMoreIdeas(ideas.length)
       if (loadedMoreIdeas.length === 0) {
         setHasMore(false)
       } else {
-        // Filter out ideas that are already in ideas or newIdeas arrays
         const existingIdeaIds = new Set(
           [...ideas, ...newIdeas].map(idea => idea.id)
         )
@@ -178,13 +163,11 @@ export function HomeFeed({
         if (filteredNewIdeas.length === 0) {
           setHasMore(false)
         } else {
-          // Batch fetch user votes for new ideas
           if (isAuthenticated) {
             try {
               const newIdeaIds = filteredNewIdeas.map(idea => idea.id)
               const votesMap =
                 await ideaService.getUserVotesForIdeas(newIdeaIds)
-              // Update new ideas with user vote information
               const newIdeasWithVotes = filteredNewIdeas.map(idea => ({
                 ...idea,
                 userVotes: votesMap[idea.id] || {
@@ -206,15 +189,14 @@ export function HomeFeed({
     } finally {
       setLoading(false)
     }
-  }, [loading, hasMore, ideas.length, isAuthenticated])
+  }, [loading, hasMore, ideas.length, ideas, newIdeas, isAuthenticated])
 
-  // Auto-loading with IntersectionObserver
   useEffect(() => {
     if (!initialized || !hasMore) return
 
     const options = {
       root: null,
-      rootMargin: '200px', // Load earlier for smoother experience
+      rootMargin: '200px',
       threshold: 0.1,
     }
 
@@ -236,9 +218,34 @@ export function HomeFeed({
     }
   }, [initialized, hasMore, loading, handleLoadMore])
 
-  const content = (
+  const filteredIdeas = ideas.filter(
+    idea =>
+      !search ||
+      idea.title.toLowerCase().includes(search.toLowerCase()) ||
+      idea.description.toLowerCase().includes(search.toLowerCase()) ||
+      idea.tags.some(tag => tag.toLowerCase().includes(search.toLowerCase()))
+  )
+
+  const filteredNewIdeas = newIdeas.filter(
+    idea =>
+      !search ||
+      idea.title.toLowerCase().includes(search.toLowerCase()) ||
+      idea.description.toLowerCase().includes(search.toLowerCase()) ||
+      idea.tags.some(tag => tag.toLowerCase().includes(search.toLowerCase()))
+  )
+
+  return (
     <main className="flex-1 w-full px-4 md:px-6 py-8 max-w-7xl mx-auto">
-      {/* Show skeletons while loading initial data */}
+      {/* <div className="mb-8">
+        <input
+          type="text"
+          placeholder="Search ideas by title, description, or tags..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="w-full p-4 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent bg-background text-text-primary placeholder-text-secondary"
+        />
+      </div> */}
+
       {!initialized && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(i => (
@@ -247,20 +254,12 @@ export function HomeFeed({
         </div>
       )}
 
-      {/* Show ideas once loaded */}
       {initialized && (
         <>
-          {/* New Ideas Section */}
-          {newIdeas.length > 0 && (
+          {filteredNewIdeas.length > 0 && (
             <div className="mb-6 md:mb-8">
-              <div className="flex items-center gap-3 mb-4">
-                <span className="px-3 py-1 bg-accent/20 text-accent text-sm font-semibold rounded-full">
-                  {t('ideas.new_ideas')}
-                </span>
-                <div className="flex-1 h-px bg-border"></div>
-              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                {newIdeas.map((idea, index) => (
+                {filteredNewIdeas.map((idea, index) => (
                   <motion.div
                     key={idea.id}
                     initial={{ opacity: 0, y: 20 }}
@@ -280,9 +279,8 @@ export function HomeFeed({
             </div>
           )}
 
-          {/* Regular Ideas Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-            {ideas.map((idea, index) => (
+            {filteredIdeas.map((idea, index) => (
               <motion.div
                 key={idea.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -298,15 +296,12 @@ export function HomeFeed({
                 />
               </motion.div>
             ))}
-            {/* Loading skeletons for new items */}
             {loading &&
               [1, 2].map(i => <IdeaCardSkeleton key={`loading-${i}`} />)}
           </div>
 
-          {/* Auto-loading trigger */}
           <div ref={loadMoreRef} className="mt-8 h-4" />
 
-          {/* Loading indicator */}
           {loading && (
             <div className="mt-8 text-center">
               <div className="text-text-secondary">
@@ -315,7 +310,6 @@ export function HomeFeed({
             </div>
           )}
 
-          {/* No more items indicator */}
           {!hasMore && ideas.length > 0 && (
             <div className="mt-8 text-center">
               <div className="text-text-secondary">
@@ -327,5 +321,4 @@ export function HomeFeed({
       )}
     </main>
   )
-  return content
 }

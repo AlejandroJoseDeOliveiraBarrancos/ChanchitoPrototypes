@@ -95,7 +95,9 @@ export default function Home() {
 
       // Find the scrollable container (main element)
       const scrollContainer = document.querySelector('main') as HTMLElement
-      const scrollY = scrollContainer ? scrollContainer.scrollTop : window.scrollY
+      const scrollY = scrollContainer
+        ? scrollContainer.scrollTop
+        : window.scrollY
       const pathname = window.location.pathname
 
       // Save to both sessionStorage (for immediate back navigation) and localStorage (for persistence)
@@ -132,10 +134,8 @@ export default function Home() {
 
   return (
     <>
-      {/* Hero Carousel at the top */}
       <HeroCarousel />
-      {/* Home Feed below - loaded directly, not lazy */}
-      <HomeFeed showHeader={false} showFooter={false} />
+      <HomeFeed />
     </>
   )
 }

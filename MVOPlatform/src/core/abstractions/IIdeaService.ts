@@ -1,4 +1,4 @@
-import { Idea } from "../types/idea"
+import { Idea } from '../types/idea'
 
 export interface IIdeaService {
   getIdeas(limit?: number, offset?: number): Promise<Idea[]>
@@ -23,9 +23,20 @@ export interface IIdeaService {
     offset?: number
   ): Promise<Idea[]>
 
+  getAllIdeasForAdmin(
+    search?: string,
+    limit?: number,
+    offset?: number
+  ): Promise<{ ideas: Idea[]; total: number }>
 
-  getAllIdeasForAdmin(search?: string, limit?: number, offset?: number): Promise<{ ideas: Idea[], total: number }>
+  getAllTags(): Promise<string[]>
 
+  getIdeasWithFilters(options: {
+    limit?: number
+    offset?: number
+    sortBy?: 'date' | 'popularity' | 'comments'
+    tags?: string[]
+  }): Promise<Idea[]>
 
   createIdea(idea: Omit<Idea, 'id'>, spaceId: string): Promise<Idea>
 
@@ -33,19 +44,16 @@ export interface IIdeaService {
 
   deleteIdea(ideaId: string): Promise<boolean>
 
-
   getSpaces(): Promise<Array<{ id: string; name: string; team_id: string }>>
 
   toggleVote(ideaId: string, voteType: 'dislike' | 'use' | 'pay'): Promise<Idea>
 
- 
   getUserVote(ideaId: string): Promise<'dislike' | 'use' | 'pay' | null>
 
   getUserVotes(
     ideaId: string
   ): Promise<{ use: boolean; dislike: boolean; pay: boolean }>
 
- 
   getUserVotesForIdeas(
     ideaIds: string[]
   ): Promise<Record<string, { use: boolean; dislike: boolean; pay: boolean }>>

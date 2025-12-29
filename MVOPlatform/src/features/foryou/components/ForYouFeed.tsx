@@ -7,7 +7,10 @@ import { Idea } from '@/core/types/idea'
 import { ideaService } from '@/core/lib/services/ideaService'
 import { ExploreIdeaSkeleton } from '@/shared/components/ui/Skeleton'
 import { useAppSelector } from '@/core/lib/hooks'
-import { useTranslations, useLocale } from '@/shared/components/providers/I18nProvider'
+import {
+  useTranslations,
+  useLocale,
+} from '@/shared/components/providers/I18nProvider'
 
 interface ForYouFeedProps {
   initialIdeaId?: string
@@ -28,6 +31,7 @@ export function ForYouFeed({ initialIdeaId }: ForYouFeedProps) {
   const searchParams = useSearchParams()
   const hasSetInitialScroll = useRef(false)
   const lastUrlIdeaId = useRef<string | null>(null)
+  const uniqueIdeasCount = useRef(0)
   const { isAuthenticated } = useAppSelector(state => state.auth)
 
   const handleKeyDown = useCallback(
@@ -83,94 +87,51 @@ export function ForYouFeed({ initialIdeaId }: ForYouFeedProps) {
   useEffect(() => {
     if (!initialized) {
       setLoading(true)
-      
+
       // Function to load ideas and check for initialIdeaId
-      const loadIdeasWithInitialId = async (offset = 0, accumulatedIdeas: Idea[] = []) => {
+      const loadIdeasWithInitialId = async (
+        offset = 0,
+        accumulatedIdeas: Idea[] = []
+      ) => {
         const batchSize = 3
         const loadedIdeas = await ideaService.getExploreIdeas(batchSize, offset)
-        
+
         if (loadedIdeas.length === 0) {
           // No more ideas to load
           return accumulatedIdeas
         }
-        
-        const allIdeas = [...accumulatedIdeas, ...loadedIdeas]
-        
+
+        // Filter out any duplicates that might be returned by the API
+        const existingIds = new Set(accumulatedIdeas.map(idea => idea.id))
+        const uniqueLoadedIdeas = loadedIdeas.filter(
+          idea => !existingIds.has(idea.id)
+        )
+
+        const allIdeas = [...accumulatedIdeas, ...uniqueLoadedIdeas]
+
         // Check if we found the initial idea
         if (initialIdeaId) {
-          const hasInitialIdea = allIdeas.some(idea => idea.id === initialIdeaId)
-          
+          const hasInitialIdea = allIdeas.some(
+            idea => idea.id === initialIdeaId
+          )
+
           // If we haven't found it yet and have less than 15 ideas, load more
           if (!hasInitialIdea && allIdeas.length < 15) {
             return loadIdeasWithInitialId(offset + batchSize, allIdeas)
           }
         }
-        
+
         return allIdeas
       }
-      
+
       loadIdeasWithInitialId().then(async loadedIdeas => {
-       // Batch fetch user votes for all loaded ideas
-       if (isAuthenticated && loadedIdeas.length > 0) {
-         try {
-           const ideaIds = loadedIdeas.map(idea => idea.id)
-           const votesMap = await ideaService.getUserVotesForIdeas(ideaIds)
-           // Update ideas with user vote information
-           loadedIdeas = loadedIdeas.map(idea => ({
-             ...idea,
-             userVotes: votesMap[idea.id] || {
-               use: false,
-               dislike: false,
-               pay: false,
-             },
-           }))
-         } catch (error) {
-           console.error('Error fetching user votes:', error)
-         }
-       }
-
-       // Set initial active index based on URL parameter
-       let initialIndex = 0
-       if (initialIdeaId && loadedIdeas.length > 0) {
-         const foundIndex = loadedIdeas.findIndex(
-           idea => idea.id === initialIdeaId
-         )
-         if (foundIndex >= 0) {
-           initialIndex = foundIndex
-           lastUrlIdeaId.current = initialIdeaId
-         } else {
-           // If initial idea not found, default to first idea
-           lastUrlIdeaId.current = loadedIdeas[0].id
-         }
-       } else if (loadedIdeas.length > 0) {
-         // No initial idea specified, default to first idea
-         lastUrlIdeaId.current = loadedIdeas[0].id
-       }
-
-       // Set state all at once to avoid intermediate renders
-       setIdeas(loadedIdeas)
-       setActiveIndex(initialIndex)
-       setLoading(false)
-       setInitialized(true)
-       setHasCompletedInitialLoad(true)
-     })
-    }
-  }, [initialized, initialIdeaId, isAuthenticated])
-
-  const loadMoreIdeas = useCallback(async () => {
-    if (loading) return
-    setLoading(true)
-    try {
-      // Load more explore ideas with offset - smaller batches for better performance
-      const newIdeas = await ideaService.getExploreIdeas(3, ideas.length)
-      if (newIdeas.length > 0) {
-        // Batch fetch user votes for new ideas
-        if (isAuthenticated) {
+        // Batch fetch user votes for all loaded ideas
+        if (isAuthenticated && loadedIdeas.length > 0) {
           try {
-            const newIdeaIds = newIdeas.map(idea => idea.id)
-            const votesMap = await ideaService.getUserVotesForIdeas(newIdeaIds)
-            // Update new ideas with user vote information
-            const newIdeasWithVotes = newIdeas.map(idea => ({
+            const ideaIds = loadedIdeas.map(idea => idea.id)
+            const votesMap = await ideaService.getUserVotesForIdeas(ideaIds)
+            // Update ideas with user vote information
+            loadedIdeas = loadedIdeas.map(idea => ({
               ...idea,
               userVotes: votesMap[idea.id] || {
                 use: false,
@@ -178,19 +139,117 @@ export function ForYouFeed({ initialIdeaId }: ForYouFeedProps) {
                 pay: false,
               },
             }))
-            setIdeas(prev => [...prev, ...newIdeasWithVotes])
           } catch (error) {
-            console.error('Error fetching user votes for new ideas:', error)
-            setIdeas(prev => [...prev, ...newIdeas])
+            console.error('Error fetching user votes:', error)
           }
-        } else {
-          setIdeas(prev => [...prev, ...newIdeas])
+        }
+
+        // Set initial active index based on URL parameter
+        let initialIndex = 0
+        if (initialIdeaId && loadedIdeas.length > 0) {
+          const foundIndex = loadedIdeas.findIndex(
+            idea => idea.id === initialIdeaId
+          )
+          if (foundIndex >= 0) {
+            initialIndex = foundIndex
+            lastUrlIdeaId.current = initialIdeaId
+          } else {
+            // If initial idea not found, default to first idea
+            lastUrlIdeaId.current = loadedIdeas[0].id
+          }
+        } else if (loadedIdeas.length > 0) {
+          // No initial idea specified, default to first idea
+          lastUrlIdeaId.current = loadedIdeas[0].id
+        }
+
+        // Ensure no duplicates in the final ideas array
+        const uniqueIdeas = loadedIdeas.filter(
+          (idea, index, self) => index === self.findIndex(i => i.id === idea.id)
+        )
+
+        // Update the unique count
+        uniqueIdeasCount.current = uniqueIdeas.length
+
+        // Set state all at once to avoid intermediate renders
+        setIdeas(uniqueIdeas)
+        setActiveIndex(initialIndex)
+        setLoading(false)
+        setInitialized(true)
+        setHasCompletedInitialLoad(true)
+      })
+    }
+  }, [initialized, initialIdeaId, isAuthenticated])
+
+  const loadMoreIdeas = useCallback(async () => {
+    if (loading) return
+    setLoading(true)
+    try {
+      // Load more explore ideas with offset - use ref for correct offset
+      const newIdeas = await ideaService.getExploreIdeas(
+        3,
+        uniqueIdeasCount.current
+      )
+      if (newIdeas.length > 0) {
+        // Filter out any duplicate ideas that might already exist in the current list
+        const existingIdeaIds = new Set(ideas.map(idea => idea.id))
+        const uniqueNewIdeas = newIdeas.filter(
+          idea => !existingIdeaIds.has(idea.id)
+        )
+
+        if (uniqueNewIdeas.length > 0) {
+          // Batch fetch user votes for new ideas
+          if (isAuthenticated) {
+            try {
+              const newIdeaIds = uniqueNewIdeas.map(idea => idea.id)
+              const votesMap =
+                await ideaService.getUserVotesForIdeas(newIdeaIds)
+              // Update new ideas with user vote information
+              const newIdeasWithVotes = uniqueNewIdeas.map(idea => ({
+                ...idea,
+                userVotes: votesMap[idea.id] || {
+                  use: false,
+                  dislike: false,
+                  pay: false,
+                },
+              }))
+              setIdeas(prev => {
+                const combined = [...prev, ...newIdeasWithVotes]
+                const deduplicated = combined.filter(
+                  (idea, index, self) =>
+                    index === self.findIndex(i => i.id === idea.id)
+                )
+                uniqueIdeasCount.current = deduplicated.length
+                return deduplicated
+              })
+            } catch (error) {
+              console.error('Error fetching user votes for new ideas:', error)
+              setIdeas(prev => {
+                const combined = [...prev, ...uniqueNewIdeas]
+                const deduplicated = combined.filter(
+                  (idea, index, self) =>
+                    index === self.findIndex(i => i.id === idea.id)
+                )
+                uniqueIdeasCount.current = deduplicated.length
+                return deduplicated
+              })
+            }
+          } else {
+            setIdeas(prev => {
+              const combined = [...prev, ...uniqueNewIdeas]
+              const deduplicated = combined.filter(
+                (idea, index, self) =>
+                  index === self.findIndex(i => i.id === idea.id)
+              )
+              uniqueIdeasCount.current = deduplicated.length
+              return deduplicated
+            })
+          }
         }
       }
     } finally {
       setLoading(false)
     }
-  }, [loading, ideas.length, isAuthenticated])
+  }, [loading, isAuthenticated])
 
   // Add keyboard event listeners
   useEffect(() => {
@@ -212,10 +271,11 @@ export function ForYouFeed({ initialIdeaId }: ForYouFeedProps) {
       if (currentIdea && currentIdea.id !== lastUrlIdeaId.current) {
         // Only skip URL update if we haven't completed initial load yet
         // AND we're on the initial idea from URL
-        const shouldSkipUpdate = !hasCompletedInitialLoad &&
-                                initialIdeaId &&
-                                currentIdea.id === initialIdeaId
-                                
+        const shouldSkipUpdate =
+          !hasCompletedInitialLoad &&
+          initialIdeaId &&
+          currentIdea.id === initialIdeaId
+
         if (!shouldSkipUpdate) {
           lastUrlIdeaId.current = currentIdea.id
           router.replace(`/${locale}/for-you?id=${currentIdea.id}`, {
@@ -224,7 +284,14 @@ export function ForYouFeed({ initialIdeaId }: ForYouFeedProps) {
         }
       }
     }
-  }, [activeIndex, ideas, initialized, router, initialIdeaId, hasCompletedInitialLoad])
+  }, [
+    activeIndex,
+    ideas,
+    initialized,
+    router,
+    initialIdeaId,
+    hasCompletedInitialLoad,
+  ])
 
   // Scroll to initial position when component is ready
   useEffect(() => {
