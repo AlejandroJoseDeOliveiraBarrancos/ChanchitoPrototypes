@@ -132,6 +132,21 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
     return () => clearTimeout(timer)
   }, [pathname])
 
+  // Check if we're on mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+      // On mobile, start with sidebar closed (icon-only)
+      if (window.innerWidth < 768) {
+        setIsMobileOpen(false)
+      }
+    }
+
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
   const handleBack = () => {
     // Get the previous path from sessionStorage (set when navigating to idea)
     const previousPath = sessionStorage.getItem('previousPath') || '/'
@@ -154,23 +169,12 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
     }
   }
 
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-      // On mobile, start with sidebar closed (icon-only)
-      if (window.innerWidth < 768) {
-        setIsMobileOpen(false)
-      }
-    }
-
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
-
   const showExpanded = isMobileOpen || (!isMobile && !isCollapsed)
 
-  const isHomePage = pathname === '/'
+  const isHomePage =
+    pathname === '/' ||
+    pathname === `/${currentLocale}` ||
+    pathname === `/${currentLocale}/home`
 
   const navItems = [
     {
@@ -186,7 +190,10 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
           onTabChange('home')
         }
       },
-      active: pathname === '/' || pathname === `/${currentLocale}`,
+      active:
+        pathname === '/' ||
+        pathname === `/${currentLocale}` ||
+        pathname === `/${currentLocale}/home`,
     },
     {
       id: 'foryou',
@@ -218,13 +225,17 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       href: `/${currentLocale}/upload`,
       active: pathname === `/${currentLocale}/upload`,
     },
-    ...(profile?.role === 'admin' ? [{
-      id: 'admin',
-      label: t('navigation.admin'),
-      icon: Shield,
-      href: `/${currentLocale}/admin`,
-      active: pathname === `/${currentLocale}/admin`,
-    }] : []),
+    ...(profile?.role === 'admin'
+      ? [
+          {
+            id: 'admin',
+            label: t('navigation.admin'),
+            icon: Shield,
+            href: `/${currentLocale}/admin`,
+            active: pathname === `/${currentLocale}/admin`,
+          },
+        ]
+      : []),
   ]
 
   const bottomItems = [
@@ -262,7 +273,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                 </button>
               ) : (
                 <Link
-                  href="/"
+                  href="/home"
                   className={`${SIDEBAR_STYLES.logo.expanded.text} font-semibold text-text-primary truncate flex-1 min-w-0`}
                 >
                   {t('brand.name')}
@@ -295,7 +306,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
               </button>
             ) : (
               <Link
-                href="/"
+                href="/home"
                 className={`${SIDEBAR_STYLES.logo.collapsed.size} ${SIDEBAR_STYLES.button.borderRadius} bg-accent flex items-center justify-center`}
               >
                 <span

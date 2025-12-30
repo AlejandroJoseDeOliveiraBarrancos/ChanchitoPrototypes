@@ -4,9 +4,12 @@ import { useTranslations } from '@/shared/components/providers/I18nProvider'
 import { Button } from '@/shared/components/ui/Button'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 export function CTA() {
   const t = useTranslations()
+  const pathname = usePathname()
+  const currentLocale = pathname.startsWith('/es') ? 'es' : 'en'
   return (
     <section className="bg-background py-24">
       <div className="max-w-4xl mx-auto px-6 text-center">
@@ -20,7 +23,7 @@ export function CTA() {
           <p className="text-body-large mb-8 max-w-2xl mx-auto">
             {t('cta.description')}
           </p>
-          <Link href="/upload">
+          <Link href={`/${currentLocale}/upload`}>
             <Button size="lg" variant="primary">
               {t('actions.submit_your_idea_now')}
             </Button>

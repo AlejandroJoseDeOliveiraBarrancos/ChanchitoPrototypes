@@ -168,8 +168,10 @@ class SupabaseIdeaService implements IIdeaService {
     // Filter ideas with at least one video or image
     const ideasWithMedia = ideas.filter(idea => idea.video || idea.image)
 
-    // Sort by total votes (descending)
-    const sortedIdeas = ideasWithMedia.sort((a, b) => b.votes - a.votes)
+    // Sort by total engagement (votes + comments, descending)
+    const sortedIdeas = ideasWithMedia.sort(
+      (a, b) => b.votes + b.commentCount - (a.votes + a.commentCount)
+    )
 
     // Return top ideas up to the limit
     return sortedIdeas.slice(0, limit)

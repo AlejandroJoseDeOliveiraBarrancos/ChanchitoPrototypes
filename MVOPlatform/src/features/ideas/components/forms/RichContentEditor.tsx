@@ -9,29 +9,24 @@ import {
   Heading3,
   Image as ImageIcon,
   Video,
-  List,
-  ListOrdered,
   Link as LinkIcon,
   Plus,
   Trash2,
   MoveUp,
   MoveDown,
-  Youtube,
-  FileImage,
   Layout,
   Code,
-  Figma,
   Upload,
   Crop,
   X,
   ChevronDown,
   ZoomIn,
   ZoomOut,
-  Loader2,
 } from 'lucide-react'
 import { ContentBlock } from '@/core/types/content'
 import { useTranslations } from '@/shared/components/providers/I18nProvider'
 import { Button } from '@/shared/components/ui/Button'
+import { isUrlValid } from '@/core/lib/utils/media'
 
 interface RichContentEditorProps {
   value: ContentBlock[]
@@ -406,6 +401,10 @@ function BlockEditor({
   )
   const [urlInputValue, setUrlInputValue] = useState('')
   const [isUploading, setIsUploading] = useState(false)
+  const [isValidatingUrl, setIsValidatingUrl] = useState(false)
+  const [urlValidationError, setUrlValidationError] = useState<string | null>(
+    null
+  )
   const blockRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const headingTextareaRef = useRef<HTMLTextAreaElement>(null)
@@ -496,6 +495,28 @@ function BlockEditor({
 
     const data = await response.json()
     return data.url
+  }
+
+  const validateAndSetUrl = async (url: string) => {
+    if (!url || !url.trim()) return
+
+    setIsValidatingUrl(true)
+    setUrlValidationError(null)
+
+    try {
+      const isValid = await isUrlValid(url.trim(), true)
+      if (isValid) {
+        onUpdate({ src: url.trim() })
+        setShowUrlModal(null)
+        setUrlInputValue('')
+      } else {
+        setUrlValidationError(t('validation.invalid_media_url'))
+      }
+    } catch (error) {
+      setUrlValidationError(t('validation.invalid_media_url'))
+    } finally {
+      setIsValidatingUrl(false)
+    }
   }
 
   return (
@@ -756,6 +777,7 @@ function BlockEditor({
             onClick={() => {
               setShowUrlModal(null)
               setUrlInputValue('')
+              setUrlValidationError(null)
             }}
           />
           <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-background border border-border-color rounded-lg p-6 shadow-2xl z-[70] min-w-[400px]">
@@ -774,22 +796,25 @@ function BlockEditor({
               onKeyDown={e => {
                 if (e.key === 'Enter') {
                   if (urlInputValue.trim()) {
-                    onUpdate({ src: urlInputValue.trim() })
-                    setShowUrlModal(null)
-                    setUrlInputValue('')
+                    validateAndSetUrl(urlInputValue.trim())
                   }
                 } else if (e.key === 'Escape') {
                   setShowUrlModal(null)
                   setUrlInputValue('')
+                  setUrlValidationError(null)
                 }
               }}
             />
+            {urlValidationError && (
+              <p className="text-red-500 text-sm mb-4">{urlValidationError}</p>
+            )}
             <div className="flex gap-2 justify-end">
               <button
                 type="button"
                 onClick={() => {
                   setShowUrlModal(null)
                   setUrlInputValue('')
+                  setUrlValidationError(null)
                 }}
                 className="px-4 py-2 border border-border-color rounded hover:bg-gray-50 text-text-secondary"
               >
@@ -799,14 +824,13 @@ function BlockEditor({
                 type="button"
                 onClick={() => {
                   if (urlInputValue.trim()) {
-                    onUpdate({ src: urlInputValue.trim() })
-                    setShowUrlModal(null)
-                    setUrlInputValue('')
+                    validateAndSetUrl(urlInputValue.trim())
                   }
                 }}
-                className="px-4 py-2 bg-accent text-white rounded hover:bg-accent/90"
+                disabled={isValidatingUrl}
+                className="px-4 py-2 bg-accent text-white rounded hover:bg-accent/90 disabled:opacity-50"
               >
-                Add
+                {isValidatingUrl ? t('validation.checking_url') : 'Add'}
               </button>
             </div>
           </div>
@@ -1163,6 +1187,7 @@ function BlockEditor({
                   {block.src.includes('youtube.com/embed') ||
                   block.src.includes('youtu.be') ? (
                     <iframe
+                      key={block.src}
                       src={block.src}
                       className="w-full h-full"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -1170,6 +1195,7 @@ function BlockEditor({
                     />
                   ) : (
                     <video
+                      key={block.src}
                       src={block.src}
                       className="w-full h-full object-contain"
                       style={
@@ -1713,7 +1739,10 @@ function CarouselEditor({
     updates: Partial<(typeof block.slides)[0]>
   ) => {
     const newSlides = [...block.slides]
+    console.log('Before update:', newSlides[index])
     newSlides[index] = { ...newSlides[index], ...updates }
+    console.log('After update:', newSlides[index])
+    console.log('Updates applied:', updates)
     onUpdate({ slides: newSlides })
   }
 
@@ -1841,10 +1870,70 @@ function CarouselEditor({
                   </label>
                   <button
                     type="button"
-                    onClick={() => {
-                      const url = prompt(t('prompts.enter_image_url'))
-                      if (url)
-                        updateSlide(index, { image: url, video: undefined })
+                    onClick={async () => {
+                      const url = prompt(t('prompts.enter_url'))
+                      if (url) {
+                        // First, try to detect media type from URL pattern
+                        const isImage =
+                          /\.(jpg|jpeg|png|gif|webp|svg|bmp|ico)(\?.*)?$/i.test(
+                            url
+                          )
+                        const isVideo =
+                          /\.(mp4|webm|ogg|avi|mov|wmv|flv|m4v)(\?.*)?$/i.test(
+                            url
+                          )
+
+                        console.log('URL detection:', { url, isImage, isVideo })
+
+                        let mediaType: 'image' | 'video' = 'video' // Default to video
+
+                        if (isImage) {
+                          mediaType = 'image'
+                        } else if (isVideo) {
+                          mediaType = 'video'
+                        } else {
+                          // If we can't determine from URL, try to validate it
+                          // Use permissive validation to avoid CORS issues
+                          try {
+                            const isValid = await isUrlValid(url, false) // Use permissive validation
+                            if (isValid) {
+                              // Try to determine content type from response
+                              try {
+                                const response = await fetch(url, {
+                                  method: 'HEAD',
+                                })
+                                const contentType =
+                                  response.headers.get('content-type') || ''
+                                if (contentType.startsWith('image/')) {
+                                  mediaType = 'image'
+                                } else if (contentType.startsWith('video/')) {
+                                  mediaType = 'video'
+                                }
+                              } catch (headError) {
+                                console.warn(
+                                  'Could not determine content type from HEAD request:',
+                                  headError
+                                )
+                                // If HEAD fails, keep the default (video)
+                              }
+                            } else {
+                              alert(t('validation.invalid_media_url'))
+                              return
+                            }
+                          } catch (validationError) {
+                            console.error('Validation error:', validationError)
+                            alert(t('validation.invalid_media_url'))
+                            return
+                          }
+                        }
+
+                        // Update the slide with the detected media type
+                        if (mediaType === 'image') {
+                          updateSlide(index, { image: url, video: undefined })
+                        } else {
+                          updateSlide(index, { video: url, image: undefined })
+                        }
+                      }
                     }}
                     className="flex flex-col items-center gap-1 px-3 py-2 bg-background border border-border-color rounded hover:bg-gray-50 transition-colors"
                   >
@@ -1918,16 +2007,21 @@ function CarouselEditor({
               </label>
               <button
                 type="button"
-                onClick={() => {
+                onClick={async () => {
                   const url = prompt(
                     t('prompts.enter_url'),
                     slide.image || slide.video
                   )
                   if (url) {
-                    if (url.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
-                      updateSlide(index, { image: url, video: undefined })
+                    const isValid = await isUrlValid(url, true)
+                    if (isValid) {
+                      if (url.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+                        updateSlide(index, { image: url, video: undefined })
+                      } else {
+                        updateSlide(index, { video: url, image: undefined })
+                      }
                     } else {
-                      updateSlide(index, { video: url, image: undefined })
+                      alert(t('validation.invalid_media_url'))
                     }
                   }
                 }}
@@ -1947,6 +2041,7 @@ function CarouselEditor({
             <div className="mt-2 rounded-lg overflow-hidden bg-black aspect-video">
               {slide.video ? (
                 <video
+                  key={slide.video}
                   src={slide.video}
                   className="w-full h-full object-cover pointer-events-none"
                   controls={false}
@@ -1954,6 +2049,24 @@ function CarouselEditor({
                   playsInline
                   autoPlay
                   loop
+                  poster=""
+                  onLoadedData={e => {
+                    const video = e.currentTarget
+                    video.currentTime = 0.1
+                    console.log('Video loaded:', slide.video)
+                  }}
+                  onError={e => {
+                    console.error('Video error:', e, 'for URL:', slide.video)
+                  }}
+                  onCanPlay={e => {
+                    const video = e.currentTarget
+                    video.play().catch(error => {
+                      console.warn(
+                        'Autoplay prevented, trying to show first frame'
+                      )
+                      video.currentTime = 0.1
+                    })
+                  }}
                 />
               ) : slide.image ? (
                 <img

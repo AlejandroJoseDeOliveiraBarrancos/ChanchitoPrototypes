@@ -1,7 +1,16 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { ArrowUp, Share2, Bookmark, TrendingUp } from 'lucide-react'
+import {
+  ArrowUp,
+  Share2,
+  Bookmark,
+  TrendingUp,
+  ThumbsDown,
+  CheckCircle,
+  DollarSign,
+  MessageCircle,
+} from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Idea } from '@/core/types/idea'
@@ -12,7 +21,7 @@ import {
 } from '@/shared/components/providers/I18nProvider'
 import { ideaService } from '@/core/lib/services/ideaService'
 import { CarouselItemSkeleton } from '@/shared/components/ui/Skeleton'
-import { getCardMedia } from '@/core/lib/utils/media'
+import { getCardMedia, isUrlValid } from '@/core/lib/utils/media'
 import { formatDate } from '@/core/lib/utils/date'
 
 interface HeroCarouselProps {
@@ -126,6 +135,9 @@ export function HeroCarousel({ ideas: initialIdeas }: HeroCarouselProps) {
   const progressRef = useRef<NodeJS.Timeout | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [initialized, setInitialized] = useState(false)
+  const [validMediaMap, setValidMediaMap] = useState<
+    Record<string, { video?: string; image?: string }>
+  >({})
 
   // Load trending ideas if not provided (max 5 for carousel)
   useEffect(() => {
@@ -136,6 +148,41 @@ export function HeroCarousel({ ideas: initialIdeas }: HeroCarouselProps) {
       })
     }
   }, [initialIdeas, initialized])
+
+  // Check and filter invalid media URLs for all ideas
+  useEffect(() => {
+    if (ideas.length === 0) return
+
+    const checkAllMediaValidity = async () => {
+      const newValidMediaMap: Record<
+        string,
+        { video?: string; image?: string }
+      > = {}
+
+      await Promise.all(
+        ideas.map(async idea => {
+          const media = getCardMedia(idea)
+          const validMedia: { video?: string; image?: string } = {}
+
+          if (media.video) {
+            const isValid = await isUrlValid(media.video)
+            if (isValid) validMedia.video = media.video
+          }
+
+          if (media.image) {
+            const isValid = await isUrlValid(media.image)
+            if (isValid) validMedia.image = media.image
+          }
+
+          newValidMediaMap[idea.id] = validMedia
+        })
+      )
+
+      setValidMediaMap(newValidMediaMap)
+    }
+
+    checkAllMediaValidity()
+  }, [ideas])
 
   // Auto-scroll functionality
   useEffect(() => {
@@ -256,7 +303,7 @@ export function HeroCarousel({ ideas: initialIdeas }: HeroCarouselProps) {
           }}
         >
           {ideas.map((idea, index) => {
-            const cardMedia = getCardMedia(idea)
+            const validCardMedia = validMediaMap[idea.id] || {}
             return (
               <div
                 key={idea.id}
@@ -264,15 +311,15 @@ export function HeroCarousel({ ideas: initialIdeas }: HeroCarouselProps) {
               >
                 {/* Background Image/Video */}
                 <div className="absolute inset-0">
-                  {cardMedia.video ? (
+                  {validCardMedia.video ? (
                     <CarouselVideoItem
-                      videoSrc={cardMedia.video}
+                      videoSrc={validCardMedia.video}
                       isActive={index === activeIndex}
                     />
-                  ) : cardMedia.image ? (
+                  ) : validCardMedia.image ? (
                     <div className="relative w-full h-full">
                       <Image
-                        src={cardMedia.image}
+                        src={validCardMedia.image}
                         alt={idea.title}
                         fill
                         className="object-cover"
@@ -281,7 +328,7 @@ export function HeroCarousel({ ideas: initialIdeas }: HeroCarouselProps) {
                       <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 via-black/40 to-transparent" />
                     </div>
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-400" />
+                    <div className="w-full h-full bg-gradient-to-br from-blue-900 to-purple-900" />
                   )}
                 </div>
 
@@ -320,10 +367,24 @@ export function HeroCarousel({ ideas: initialIdeas }: HeroCarouselProps) {
                         {formatDate(idea.createdAt)}
                       </span>
                       <span className="hidden md:inline">•</span>
-                      <span className="hidden md:flex items-center gap-1">
-                        <ArrowUp className="w-4 h-4" />
-                        {idea.votes} {t('carousel.votes')}
-                      </span>
+                      <div className="hidden md:flex items-center gap-3">
+                        <span className="flex items-center gap-1 text-red-400">
+                          <ThumbsDown className="w-3 h-3" />
+                          {idea.votesByType.dislike}
+                        </span>
+                        <span className="flex items-center gap-1 text-green-400">
+                          <CheckCircle className="w-3 h-3" />
+                          {idea.votesByType.use}
+                        </span>
+                        <span className="flex items-center gap-1 text-yellow-400">
+                          <DollarSign className="w-3 h-3" />
+                          {idea.votesByType.pay}
+                        </span>
+                        <span className="flex items-center gap-1 text-blue-400">
+                          <MessageCircle className="w-3 h-3" />
+                          {idea.commentCount}
+                        </span>
+                      </div>
                       <span className="hidden md:inline">•</span>
                       <span className="hidden md:inline text-accent font-semibold">
                         {t('carousel.score')}: {idea.score}
@@ -362,7 +423,40 @@ export function HeroCarousel({ ideas: initialIdeas }: HeroCarouselProps) {
                       <button className="hidden md:block p-3 bg-white/10 backdrop-blur-sm rounded-full hover:bg-white/20 transition-colors">
                         <Bookmark className="w-5 h-5" />
                       </button>
-                      <button className="hidden md:block p-3 bg-white/10 backdrop-blur-sm rounded-full hover:bg-white/20 transition-colors">
+                      <button
+                        onClick={e => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          const ideaUrl = `${window.location.origin}/${locale}/ideas/${activeIdea.id}`
+
+                          if (navigator.share) {
+                            navigator
+                              .share({
+                                title: activeIdea.title,
+                                text: activeIdea.description,
+                                url: ideaUrl,
+                              })
+                              .then(() => {
+                                // Show success feedback
+                                alert(t('actions.share_success'))
+                              })
+                              .catch(error => {
+                                if (error.name !== 'AbortError') {
+                                  console.error('Error sharing:', error)
+                                  // Fallback to clipboard
+                                  navigator.clipboard.writeText(ideaUrl)
+                                  alert(t('actions.link_copied'))
+                                }
+                                // If user canceled, don't show any message
+                              })
+                          } else {
+                            // Fallback to clipboard
+                            navigator.clipboard.writeText(ideaUrl)
+                            alert(t('actions.link_copied'))
+                          }
+                        }}
+                        className="hidden md:block p-3 bg-white/10 backdrop-blur-sm rounded-full hover:bg-white/20 transition-colors"
+                      >
                         <Share2 className="w-5 h-5" />
                       </button>
                     </div>
@@ -377,7 +471,7 @@ export function HeroCarousel({ ideas: initialIdeas }: HeroCarouselProps) {
       <div className="hidden md:block absolute right-0 top-0 bottom-0 w-64 lg:w-72 bg-black z-30 border-l border-gray-800 flex-col">
         <div className="flex-1 flex flex-col p-2 md:p-3 space-y-1.5 md:space-y-2 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {ideas.slice(0, 5).map((idea, index) => {
-            const cardMedia = getCardMedia(idea)
+            const validCardMedia = validMediaMap[idea.id] || {}
             return (
               <button
                 key={idea.id}
@@ -411,21 +505,21 @@ export function HeroCarousel({ ideas: initialIdeas }: HeroCarouselProps) {
                   </div>
                 )}
                 <div className="relative w-16 h-16 flex-shrink-0 rounded overflow-hidden bg-gray-800 z-10">
-                  {cardMedia.video ? (
+                  {validCardMedia.video ? (
                     <VideoThumbnail
-                      videoSrc={cardMedia.video}
+                      videoSrc={validCardMedia.video}
                       title={idea.title}
                     />
-                  ) : cardMedia.image ? (
+                  ) : validCardMedia.image ? (
                     <Image
-                      src={cardMedia.image}
+                      src={validCardMedia.image}
                       alt={idea.title}
                       fill
                       className="object-cover"
                       unoptimized
                     />
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-400" />
+                    <div className="w-full h-full bg-gradient-to-br from-blue-900 to-purple-900" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0 z-10">

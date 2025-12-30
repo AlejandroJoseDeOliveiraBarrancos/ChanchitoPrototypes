@@ -2,11 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import {
-  User,
-  Calendar,
-  ArrowLeft,
-} from 'lucide-react'
+import { User, Calendar, ArrowLeft } from 'lucide-react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { formatDate } from '@/core/lib/utils/date'
@@ -23,8 +19,11 @@ import { IdeaActions } from './IdeaActions'
 import { ContentRenderer } from './ContentRenderer'
 import { IdeaDetailSkeleton } from '@/shared/components/ui/Skeleton'
 import { useAppSelector, useAppDispatch } from '@/core/lib/hooks'
-import { getCardMedia } from '@/core/lib/utils/media'
-import { useTranslations, useLocale } from '@/shared/components/providers/I18nProvider'
+import { getCardMedia, isUrlValid } from '@/core/lib/utils/media'
+import {
+  useTranslations,
+  useLocale,
+} from '@/shared/components/providers/I18nProvider'
 import { Button } from '@/shared/components/ui/Button'
 import { IdeaAnalytics } from './IdeaAnalytics'
 
@@ -38,6 +37,10 @@ export function IdeaDetail({ ideaId }: IdeaDetailProps) {
   const [idea, setIdea] = useState<Idea | null>(null)
   const [loading, setLoading] = useState(true)
   const [commentCount, setCommentCount] = useState(0)
+  const [validCardMedia, setValidCardMedia] = useState<{
+    video?: string
+    image?: string
+  }>({})
   const dispatch = useAppDispatch()
   const { currentIdea, userVotes, isVoting } = useAppSelector(
     state => state.ideas
@@ -94,11 +97,34 @@ export function IdeaDetail({ ideaId }: IdeaDetailProps) {
   }, [ideaId, isAuthenticated])
 
   const ideaData = currentIdea || idea
-  const cardMedia = ideaData ? getCardMedia(ideaData) : {}
+
+  // Check and filter invalid media URLs
+  useEffect(() => {
+    if (!ideaData) return
+
+    const checkMediaValidity = async () => {
+      const media = getCardMedia(ideaData)
+      const validMedia: { video?: string; image?: string } = {}
+
+      if (media.video) {
+        const isValid = await isUrlValid(media.video)
+        if (isValid) validMedia.video = media.video
+      }
+
+      if (media.image) {
+        const isValid = await isUrlValid(media.image)
+        if (isValid) validMedia.image = media.image
+      }
+
+      setValidCardMedia(validMedia)
+    }
+
+    checkMediaValidity()
+  }, [ideaData])
 
   // Use video player hook - auto-play when in viewport
   const videoPlayerRef = useVideoPlayer({
-    videoSrc: cardMedia.video,
+    videoSrc: validCardMedia.video,
     containerRef: containerRef,
     startTime: 35,
     threshold: 0.1, // Start playing when 10% visible
@@ -156,7 +182,7 @@ export function IdeaDetail({ ideaId }: IdeaDetailProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background relative">
+    <div className="bg-background relative">
       {/* Back Button - Top Left, next to sidebar - fixed on scroll */}
       <div className="fixed top-4 left-20 md:left-[272px] z-50">
         <Button
@@ -172,11 +198,11 @@ export function IdeaDetail({ ideaId }: IdeaDetailProps) {
       {/* Hero Section - Main content at the top */}
       <div className="relative w-full bg-black">
         {/* Media Section */}
-        {cardMedia.video ? (
+        {validCardMedia.video ? (
           <div ref={containerRef} className="relative w-full aspect-video">
             <video
               ref={videoPlayerRef}
-              src={cardMedia.video}
+              src={validCardMedia.video}
               className="w-full h-full object-cover pointer-events-none"
               loop
               muted
@@ -199,10 +225,10 @@ export function IdeaDetail({ ideaId }: IdeaDetailProps) {
               style={{ pointerEvents: 'none' }}
             />
           </div>
-        ) : cardMedia.image ? (
+        ) : validCardMedia.image ? (
           <div className="relative w-full aspect-video">
             <Image
-              src={cardMedia.image}
+              src={validCardMedia.image}
               alt={idea.title}
               fill
               className="object-cover"

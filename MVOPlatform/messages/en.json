@@ -37,7 +37,11 @@
     "back": "Back",
     "delete": "Delete",
     "ok": "OK",
-    "try_again": "Try Again"
+    "try_again": "Try Again",
+    "clear_draft": "Clear Draft",
+    "browse_ideas": "Browse Ideas",
+    "share_success": "Link shared successfully!",
+    "link_copied": "Link copied to clipboard!"
   },
   "status": {
     "loading": "Loading...",
@@ -76,10 +80,11 @@
   "auth": {
     "sign_in_required": "Sign In Required",
     "sign_in_with_google": "Sign In with Google",
-    "sign_in_description": "Please sign in with your Google account to submit an idea.",
-    "sign_in_to_upload": "Please sign in with your Google account to upload an idea.",
+    "sign_in_description": "Please sign in with your account to submit an idea.",
+    "sign_in_to_upload": "Please sign in to upload an idea.",
     "sign_in_to_vote": "Please sign in to vote",
-    "sign_in_to_comment": "Please sign in to comment"
+    "sign_in_to_comment": "Please sign in to comment",
+    "sign_in_required_alert": "You need to sign in to submit your idea. Your idea has been saved as a draft and will be available after you sign in."
   },
   "ideas": {
     "browse_ideas": "Browse Ideas",
@@ -243,7 +248,11 @@
     "title_min_length": "Title must be at least 10 characters",
     "space_required": "You must select a space",
     "content_required": "Please add at least one content block with content",
-    "idea_creation_error": "Error creating idea. Please try again."
+    "idea_creation_error": "Error creating idea. Please try again.",
+    "invalid_media_url": "The provided media URL is not accessible (404 or server error). Please use a valid URL.",
+    "checking_url": "Checking URL...",
+    "file_size_exceeds_limit": "File size exceeds 50MB limit",
+    "upload_failed": "Upload failed"
   },
   "form": {
     "create_idea": "Create Idea",
@@ -274,7 +283,8 @@
   "prompts": {
     "enter_image_url": "Enter image URL:",
     "enter_url": "Enter URL:",
-    "enter_video_url": "Enter video URL:"
+    "enter_video_url": "Enter video URL:",
+    "paste_url": "Paste URL"
   },
   "editor": {
     "block_types": {
