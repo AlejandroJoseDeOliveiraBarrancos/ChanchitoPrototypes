@@ -39,7 +39,9 @@
     "ok": "OK",
     "try_again": "Try Again",
     "clear_draft": "Clear Draft",
-    "browse_ideas": "Browse Ideas"
+    "browse_ideas": "Browse Ideas",
+    "share_success": "Link shared successfully!",
+    "link_copied": "Link copied to clipboard!"
   },
   "status": {
     "loading": "Loading...",

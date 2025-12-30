@@ -423,7 +423,40 @@ export function HeroCarousel({ ideas: initialIdeas }: HeroCarouselProps) {
                       <button className="hidden md:block p-3 bg-white/10 backdrop-blur-sm rounded-full hover:bg-white/20 transition-colors">
                         <Bookmark className="w-5 h-5" />
                       </button>
-                      <button className="hidden md:block p-3 bg-white/10 backdrop-blur-sm rounded-full hover:bg-white/20 transition-colors">
+                      <button
+                        onClick={e => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          const ideaUrl = `${window.location.origin}/${locale}/ideas/${activeIdea.id}`
+
+                          if (navigator.share) {
+                            navigator
+                              .share({
+                                title: activeIdea.title,
+                                text: activeIdea.description,
+                                url: ideaUrl,
+                              })
+                              .then(() => {
+                                // Show success feedback
+                                alert(t('actions.share_success'))
+                              })
+                              .catch(error => {
+                                if (error.name !== 'AbortError') {
+                                  console.error('Error sharing:', error)
+                                  // Fallback to clipboard
+                                  navigator.clipboard.writeText(ideaUrl)
+                                  alert(t('actions.link_copied'))
+                                }
+                                // If user canceled, don't show any message
+                              })
+                          } else {
+                            // Fallback to clipboard
+                            navigator.clipboard.writeText(ideaUrl)
+                            alert(t('actions.link_copied'))
+                          }
+                        }}
+                        className="hidden md:block p-3 bg-white/10 backdrop-blur-sm rounded-full hover:bg-white/20 transition-colors"
+                      >
                         <Share2 className="w-5 h-5" />
                       </button>
                     </div>

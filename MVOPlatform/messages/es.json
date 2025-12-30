@@ -40,7 +40,9 @@
     "ok": "OK",
     "try_again": "Intentar de Nuevo",
     "clear_draft": "Limpiar Borrador",
-    "browse_ideas": "Explorar Ideas"
+    "browse_ideas": "Explorar Ideas",
+    "share_success": "¡Enlace compartido exitosamente!",
+    "link_copied": "¡Enlace copiado al portapapeles!"
   },
   "status": {
     "loading": "Cargando...",

@@ -50,12 +50,21 @@ export function IdeaActions({
           text: idea.description,
           url: window.location.href,
         })
+        // Show success feedback
+        alert(t('actions.share_success'))
       } catch (error) {
-        console.error('Error sharing:', error)
+        if (error.name !== 'AbortError') {
+          console.error('Error sharing:', error)
+          // Fallback to clipboard
+          navigator.clipboard.writeText(window.location.href)
+          alert(t('actions.link_copied'))
+        }
+        // If user canceled, don't show any message
       }
     } else {
       // Fallback: copy to clipboard
       navigator.clipboard.writeText(window.location.href)
+      alert(t('actions.link_copied'))
     }
   }
 

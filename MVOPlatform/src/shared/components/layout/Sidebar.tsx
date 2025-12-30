@@ -273,7 +273,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                 </button>
               ) : (
                 <Link
-                  href="/"
+                  href="/home"
                   className={`${SIDEBAR_STYLES.logo.expanded.text} font-semibold text-text-primary truncate flex-1 min-w-0`}
                 >
                   {t('brand.name')}
@@ -306,7 +306,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
               </button>
             ) : (
               <Link
-                href="/"
+                href="/home"
                 className={`${SIDEBAR_STYLES.logo.collapsed.size} ${SIDEBAR_STYLES.button.borderRadius} bg-accent flex items-center justify-center`}
               >
                 <span
