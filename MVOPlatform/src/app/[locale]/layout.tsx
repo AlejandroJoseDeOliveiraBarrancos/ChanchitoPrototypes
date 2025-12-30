@@ -24,11 +24,9 @@ export default async function RootLayout({ children, params }: Props) {
       <Providers locale={locale}>
         <div className="h-screen w-full overflow-hidden bg-background flex">
           <Sidebar />
-          <main className="flex-1 overflow-y-auto ml-16 md:ml-64 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-            <div className="flex flex-col min-h-full">
-              {children}
-              <Footer />
-            </div>
+          <main className="flex-1 overflow-y-auto ml-16 md:ml-64">
+            {children}
+            <Footer />
           </main>
         </div>
       </Providers>

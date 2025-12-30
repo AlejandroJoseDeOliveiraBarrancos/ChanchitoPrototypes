@@ -4,14 +4,20 @@ import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { ArrowUp, ArrowDown, MessageSquare, DollarSign } from 'lucide-react'
-import { useLocale, useTranslations } from '@/shared/components/providers/I18nProvider'
+import {
+  useLocale,
+  useTranslations,
+} from '@/shared/components/providers/I18nProvider'
 import { Idea } from '@/core/types/idea'
 import { useAppSelector } from '@/core/lib/hooks'
-import { getCardMedia } from '@/core/lib/utils/media'
+import { getCardMedia, isUrlValid } from '@/core/lib/utils/media'
 import { useVideoPlayer } from '@/core/hooks/useVideoPlayer'
 import { formatDate } from '@/core/lib/utils/date'
 import { ideaService } from '@/core/lib/services/ideaService'
-import { getMostVotedType, VoteDistributionBar } from '@/shared/components/ui/VoteDistributionBar'
+import {
+  getMostVotedType,
+  VoteDistributionBar,
+} from '@/shared/components/ui/VoteDistributionBar'
 
 type IdeaCardVariant = 'interactive' | 'metrics'
 
@@ -51,6 +57,9 @@ export function IdeaCard({
   )
   const cardRef = useRef<HTMLDivElement>(null)
   const { isAuthenticated } = useAppSelector(state => state.auth)
+  const [validCardMedia, setValidCardMedia] = useState(
+    getCardMedia(currentIdea)
+  )
 
   // Update user votes when initialUserVotes prop changes
   useEffect(() => {
@@ -59,11 +68,31 @@ export function IdeaCard({
     }
   }, [initialUserVotes])
 
-  const cardMedia = getCardMedia(currentIdea)
+  // Check and filter invalid media URLs
+  useEffect(() => {
+    const checkMediaValidity = async () => {
+      const media = getCardMedia(currentIdea)
+      const validMedia: { video?: string; image?: string } = {}
+
+      if (media.video) {
+        const isValid = await isUrlValid(media.video)
+        if (isValid) validMedia.video = media.video
+      }
+
+      if (media.image) {
+        const isValid = await isUrlValid(media.image)
+        if (isValid) validMedia.image = media.image
+      }
+
+      setValidCardMedia(validMedia)
+    }
+
+    checkMediaValidity()
+  }, [currentIdea])
 
   // Use reusable video player hook with start time at 10 seconds
   const videoRef = useVideoPlayer({
-    videoSrc: cardMedia.video,
+    videoSrc: validCardMedia.video,
     containerRef: cardRef,
     startTime: 10,
   })
@@ -143,24 +172,31 @@ export function IdeaCard({
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
-      <Link href={`/${locale}/ideas/${currentIdea.id}`} onClick={handleClick} className="h-full">
-        <motion.article whileHover={{ y: -2 }} className="p-4 flex flex-col h-full">
+      <Link
+        href={`/${locale}/ideas/${currentIdea.id}`}
+        onClick={handleClick}
+        className="h-full"
+      >
+        <motion.article
+          whileHover={{ y: -2 }}
+          className="p-4 flex flex-col h-full"
+        >
           {/* Media Section */}
           <div className="relative w-full aspect-video mb-3 rounded-md overflow-hidden">
-            {cardMedia.video ? (
+            {validCardMedia.video ? (
               <video
                 ref={videoRef}
-                src={cardMedia.video}
+                src={validCardMedia.video}
                 className="w-full h-full object-cover"
                 loop
                 muted
                 playsInline
                 preload="none"
               />
-            ) : cardMedia.image ? (
+            ) : validCardMedia.image ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={cardMedia.image}
+                src={validCardMedia.image}
                 alt={currentIdea.title}
                 className="w-full h-full object-cover"
                 loading="lazy"

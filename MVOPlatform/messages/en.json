@@ -37,7 +37,8 @@
     "back": "Back",
     "delete": "Delete",
     "ok": "OK",
-    "try_again": "Try Again"
+    "try_again": "Try Again",
+    "clear_draft": "Clear Draft"
   },
   "status": {
     "loading": "Loading...",
@@ -243,7 +244,11 @@
     "title_min_length": "Title must be at least 10 characters",
     "space_required": "You must select a space",
     "content_required": "Please add at least one content block with content",
-    "idea_creation_error": "Error creating idea. Please try again."
+    "idea_creation_error": "Error creating idea. Please try again.",
+    "invalid_media_url": "The provided media URL is not accessible (404 or server error). Please use a valid URL.",
+    "checking_url": "Checking URL...",
+    "file_size_exceeds_limit": "File size exceeds 50MB limit",
+    "upload_failed": "Upload failed"
   },
   "form": {
     "create_idea": "Create Idea",
@@ -274,7 +279,8 @@
   "prompts": {
     "enter_image_url": "Enter image URL:",
     "enter_url": "Enter URL:",
-    "enter_video_url": "Enter video URL:"
+    "enter_video_url": "Enter video URL:",
+    "paste_url": "Paste URL"
   },
   "editor": {
     "block_types": {

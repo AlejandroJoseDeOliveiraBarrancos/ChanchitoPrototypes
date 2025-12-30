@@ -38,7 +38,8 @@
     "back": "Volver",
     "delete": "Eliminar",
     "ok": "OK",
-    "try_again": "Intentar de Nuevo"
+    "try_again": "Intentar de Nuevo",
+    "clear_draft": "Limpiar Borrador"
   },
   "status": {
     "loading": "Cargando...",
@@ -244,7 +245,11 @@
     "title_min_length": "El título debe tener al menos 10 caracteres",
     "space_required": "Debes seleccionar un espacio",
     "content_required": "Por favor agrega al menos un bloque de contenido con contenido",
-    "idea_creation_error": "Error al crear la idea. Por favor intenta de nuevo."
+    "idea_creation_error": "Error al crear la idea. Por favor intenta de nuevo.",
+    "invalid_media_url": "La URL de medios proporcionada no es accesible (404 o error del servidor). Por favor usa una URL válida.",
+    "checking_url": "Verificando URL...",
+    "file_size_exceeds_limit": "El tamaño del archivo excede el límite de 50MB",
+    "upload_failed": "Error al subir"
   },
   "form": {
     "create_idea": "Crear Idea",
@@ -275,7 +280,8 @@
   "prompts": {
     "enter_image_url": "Ingresa la URL de la imagen:",
     "enter_url": "Ingresa la URL:",
-    "enter_video_url": "Ingresa la URL del video:"
+    "enter_video_url": "Ingresa la URL del video:",
+    "paste_url": "Pegar URL"
   },
   "editor": {
     "block_types": {

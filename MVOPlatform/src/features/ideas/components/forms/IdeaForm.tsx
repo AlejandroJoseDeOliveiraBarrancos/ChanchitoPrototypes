@@ -12,7 +12,7 @@ import {
   ChevronDown,
   ChevronUp,
   Upload,
-  Link as LinkIcon,
+  Link,
   Image as ImageIcon,
   Video,
   Crop,
@@ -28,7 +28,10 @@ import {
   Search,
 } from 'lucide-react'
 import Image from 'next/image'
-import { useLocale, useTranslations } from '@/shared/components/providers/I18nProvider'
+import {
+  useLocale,
+  useTranslations,
+} from '@/shared/components/providers/I18nProvider'
 import { SpaceWithTeam } from '@/core/types/space'
 import { useAppSelector } from '@/core/lib/hooks'
 import { supabase } from '@/core/lib/supabase'
@@ -38,6 +41,7 @@ import { Idea } from '@/core/types/idea'
 import { ContentRenderer } from '../ContentRenderer'
 import { Button } from '@/shared/components/ui/Button'
 import { ContentBlock } from '@/core/types/content'
+import { isUrlValid } from '@/core/lib/utils/media'
 
 type IdeaFormData = {
   title: string
@@ -55,7 +59,12 @@ interface IdeaFormProps {
   onCancel?: () => void
 }
 
-export function IdeaForm({ defaultSpaceId, ideaId, onSuccess, onCancel }: IdeaFormProps = {}) {
+export function IdeaForm({
+  defaultSpaceId,
+  ideaId,
+  onSuccess,
+  onCancel,
+}: IdeaFormProps = {}) {
   const router = useRouter()
   const t = useTranslations()
   const { locale } = useLocale()
@@ -85,6 +94,10 @@ export function IdeaForm({ defaultSpaceId, ideaId, onSuccess, onCancel }: IdeaFo
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [isUploadingHeroImage, setIsUploadingHeroImage] = useState(false)
   const [isUploadingHeroVideo, setIsUploadingHeroVideo] = useState(false)
+  const [isValidatingUrl, setIsValidatingUrl] = useState(false)
+  const [urlValidationError, setUrlValidationError] = useState<string | null>(
+    null
+  )
   const imageInputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
   const { profile, user } = useAppSelector(state => state.auth)
@@ -165,9 +178,10 @@ export function IdeaForm({ defaultSpaceId, ideaId, onSuccess, onCancel }: IdeaFo
           }
 
           // Set remaining content blocks (skip first if it's hero media)
-          const remainingBlocks = firstBlock.type === 'image' || firstBlock.type === 'video'
-            ? idea.content.slice(1)
-            : idea.content
+          const remainingBlocks =
+            firstBlock.type === 'image' || firstBlock.type === 'video'
+              ? idea.content.slice(1)
+              : idea.content
           setContentBlocks(remainingBlocks)
         } else {
           // Fallback to image/video from idea root
@@ -193,7 +207,7 @@ export function IdeaForm({ defaultSpaceId, ideaId, onSuccess, onCancel }: IdeaFo
     try {
       const savedData = localStorage.getItem(FORM_STORAGE_KEY)
       let parsed: any = null
-      
+
       if (savedData) {
         parsed = JSON.parse(savedData)
 
@@ -264,7 +278,7 @@ export function IdeaForm({ defaultSpaceId, ideaId, onSuccess, onCancel }: IdeaFo
           setIsAnonymous(parsed.isAnonymous)
         }
       }
-      
+
       // Set default space if provided (prioritize defaultSpaceId over saved data)
       if (defaultSpaceId) {
         setValue('space_id', defaultSpaceId)
@@ -450,7 +464,7 @@ export function IdeaForm({ defaultSpaceId, ideaId, onSuccess, onCancel }: IdeaFo
     folder: string = 'uploads'
   ): Promise<string> => {
     if (file.size > 50 * 1024 * 1024) {
-      throw new Error('File size exceeds 50MB limit')
+      throw new Error(t('validation.file_size_exceeds_limit'))
     }
 
     const formData = new FormData()
@@ -471,6 +485,34 @@ export function IdeaForm({ defaultSpaceId, ideaId, onSuccess, onCancel }: IdeaFo
     return data.url
   }
 
+  const validateAndSetUrl = async (url: string, type: 'image' | 'video') => {
+    if (!url || !url.trim()) return
+
+    setIsValidatingUrl(true)
+    setUrlValidationError(null)
+
+    try {
+      const isValid = await isUrlValid(url.trim(), true)
+      if (isValid) {
+        if (type === 'image') {
+          setHeroImage(url.trim())
+          setHeroVideo(null)
+          setShowImageUpload(false)
+        } else {
+          setHeroVideo(url.trim())
+          setHeroImage(null)
+          setShowVideoUpload(false)
+        }
+      } else {
+        setUrlValidationError(t('validation.invalid_media_url'))
+      }
+    } catch (error) {
+      setUrlValidationError(t('validation.invalid_media_url'))
+    } finally {
+      setIsValidatingUrl(false)
+    }
+  }
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
@@ -481,7 +523,9 @@ export function IdeaForm({ defaultSpaceId, ideaId, onSuccess, onCancel }: IdeaFo
         setHeroVideo(null)
         setShowImageUpload(false)
       } catch (error) {
-        alert(error instanceof Error ? error.message : 'Upload failed')
+        alert(
+          error instanceof Error ? error.message : t('validation.upload_failed')
+        )
       } finally {
         setIsUploadingHeroImage(false)
       }
@@ -498,7 +542,9 @@ export function IdeaForm({ defaultSpaceId, ideaId, onSuccess, onCancel }: IdeaFo
         setHeroImage(null)
         setShowVideoUpload(false)
       } catch (error) {
-        alert(error instanceof Error ? error.message : 'Upload failed')
+        alert(
+          error instanceof Error ? error.message : t('validation.upload_failed')
+        )
       } finally {
         setIsUploadingHeroVideo(false)
       }
@@ -619,7 +665,7 @@ export function IdeaForm({ defaultSpaceId, ideaId, onSuccess, onCancel }: IdeaFo
         anonymous: isAnonymous, // Anonymous flag
       }
 
-      setSubmitProgress('Uploading to Supabase...')
+      setSubmitProgress('Uploading...')
 
       let resultIdea: Idea
 
@@ -804,7 +850,7 @@ export function IdeaForm({ defaultSpaceId, ideaId, onSuccess, onCancel }: IdeaFo
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background">
       {/* Edit Mode Header */}
       <div className="sticky top-0 z-50 bg-background border-b border-border-color px-4 py-3 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-text-primary truncate flex-1 min-w-0 mr-4">
@@ -868,13 +914,19 @@ export function IdeaForm({ defaultSpaceId, ideaId, onSuccess, onCancel }: IdeaFo
             <div className="text-center px-6 max-w-2xl z-10">
               {showImageUpload ? (
                 <div className="space-y-4">
-                  <label className={`flex flex-col items-center gap-2 px-6 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg text-white transition-colors ${isUploadingHeroImage ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
+                  <label
+                    className={`flex flex-col items-center gap-2 px-6 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg text-white transition-colors ${isUploadingHeroImage ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                  >
                     {isUploadingHeroImage ? (
                       <Loader2 className="w-8 h-8 animate-spin" />
                     ) : (
-                    <Upload className="w-8 h-8" />
+                      <Upload className="w-8 h-8" />
                     )}
-                    <span>{isUploadingHeroImage ? t('status.loading') : `${t('form.upload_image')} (max 50MB)`}</span>
+                    <span>
+                      {isUploadingHeroImage
+                        ? t('status.loading')
+                        : `${t('form.upload_image')} (max 50MB)`}
+                    </span>
                     <input
                       type="file"
                       accept="image/*"
@@ -887,16 +939,17 @@ export function IdeaForm({ defaultSpaceId, ideaId, onSuccess, onCancel }: IdeaFo
                     <button
                       type="button"
                       onClick={() => {
-                        const url = prompt('Enter image URL:')
-                        if (url && url.trim()) {
-                          setHeroImage(url.trim())
-                          setHeroVideo(null)
-                          setShowImageUpload(false)
+                        const url = prompt(t('prompts.enter_image_url'))
+                        if (url) {
+                          validateAndSetUrl(url, 'image')
                         }
                       }}
-                      className="px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg text-white transition-colors text-sm"
+                      disabled={isValidatingUrl}
+                      className="px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg text-white transition-colors text-sm disabled:opacity-50"
                     >
-                      Paste URL
+                      {isValidatingUrl
+                        ? t('validation.checking_url')
+                        : t('prompts.paste_url')}
                     </button>
                     <button
                       type="button"
@@ -906,16 +959,27 @@ export function IdeaForm({ defaultSpaceId, ideaId, onSuccess, onCancel }: IdeaFo
                       {t('actions.cancel')}
                     </button>
                   </div>
+                  {urlValidationError && (
+                    <p className="text-red-300 text-sm mt-2 text-center">
+                      {urlValidationError}
+                    </p>
+                  )}
                 </div>
               ) : showVideoUpload ? (
                 <div className="space-y-4">
-                  <label className={`flex flex-col items-center gap-2 px-6 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg text-white transition-colors ${isUploadingHeroVideo ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
+                  <label
+                    className={`flex flex-col items-center gap-2 px-6 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg text-white transition-colors ${isUploadingHeroVideo ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                  >
                     {isUploadingHeroVideo ? (
                       <Loader2 className="w-8 h-8 animate-spin" />
                     ) : (
-                    <Upload className="w-8 h-8" />
+                      <Upload className="w-8 h-8" />
                     )}
-                    <span>{isUploadingHeroVideo ? t('status.loading') : `${t('form.upload_video')} (max 50MB)`}</span>
+                    <span>
+                      {isUploadingHeroVideo
+                        ? t('status.loading')
+                        : `${t('form.upload_video')} (max 50MB)`}
+                    </span>
                     <input
                       type="file"
                       accept="video/*"
@@ -928,16 +992,17 @@ export function IdeaForm({ defaultSpaceId, ideaId, onSuccess, onCancel }: IdeaFo
                     <button
                       type="button"
                       onClick={() => {
-                        const url = prompt('Enter video URL:')
-                        if (url && url.trim()) {
-                          setHeroVideo(url.trim())
-                          setHeroImage(null)
-                          setShowVideoUpload(false)
+                        const url = prompt(t('prompts.enter_video_url'))
+                        if (url) {
+                          validateAndSetUrl(url, 'video')
                         }
                       }}
-                      className="px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg text-white transition-colors text-sm"
+                      disabled={isValidatingUrl}
+                      className="px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg text-white transition-colors text-sm disabled:opacity-50"
                     >
-                      Paste URL
+                      {isValidatingUrl
+                        ? t('validation.checking_url')
+                        : t('prompts.paste_url')}
                     </button>
                     <button
                       type="button"
@@ -947,6 +1012,11 @@ export function IdeaForm({ defaultSpaceId, ideaId, onSuccess, onCancel }: IdeaFo
                       {t('actions.cancel')}
                     </button>
                   </div>
+                  {urlValidationError && (
+                    <p className="text-red-300 text-sm mt-2 text-center">
+                      {urlValidationError}
+                    </p>
+                  )}
                 </div>
               ) : (
                 <div className="flex gap-4 justify-center">
@@ -978,7 +1048,7 @@ export function IdeaForm({ defaultSpaceId, ideaId, onSuccess, onCancel }: IdeaFo
             <button
               type="button"
               onClick={() => setShowHeroCrop(!showHeroCrop)}
-              className="px-4 py-2 bg-black/50 hover:bg-black/70 backdrop-blur-sm rounded-lg text-white transition-colors flex items-center gap-2"
+              className="px-4 py-2 bg-black/50 hover:bg-black/70 backdrop-blur-sm rounded-lg text-gray-400 transition-colors flex items-center gap-2"
             >
               <Crop className="w-4 h-4" />
               <span className="text-sm">{t('form.crop_adjust')}</span>
@@ -990,7 +1060,7 @@ export function IdeaForm({ defaultSpaceId, ideaId, onSuccess, onCancel }: IdeaFo
                 setHeroVideo(null)
                 setHeroCrop(null)
               }}
-              className="px-4 py-2 bg-black/50 hover:bg-black/70 backdrop-blur-sm rounded-lg text-white transition-colors flex items-center gap-2"
+              className="px-4 py-2 bg-black/50 hover:bg-black/70 backdrop-blur-sm rounded-lg text-gray-400 transition-colors flex items-center gap-2"
             >
               <X className="w-4 h-4" />
               <span className="text-sm">{t('form.remove')}</span>
@@ -1047,7 +1117,7 @@ export function IdeaForm({ defaultSpaceId, ideaId, onSuccess, onCancel }: IdeaFo
             <input
               {...register('title')}
               type="text"
-              className="w-full bg-transparent border-none outline-none text-2xl md:text-3xl lg:text-5xl font-bold text-white mb-3 md:mb-4 drop-shadow-lg placeholder:text-white/50"
+              className="w-full bg-transparent border-none outline-none text-2xl md:text-3xl lg:text-5xl font-bold text-white mb-3 md:mb-4 drop-shadow-lg placeholder:text-gray-300"
               placeholder={t('form.enter_title')}
               onKeyDown={e => {
                 if (e.key === 'Enter') {
@@ -1062,7 +1132,7 @@ export function IdeaForm({ defaultSpaceId, ideaId, onSuccess, onCancel }: IdeaFo
             )}
             {/* Tags Input Placeholder */}
             {selectedTags.length === 0 && (
-              <div className="text-white/60 text-xs md:text-sm">
+              <div className="text-gray-400 text-xs md:text-sm">
                 {t('form.add_tags_hint')}
               </div>
             )}
@@ -1107,18 +1177,14 @@ export function IdeaForm({ defaultSpaceId, ideaId, onSuccess, onCancel }: IdeaFo
             </label>
             <div className="relative">
               {/* Hidden input for form validation */}
-              <input
-                type="hidden"
-              {...register('space_id')}
-              id="space_id"
-              />
-              
+              <input type="hidden" {...register('space_id')} id="space_id" />
+
               {/* Custom Dropdown Button */}
               <button
                 type="button"
                 onClick={() => setIsSpaceDropdownOpen(!isSpaceDropdownOpen)}
                 className="w-full px-4 py-2 bg-background border border-border-color rounded-lg text-text-primary text-left flex items-center justify-between hover:border-accent/30 transition-colors"
-            >
+              >
                 <span className="truncate">
                   {selectedSpaceId
                     ? spaces.find(s => s.id === selectedSpaceId)?.name ||
@@ -1141,7 +1207,9 @@ export function IdeaForm({ defaultSpaceId, ideaId, onSuccess, onCancel }: IdeaFo
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-text-secondary" />
                       <input
                         type="text"
-                        placeholder={t('form.search_spaces') || 'Search spaces...'}
+                        placeholder={
+                          t('form.search_spaces') || 'Search spaces...'
+                        }
                         value={spaceSearchQuery}
                         onChange={e => setSpaceSearchQuery(e.target.value)}
                         className="w-full pl-10 pr-4 py-2 bg-background border border-border-color rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
@@ -1184,7 +1252,7 @@ export function IdeaForm({ defaultSpaceId, ideaId, onSuccess, onCancel }: IdeaFo
                               }`}
                             />
                             <span className="flex-1 truncate text-text-primary">
-                  {space.name}
+                              {space.name}
                             </span>
                             {isSelected && (
                               <Check className="w-4 h-4 text-accent flex-shrink-0" />
@@ -1401,7 +1469,7 @@ export function IdeaForm({ defaultSpaceId, ideaId, onSuccess, onCancel }: IdeaFo
               }}
               disabled={isSubmitting}
             >
-              Clear Draft
+              {t('actions.clear_draft')}
             </Button>
             <Button
               type="button"
