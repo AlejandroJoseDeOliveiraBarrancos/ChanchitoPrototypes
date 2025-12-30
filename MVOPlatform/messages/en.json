@@ -38,7 +38,8 @@
     "delete": "Delete",
     "ok": "OK",
     "try_again": "Try Again",
-    "clear_draft": "Clear Draft"
+    "clear_draft": "Clear Draft",
+    "browse_ideas": "Browse Ideas"
   },
   "status": {
     "loading": "Loading...",
@@ -77,10 +78,11 @@
   "auth": {
     "sign_in_required": "Sign In Required",
     "sign_in_with_google": "Sign In with Google",
-    "sign_in_description": "Please sign in with your Google account to submit an idea.",
-    "sign_in_to_upload": "Please sign in with your Google account to upload an idea.",
+    "sign_in_description": "Please sign in with your account to submit an idea.",
+    "sign_in_to_upload": "Please sign in to upload an idea.",
     "sign_in_to_vote": "Please sign in to vote",
-    "sign_in_to_comment": "Please sign in to comment"
+    "sign_in_to_comment": "Please sign in to comment",
+    "sign_in_required_alert": "You need to sign in to submit your idea. Your idea has been saved as a draft and will be available after you sign in."
   },
   "ideas": {
     "browse_ideas": "Browse Ideas",

@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import '../globals.css'
 import { Providers } from '@/shared/components/providers/Providers'
 import { GoogleAnalytics } from '@/shared/components/GoogleAnalytics'
-import { Sidebar } from '@/shared/components/layout/Sidebar'
+import { SidebarWrapper } from '@/shared/components/layout/SidebarWrapper'
 import { Footer } from '@/shared/components/layout/Footer'
 
 type Props = {
@@ -22,13 +22,12 @@ export default async function RootLayout({ children, params }: Props) {
     <>
       <GoogleAnalytics />
       <Providers locale={locale}>
-        <div className="h-screen w-full overflow-hidden bg-background flex">
-          <Sidebar />
-          <main className="flex-1 overflow-y-auto ml-16 md:ml-64">
+        <Providers locale={locale}>
+          <SidebarWrapper>
             {children}
             <Footer />
-          </main>
-        </div>
+          </SidebarWrapper>
+        </Providers>
       </Providers>
     </>
   )

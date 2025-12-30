@@ -57,6 +57,7 @@ interface IdeaFormProps {
   ideaId?: string // For editing existing ideas
   onSuccess?: () => void
   onCancel?: () => void
+  onCustomSubmit?: (data: IdeaFormData) => void
 }
 
 export function IdeaForm({
@@ -64,6 +65,7 @@ export function IdeaForm({
   ideaId,
   onSuccess,
   onCancel,
+  onCustomSubmit,
 }: IdeaFormProps = {}) {
   const router = useRouter()
   const t = useTranslations()
@@ -570,6 +572,12 @@ export function IdeaForm({
 
     if (validBlocks.length === 0) {
       alert(t('validation.content_required'))
+      return
+    }
+
+    // Call the onCustomSubmit prop if provided
+    if (onCustomSubmit) {
+      onCustomSubmit(data)
       return
     }
 

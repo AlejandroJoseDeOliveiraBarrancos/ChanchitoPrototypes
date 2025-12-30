@@ -4,9 +4,12 @@ import { useTranslations } from '@/shared/components/providers/I18nProvider'
 import { Button } from '@/shared/components/ui/Button'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 export function Hero() {
   const t = useTranslations()
+  const pathname = usePathname()
+  const currentLocale = pathname.startsWith('/es') ? 'es' : 'en'
 
   return (
     <section className="max-w-7xl mx-auto px-6 py-24 md:py-32">
@@ -24,12 +27,12 @@ export function Hero() {
           {t('hero.description')}
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link href="/upload">
+          <Link href={`/${currentLocale}/upload`}>
             <Button size="lg" variant="primary">
               {t('actions.submit_idea')}
             </Button>
           </Link>
-          <Link href="/ideas">
+          <Link href={`/${currentLocale}/home`}>
             <Button size="lg" variant="outline">
               {t('actions.browse_ideas')}
             </Button>

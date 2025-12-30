@@ -78,6 +78,11 @@ export const signOut = createAsyncThunk(
     try {
       const { error } = await supabase.auth.signOut()
       if (error) throw error
+      // Redirect to landing page after logout
+      const pathname = window.location.pathname
+      const localeMatch = pathname.match(/^\/([a-z]{2})/)
+      const locale = localeMatch ? localeMatch[1] : 'en'
+      window.location.href = `/${locale}`
     } catch (error: unknown) {
       if (error instanceof Error) {
         return rejectWithValue(error.message)

@@ -39,7 +39,8 @@
     "delete": "Eliminar",
     "ok": "OK",
     "try_again": "Intentar de Nuevo",
-    "clear_draft": "Limpiar Borrador"
+    "clear_draft": "Limpiar Borrador",
+    "browse_ideas": "Explorar Ideas"
   },
   "status": {
     "loading": "Cargando...",
@@ -77,11 +78,12 @@
   },
   "auth": {
     "sign_in_required": "Inicio de Sesión Requerido",
-    "sign_in_with_google": "Iniciar Sesión con Google",
-    "sign_in_description": "Por favor inicia sesión con tu cuenta de Google para enviar una idea.",
-    "sign_in_to_upload": "Por favor inicia sesión con tu cuenta de Google para subir una idea.",
+    "sign_in_with_google": "Iniciar Sesión",
+    "sign_in_description": "Por favor inicia sesión con tu cuenta para enviar una idea.",
+    "sign_in_to_upload": "Por favor inicia sesión con tu cuenta para subir una idea.",
     "sign_in_to_vote": "Por favor inicia sesión para votar",
-    "sign_in_to_comment": "Por favor inicia sesión para comentar"
+    "sign_in_to_comment": "Por favor inicia sesión para comentar",
+    "sign_in_required_alert": "Necesitas iniciar sesión para enviar tu idea. Tu idea ha sido guardada como borrador y estará disponible después de iniciar sesión."
   },
   "ideas": {
     "browse_ideas": "Explorar Ideas",
